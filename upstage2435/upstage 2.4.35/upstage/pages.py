@@ -145,6 +145,7 @@ class Template(Resource):
     by the result thus obtained.
     """
     filename = None
+    errorRedirect = ''
     
     def render_GET(self, request):
         s = get_template(self.filename)
@@ -298,9 +299,11 @@ class AdminBase(Template):
 class AdminError(AdminBase):
     """error page, in same clothes as AdminBase"""
     filename = 'error.xhtml'
+    errorRedirect = ''
     log_message = 'Reporting Error: %s'
     code = 500
     errorMsg = 'Something went wrong'
+    errorRedirect = '<META HTTP-EQUIV="refresh" CONTENT="6;URL=/home"/>'
     
     def __init__(self, error, code=None):
         log.msg(self.log_message % error)
@@ -541,6 +544,7 @@ class NonAdminEditPage(AdminBase):
         
 class AdminWarning(AdminError):
     """A wrapper for errors (warnings)"""
+    errorRedirect = '<META HTTP-EQUIV="refresh" CONTENT="10;URL=/home"/>'
     templateFile = 'warning.xhtml'
     log_message = 'Giving Warning: %s'
     code = 200
@@ -561,7 +565,6 @@ def successpage(request, message='success', code=200):
     Makes an success page, and returns a rendering thereof.
     @param request request that is being handled
     @param message message to send to AdminSuccess"""
-
     p = AdminSuccess(message, code)
     r = p.render(request)
     return r    
