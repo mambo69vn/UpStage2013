@@ -719,8 +719,10 @@ class _Stage(object):
     def isPlayerAudience(self, player):
         print "checking if audience: %s " % player.name
         if player.name in self.access_level_one or player.name in self.access_level_two:
+            log.msg('is not audience!!!')
             return False
         else:
+            log.msg('is audience!!!')
             return True
    
     def log_chat(self,text):
@@ -796,11 +798,6 @@ class _Stage(object):
 
         self.sockets[client.ID] = client
        
-		
-        #Added checking if user is player access or admin access
-        #admin needs to be added to player as well.
-		#Disabling it for now.
-        """
         if client.player.name in self.access_level_two or client.player.name in self.access_level_one:
             self.player_sockets[client.ID] = client
         else:
@@ -809,7 +806,7 @@ class _Stage(object):
         #Added checking if user is player access or admin access
         if client.player.name in self.access_level_one:
             self.admin_sockets[client.ID] = client
-        """
+
             
         return True
 
