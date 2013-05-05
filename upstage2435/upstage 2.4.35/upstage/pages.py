@@ -93,6 +93,8 @@ Modified by: Craig Farrell  01/05/2013  - added  setupStageLock. this checks if 
 Modified by: Craig Farrell  02/05/2013  - added new varible to EditStage page  for the owner varible
                                         - added text_owner method to return the owner of stage from EditStage not from stage.
                                         - added if statement to let superuser to edit locked stages.
+Modified by: Craig Farrell  05/05/2013  - added new redirect to the errorpage
+                                        - added new redirect to the 'something went wrong' page
 """
 
 #standard lib
@@ -303,7 +305,7 @@ class AdminError(AdminBase):
     log_message = 'Reporting Error: %s'
     code = 500
     errorMsg = 'Something went wrong'
-    errorRedirect = '<META HTTP-EQUIV="refresh" CONTENT="6;URL=/home"/>'
+    errorRedirect = '<META HTTP-EQUIV="refresh" CONTENT="6;URL=/home"/>'#(05-05-2013) Craig
     
     def __init__(self, error, code=None):
         log.msg(self.log_message % error)
@@ -544,7 +546,7 @@ class NonAdminEditPage(AdminBase):
         
 class AdminWarning(AdminError):
     """A wrapper for errors (warnings)"""
-    errorRedirect = '<META HTTP-EQUIV="refresh" CONTENT="10;URL=/home"/>'
+    errorRedirect = '<META HTTP-EQUIV="refresh" CONTENT="10;URL=/home"/>'#(05-05-2013) Craig
     templateFile = 'warning.xhtml'
     log_message = 'Giving Warning: %s'
     code = 200

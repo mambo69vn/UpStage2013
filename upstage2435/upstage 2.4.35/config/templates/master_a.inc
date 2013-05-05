@@ -17,7 +17,7 @@
 <script language="javascript" type="text/javascript" src="/user.js"></script>
 <script language="javascript" type="text/javascript" src="/md5.js" ></script>
 <script language="javascript" type="text/javascript" src="/jwplayer.js"></script>
-%(attr:errorRedirect)s
+%(attr:errorRedirect)s <!--Craig Farrell 05/05/2013-->
 </head>
 
 <body>
