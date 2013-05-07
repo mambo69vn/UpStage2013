@@ -37,6 +37,7 @@ import model.ModelDrawing;
  * Modified by: Vishaal Solanki 15/10/09
  * Modified by: Heath / Vibhu 09/08/2011 - Added function CHAT_COLOUR so part of fix for media management system colour changing.
  * Modified by: Vibhu 31/08/2011 - Added function PAGE_COLOUR and TOOL_COLOUR so part of fix for media management system colour changing.
+ * Modified by: Craig Farrell 07/05/2013 - added this.satge.debug(msg) so when something is called it is put on screen if debug is on
  * Notes: 
  */
 
@@ -253,6 +254,7 @@ class Transport extends XMLSocket
             {
                 trace('\nreceived mystery message:\n' + msg );
             }
+        this.stage.debug(msg);// 07-05-2013 Craig
     };
 
 

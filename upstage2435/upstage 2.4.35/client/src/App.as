@@ -50,15 +50,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * On a developer level, the entire client side code (ActionScript1) has been
  * rebuilt using ActionScript2 and the Model/View/Controller pattern
  * 
- * 
- * 
- */
-
-
-
-/**
  *   Entry point for application onLoad called automatically
  *   See application.xml
+ * 
+ * 
+ * modified: 07-05-2013 Craig Farrell - added the debugmsg.selectable = false; when creating the textfield
  */
 
 
@@ -72,6 +68,7 @@ class App extends MovieClip
 {
     static var transport : Transport;
     static var debugMsg : TextField;
+
     /**
      * @brief Constructor
      */
@@ -84,7 +81,7 @@ class App extends MovieClip
     function onLoad() : Void
     {
         // Application begins executing here
-        if (_root._url.indexOf('mode=DEBUG') >= 0){
+        if (_root._url.indexOf('mode=DEBUG') >= 0) {
             this.createLogger();
         }
         
@@ -103,7 +100,8 @@ class App extends MovieClip
             
             debugMsg = Construct.formattedTextField(_level0, 'debugMessages', Client.L_DEBUG, 5, 5, 
                                                     Client.RIGHT_BOUND - 10, Client.BOTTOM_BOUND - 10,
-                                                    0.9, false, {}, {});
+                                                    0.9, false, { }, { } );
+        debugMsg.selectable = false; // 07-05-2013 Craig
 	    debugMsg.border = true;
 	    debugMsg.wordWrap = true;
 	    debugMsg.borderColor = 0x0000cc;
@@ -112,7 +110,7 @@ class App extends MovieClip
 		}
     };
 
-    static function debug(x : Object) :Void
+    function debug(x : Object) :Void
     {
         
         if (Client.LOG_TO_SCREEN && debugMsg != null)
@@ -121,7 +119,7 @@ class App extends MovieClip
                 var bottomish: Boolean = (debugMsg.maxscroll - scroll < 5);
                 //replaceText is much faster than debugMsg.text += '\n' + x;
                 var len : Number = debugMsg.length;
-                debugMsg.replaceText(len, len, '\n' + x);
+                debugMsg.replaceText(len, len, '\n => ' + x);
                 debugMsg.scroll = (bottomish) ? debugMsg.maxscroll : scroll;
             }
         if (Client.LOG_TO_SERVER){
