@@ -27,11 +27,13 @@
  *			1.3 Vibhu, Corey and Karena (31/08/2011) - Added function to allow to change audio type.
  *			1.4 Vibhu (31/08/2011) - Modified getMedia function to send type of audio media is, whether music or sfx.
  *			1.5 Heath / Vibhu (01/09/2011) - added functions searchTags to search through media by tag.
- *         1.6 Gavin (13/09/2012) - changed the save media into a function that allows invaild characters that are found to be removed in the media and tag name.
- *         1.7 Daniel / Gavin (16/09/12) - Converted the audio player in test voice into jwplayer in which allow multiple browsers such as IE to test the voice audio. \
- *         1.8 Scott Riddell / Gavin Chan (18/09/2012 - Removed the getFilteringInfo() function, as we removed the type1 and type2 filters from the webpage
-		   1.9 Craig Farrell (13/09/2012) - added searchTagEnterKey, so when you press enter in text box it will activate search button. 
-           2.0 Daniel / Craig 19/09/2012  - altered applySearch().
+ *          1.6 Gavin (13/09/2012) - changed the save media into a function that allows invaild characters that are found to be removed in the media and tag name.
+ *          1.7 Daniel / Gavin (16/09/12) - Converted the audio player in test voice into jwplayer in which allow multiple browsers such as IE to test the voice audio. \
+ *          1.8 Scott Riddell / Gavin Chan (18/09/2012 - Removed the getFilteringInfo() function, as we removed the type1 and type2 filters from the webpage
+		    1.9 Craig Farrell (13/09/2012) - added searchTagEnterKey, so when you press enter in text box it will activate search button. 
+            2.0 Daniel / Craig 19/09/2012  - altered applySearch().
+            3.0 Craig Farrell 17/05/2013 - changed whole of method applySearch  due to componts on site changed
+                                         - made it check the name,owner,and tags.
  */
 //General instance style variables
 var mediaSelected = false;
@@ -777,29 +779,33 @@ function playmp3(action, player)
     Modified by Daniel / Craig 19/09/2012
         - Removed code which actually removes tables under the hood.
         - added display styles code to just hide it.
-
+        
+    Modified by Craig 17/05/2013
+        - changed whole of method due to compont changed
+        - made it actaully check tags where before it just searched name.
  */
  function applySearch(){
  	var searchText = document.getElementById('serachText').value;
  	if(searchText.length > 0){
  		var elements = document.getElementById("theImages").getElementsByTagName("table");
+        var eInputs = document.getElementById("theImages").getElementsByTagName("input");
  		if(elements){
  			var html = '';
             var display;
- 			elements = document.getElementById("theImages").getElementsByTagName("table");
 		 	for (var e = 0; e < elements.length; e++){
                 display = 'none';
+                tagslist = "";
 		 		var element = elements[e];
-		 		var temp2 = element.getElementsByTagName("input");
-		 		var temp3 = temp2[0].value;
-		 		if(temp3)
+                var temp5 = element.getElementsByTagName("tr");
+                tagslist = eInputs[e].value;
+		 		var mName = temp5[1].innerText;
+                var mOwner = temp5[2].innerText;
+		 		if(temp5)
 		 		{
-			 		if(temp3.search(searchText) >= 0){
+			 		if((mName.search(searchText))  != -1 || (mOwner.search(searchText)) != -1 || (tagslist.search(searchText)) != -1){
                         display = 'block';
-                        
 			 		}
 			 	}
-                
                 element.style.display = display;
 		 	}
 			document.getElementById("mediadiv").innerHTML = '';
