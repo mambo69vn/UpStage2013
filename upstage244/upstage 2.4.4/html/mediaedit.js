@@ -34,6 +34,8 @@
             2.0 Daniel / Craig 19/09/2012  - altered applySearch().
             3.0 Craig Farrell 17/05/2013 - changed whole of method applySearch  due to componts on site changed
                                          - made it check the name,owner,and tags.
+            3.1 Craig Farrell 19/05/2013 - made saveMedia get rid of " in the name before saving.
+                                         - made saveMedia get rid of empty name or names with just spaces.
  */
 //General instance style variables
 var mediaSelected = false;
@@ -826,11 +828,12 @@ function playmp3(action, player)
     mediaName = document.getElementById('name').value;
     tagName = document.getElementById('tagName').value;
     
-    if(mediaName.match('&') || mediaName.match('#') || mediaName.match(':'))
+    if(mediaName.match('&') || mediaName.match('#') || mediaName.match(':') || mediaName.match('"'))
     {
       mediaName = mediaName.replace(/&/g,"");
       mediaName = mediaName.replace(/#/g,""); 
       mediaName = mediaName.replace(/:/g,""); 
+      mediaName = mediaName.replace(/"/g,""); //(19/05/2013) Craig
       document.getElementById('name').value = mediaName;      
     }
  
@@ -840,12 +843,15 @@ function playmp3(action, player)
       tagName = tagName.replace(/#/g,""); 
       document.getElementById('tagName').value = tagName;      
     }
-    
-    document.getElementById("status").innerHTML = 'Sending to server, please wait...';
-    document.getElementById("status").style.display = "inline";
-	document.rupert.action.value = actions[4];	
-	requestPage("POST", buildRequest(2),fillPage);
-     
+    var st = mediaName.replace(/\s/g,"");//(19/05/2013) Craig
+    var onlyspaces = false;
+    if(st.length <= 0){ onlyspaces = true;}//(19/05/2013) Craig
+    if(mediaName != "" && onlyspaces == false){
+        document.getElementById("status").innerHTML = 'Sending to server, please wait...';
+        document.getElementById("status").style.display = "inline";
+        document.rupert.action.value = actions[4];	
+    }
+    requestPage("POST", buildRequest(2),fillPage);
  }
 
  
