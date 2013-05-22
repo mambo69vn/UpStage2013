@@ -31,6 +31,7 @@ Modified by Craig Farrell 30/04/2013 - added new check box for lock stage.
 Modified by Craig Farrell 01/05/2013 - replaced the checkbox with a attr which is linked to python. which replaces it with a checkbox.
                                      - changed the hidden input value to a different call to python.
                                      - added new hidden input for owner of stage. 
+Modified by David Daniels 22/05/2013 - fixed captials                                    
 -->
 <!include master_a.inc>
 <!include workshop_nav.inc>
@@ -63,12 +64,12 @@ window.onresize = resizePage;
 		<h1>Stage name</h1>
 		<table>
 			<tr>
-				<td>Full Name:</td>
+				<td>Full name:</td>
 				<td><input type="text" name="longName" id = "longName" value="%(name)s" size="20" /></td>
 			</tr>
 			<tr>
 				<td>Short name for URL:</td>
-				<td><input type="text" name="shortName" value="%(ID)s" size="20" readonly="readonly"/>(Used for URL)</td>
+				<td><input type="text" name="shortName" value="%(ID)s" size="20" readonly="readonly"/>(used for URL)</td>
 			</tr>
             <tr>
                 <td colspan="2"> %(attr:stage_link)s </td>
@@ -80,7 +81,7 @@ window.onresize = resizePage;
 		<input type="hidden" name="displayaccess" value="%(display_access)s"></input>
 
 		<div id="editStageColor">
-            <h1>Debug Message</h1>
+            <h1>Debug message</h1>
             <input type="checkbox" id="debug" name="debug" onclick="if (this.checked) {debugChecked()}else{debugUnChecked()}"/>
             Print debug messages on the backdrop? 
             <br /> <br />
@@ -88,7 +89,7 @@ window.onresize = resizePage;
 			<input type="checkbox" id="onstagelist" name="onstagelist"  onclick="if (this.checked) {onStageListChecked()}else{onStageListUnChecked()}"/>
 			Show this stage on stage list?
             <br /> <br />
-            <h1>Lock Stage</h1> <!--#(01/05/2013)Craig-->
+            <h1>Lock stage</h1> <!--#(01/05/2013)Craig-->
 			 %(attr:stage_CB_lock)s 
 			Lock stage: only creater can edit the stage
             <br /> <br />
@@ -119,7 +120,7 @@ window.onresize = resizePage;
 		<div id="editStageGeneral">
 		
 			<div id="editStageSplash">		
-				<h1>Splash Message</h1>
+				<h1>Splash message</h1>
 				<textarea name="splash_message" class="splash" id="splash_message">%(splash)s</textarea>
 			</div>
             <br/>
@@ -148,7 +149,7 @@ window.onresize = resizePage;
                             
                         </tr>
                         <tr>
-                            <td><h4>BackDrops</h4></td>
+                            <td><h4>Backdrops</h4></td>
                             <td><h4>Audios</h4></td>
                         </tr>
                         <tr><!-- Craig Farrell 24/04/2013 -->
