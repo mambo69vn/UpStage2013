@@ -48,7 +48,7 @@
 				</div>
 			<div id="nav">
 	   			<a href="javascript:navHome()">HOME</a>
-		    	<a href="javascript:navWorkshop()">WORKSHOP</a>
+		    	<a href="javascript:navWorkshop()" type = "hidden">WORKSHOP </a>
 		    	<a href="javascript:navStages()">STAGES</a>
 				
 

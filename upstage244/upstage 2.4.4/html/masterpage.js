@@ -33,7 +33,9 @@
             Modified by Gavin (6/3/2013): Changed actions[type] to actions[5] to also delete the media on warn(type) function. 
             Modified by Craig Farrell (09/04/2013)  - changed back to actions[type] so all the stageEdit buttens work again
                                                     - changed embedmessage method name so it is more understandable. called it seSaveOnly();
-            Modified by Gavin (16/4/2013): Made a conditional statement to display the correct media warning message and delete the media.    
+            Modified by Gavin (16/4/2013): Made a conditional statement to display the correct media warning message and delete the media.   
+            Modified by Gavin (28/5/2013): Made a navAdmin() function to replace the navWorkshop() function when the user logs in 
+                                          - Added a conditional statement to navWorkshop() for different links depending if the user is logged in or not, changed the link location of navWorkshop() to /home instead of /admin to fix the workshop login issue.   
  */
 
 //Instance type variables
@@ -287,10 +289,25 @@ function navHomeUser()
         window.location = '/home';
     }   
 }
+ /*
+    Gavin Chan (28/05/2013) - Created a navAdmin function so the website can redirect  
+            to the admin page when they are logged in instead of using the workshop link
+ */
+function navAdmin()
+{
+    {
+        window.location = '/admin';
+    }   
+}
 
 function navWorkshop()
 {
-	window.location = '/admin';
+	if(isLoggedIn())
+    {
+        window.location = '/admin';
+    }
+    else
+        window.location = '/home';
 }
 
 function navStages()
@@ -530,7 +547,8 @@ function checkLogin()
 		{
             // Modified: Daniel Han (29/08/2012) Checking /admin/id to confirm login.
             //requestPage("POST", "/admin/id", checkSessionLogin);
-            navWorkshop();
+            //Modified: Gavin Chan (28/05/2013) Changed to implement navAdmin() function instead of navWorkshop()
+            navAdmin();
 		}
   	}
 }

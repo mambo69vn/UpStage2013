@@ -151,3 +151,20 @@ no errors yet!
 jpegtopnm /tmp/tmp1iVSuu | pnmscale -height=80 -width=70 | pnmtojpeg > /tmp/tmpXXBg1y.jpg
 removing /tmp/tmp1iVSuu
 worked, or at least failed to complain.
+------------------------------------------------------------------------
+2013-05-27 17:56:09
+arguments are:
+  html/media/BMaE83ry.swf
+  html/media/thumb/BMaE83ry.jpg
+  /tmp/tmpJS6x9w
+Files are: ['/tmp/tmpJS6x9w']
+
+filetype: image/jpeg
+Filetype is 'image/jpeg', convertor is <function do_jpg at 0xb734e3ac>
+
+Done SWF, got 0, jpeg2swf -z -q85 -o html/media/BMaE83ry.swf /tmp/tmpJS6x9w
+
+no errors yet!
+jpegtopnm /tmp/tmpJS6x9w | pnmscale -height=80 -width=70 | pnmtojpeg > /tmp/tmp3DRjzE.jpg
+removing /tmp/tmpJS6x9w
+worked, or at least failed to complain.

@@ -3,6 +3,9 @@
 <p>
 	UpStage is an open source web-based platform for cyberformance - live online performance by remote performers, for online audiences. Everything happens in a web browser, in real time. UpStage is an unfunded, artist-led project and we welcome your involvement - as artists, audience, and developers. Visit the <a href="http://upstage.org.nz/blog">UpStage web site</a> for more information.</p>
 <p>
+<h1>
+	UpStage Workshop</h1>
+    <p> Note: Please login to access the Workshop in order to create and edit Stages and Media</p>
 	Shows available from this Foyer:</p>
 <p>
 	<a href="javascript:navStages()">Current Stages</a></p>
