@@ -16,12 +16,12 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-import Sender;
-import Client;
-//import thing.Thing;
-import thing.BackDrop;
-import view.ItemGroup;
-import model.TransportInterface;
+import upstage.Sender;
+import upstage.Client;
+//import upstage.thing.Thing;
+import upstage.thing.BackDrop;
+import upstage.view.ItemGroup;
+import upstage.model.TransportInterface;
 
 
 /**
@@ -29,7 +29,7 @@ import model.TransportInterface;
  *          Stores information about backdrops.
  *
  */
-class model.ModelBackDropItems implements TransportInterface
+class upstage.model.ModelBackDropItems implements TransportInterface
 {
     private var sender        :Sender;  // Handle to sender
     private var backDropIcons :ItemGroup;

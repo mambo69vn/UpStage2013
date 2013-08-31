@@ -16,19 +16,19 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-import Client;
-import flash.display.BitmapData;
+import upstage.Client;
+// import flash.display.BitmapData;
 import flash.geom.Matrix;
-import flash.geom.Point;
-import flash.geom.Rectangle;
-import flash.geom.Transform;
-import thing.Thing;
-import thing.Prop;
-import view.Bubble;
-import view.AvScrollBarItem;
-import view.AvScrollBar;
-import util.Construct;
-import util.LoadTracker;
+// import flash.geom.Point;
+// import flash.geom.Rectangle;
+// import flash.geom.Transform;
+import upstage.thing.Thing;
+import upstage.thing.Prop;
+import upstage.view.Bubble;
+import upstage.view.AvScrollBarItem;
+import upstage.view.AvScrollBar;
+import upstage.util.Construct;
+import upstage.util.LoadTracker;
 
 /**
  * Author: 
@@ -38,9 +38,10 @@ import util.LoadTracker;
  * Notes: 
  * Modified by: Heath Behrens & Vibhu Patel 08/08/2011 - Modified function calcSize() line 164 to scale
  *                                                       avatar on stage. 
+ * Modified by David Daniels & Lisa Helm 27/08/2013 - Merged Martins fork
  */
  
-class thing.Avatar extends Thing
+class upstage.thing.Avatar extends Thing
 {
     public var icon      :AvScrollBarItem;
     public var prop      :Prop = null;
@@ -48,15 +49,15 @@ class thing.Avatar extends Thing
     
     //name text field.
     public var tf           :TextField;
-    public var tfBG		 :MovieClip;
+    public var tfBG		 	:MovieClip;
     public var tfText       :String;
     public var tfLayer      :Number;
     public var tfName       :String;
 
     // image and its loader.
-    public var image        :MovieClip;
+    public var image         :MovieClip;
     private var images       :Array;
-    public var baseLayer    :Number;
+    public var baseLayer	 :Number;
     public  var iconLayer    :Number;
     private var layerOffset  :Number;
     private var baseName     :String;
@@ -80,7 +81,7 @@ class thing.Avatar extends Thing
 	// Daniel 13/09/2012	- For drawable avatar.
 	public var drawable:MovieClip;
 	
-    private static var symbolName:String = "__Packages.thing.Avatar";
+    private static var symbolName:String = "__Packages.upstage.thing.Avatar";
     private static var symbolLinked:Boolean = Object.registerClass(symbolName, Avatar);
 
     
@@ -90,14 +91,17 @@ class thing.Avatar extends Thing
   
     public static function factory(parent: MovieClip, ID :Number, name :String, url :String,
                                    thumbnail :String, medium :String,
-                                   scrollBar: AvScrollBar, available:Boolean, frame: Number):Avatar
+                                   scrollBar: AvScrollBar, available:Boolean, frame: Number,
+                                   streamserver :String, streamname :String):Avatar
     {
         //trace("Avatar factory");
         var baseLayer:Number = Client.L_AV_IMG -(-ID * Client.AV_IMG_LAYERS); 
     	var baseName: String = 'avwrap_' + ID;
 
         var thing: Thing = Thing.factory(ID, name, url, baseName, 
-                                         thumbnail, medium, baseLayer, parent, Avatar);    
+                                         thumbnail, medium, baseLayer, parent, Avatar,
+                                         streamserver, streamname);
+        
         var av:Avatar = Avatar(thing);
         //name text field
         av.tfLayer = Client.L_AV_NAME + ID;
@@ -290,8 +294,6 @@ class thing.Avatar extends Thing
         this.stepping = setInterval(Avatar.avatarStep, Client.AV_STEP_TIME, this);
         trace("duration: " + duration + "  steps " + steps +" dx " + dx +" dy " + dy);
     };
-	
-	
 
 
     /**
@@ -451,7 +453,8 @@ class thing.Avatar extends Thing
     static function avatarStep(av: Avatar) :Void
     {
         //trace("stepping...");
-        if (av.steps > 0){
+        if (av.steps > 0)
+        {
             av._x += av.dx;
             av._y += av.dy;
             //av._rotation += 5;
@@ -474,7 +477,7 @@ class thing.Avatar extends Thing
 					{ av.bubble.moveBubbleBelow(); }
 					
 				// Is moving bubble above when it is below
-				else if (av.bubble.location == 'Below') && (!(av.bubble.isBubbleOffScreen(av._y)))
+				else if ((av.bubble.location == 'Below') && (!(av.bubble.isBubbleOffScreen(av._y))))
         			{ av.bubble.moveBubbleAbove(); }
         	}
         	
@@ -531,7 +534,6 @@ class thing.Avatar extends Thing
         return this.tf._visible;
     }
 
-	
     /**
      * @brief Constuctor, empty, but not removable. dumb actionscript.
      */

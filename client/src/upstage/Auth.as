@@ -21,10 +21,11 @@
  *  application talking to server when constructor called
  */ 
 
-import Client;
-import flash.external.ExternalInterface;
+import upstage.Client;
+// import flash.external.ExternalInterface;
 
-class Auth
+
+class upstage.Auth
 {
     private var loaded    :Boolean;  // .load() completed successfully
     private var key       :String;   // MD5 key for session from server

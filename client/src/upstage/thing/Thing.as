@@ -16,10 +16,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-import util.Icon;
-import Client;
-import util.LoadTracker;
-//import util.Construct;
+import upstage.util.Icon;
+import upstage.Client;
+import upstage.util.LoadTracker;
+//import upstage.util.Construct;
 
 
 /**
@@ -28,8 +28,9 @@ import util.LoadTracker;
  * Modified by: Heath Behrens & Vibhu Patel 08/08/2011 - Modified function Added line which calls Construct
  *                                                       to scale the prop on stage
  * Modified by: Craig Farrell (CF) 08/04/2013 - added: checks the size of prop and resizes it to the correct size for the stage when loaded
+ * Modified by: David Daniels & Lisa Helm 27/08/2013 - Merged in Martins fork
  */
-class thing.Thing extends MovieClip
+class upstage.thing.Thing extends MovieClip
 {
     var ID                :Number;
     var url               :String;
@@ -49,15 +50,25 @@ class thing.Thing extends MovieClip
     private var videoSocketID :String;
     private var videoFailures :Number;
 
-    public var image        :MovieClip; //points to the currently showing image
+    public var  image        :MovieClip; //points to the currently showing image
     private var baseLayer    :Number;
     private var layerOffset  :Number;
     private var baseName     :String;
 
-    private static var symbolName:String = "__Packages.thing.Thing";
+    private static var symbolName:String = "__Packages.upstage.thing.Thing";
     private static var symbolLinked:Boolean = Object.registerClass(symbolName, Thing);
 
     static var LAYER: Number = Client.L_PROPS_IMG;
+
+	// streaming properties
+	
+	public var videodisplay : MovieClip;	// videodisplay (carries video)
+    public var video : Video;				// video itself
+	public var streamName : String;			// name of the stream, e.g. 'red5StreamDemo'
+	public var streamServer : String;		// url of the stream server, e.g. 'rtmp://localhost/oflaDemo'
+	private var connection:NetConnection;	// the network connection to the stream server
+	private var stream:NetStream;			// the network stream of a connected stream server
+	
 
     /**
      * @brief Constructor
@@ -66,7 +77,7 @@ class thing.Thing extends MovieClip
 
     static public function factory(ID :Number, name :String, url :String, baseName: String,
                                    thumbnail :String, medium :String, layer: Number,
-                                   parent:MovieClip, Class: Object) : Thing
+                                   parent:MovieClip, Class: Object, streamserver :String, streamname :String) : Thing
     {
         if (!Class || ! Class.symbolName){
             trace("no class in Thing constructor");
@@ -80,10 +91,16 @@ class thing.Thing extends MovieClip
         thing.url = url;// + '?r=' + Math.random(); //cache busting.
         thing.name = name;
         thing.medium = medium;
-        if (medium == 'video')
-            thing.videoInit();
+        thing.streamName = streamname;
+        thing.streamServer = streamserver;
+        
+        
+        if (medium == 'stream') {
+        	thing.streamInit();
+        }
         thing.thumbnail = thumbnail;
         thing._visible = false;
+        
         return thing;
     }
 
@@ -152,6 +169,17 @@ class thing.Thing extends MovieClip
         //trace("finalising thing " + this.name);
     }
 
+	function streamInit() {
+		trace("in Thing.streamInit");
+		
+		// prepare streaming
+		
+		// TODO distinguish between live stream, vod stream (flv), mp3 stream, etc ... and set thumbnail icon overlay (using font awesome) according to type
+		
+		// attach videodisplay from library (height is calculated for aspect ratio of 4:3)
+		this.videodisplay = this.attachMovie("VideoDisplay", "videodisplay", this.baseLayer, {_x:0, _y:0, _width:Client.AVATAR_MAX_WIDTH, _height:(((Client.AVATAR_MAX_WIDTH)/4)*3)});
+	}
+
     function videoInit(){
         trace("in Thing.videoInit");
         this.videoLayer1 = this.baseLayer + 1;
@@ -215,7 +243,7 @@ class thing.Thing extends MovieClip
     static function reloadVideo(thing: Thing) : Void
     {
         //XXX neeed to check that nothing is loading. if it is don't restart.
-        //this is becuase this function gets called by setting visibility, not only
+        //this is because this function gets called by setting visibility, not only
         //from videoLoaded
         trace("in reload video with thing " + thing);
         clearInterval(thing.videoInterval);
@@ -234,7 +262,7 @@ class thing.Thing extends MovieClip
         var loadWatcher  :MovieClipLoader = new MovieClipLoader();
         var layerName:String = "videolayer" + layer;
         var img:MovieClip = thing.createEmptyMovieClip(layerName, layer);
-  	loadWatcher.addListener(listener);
+		loadWatcher.addListener(listener);
         //because http doesn't always work as expected,
         //make a unique suffix for the url, forcing fresh load.
         var uniquify:String = '&u=' + Math.random();
@@ -248,15 +276,113 @@ class thing.Thing extends MovieClip
     function show() :Void
     {
         trace("thing.show with" + this);
-        if (this.medium == 'video'){
+        
+        if (this.medium == 'video') {
             trace("setting video interval " +  Client.VIDEO_INTERVAL_TARGET);
             if (this.videoInterval == 0){
                 this.videoInterval = setInterval(Thing.reloadVideo, Client.VIDEO_INTERVAL_TARGET, this);
             }
         }
-
+        
         this._alpha = 100;
         this._visible = true;
+        
+        if (this.medium == 'stream') {
+        	trace("medium stream recognized");
+        	
+        	// start stream
+        	
+        	// for reference see http://docs.brajeshwar.com/as2/NetStream.html
+        	
+        	// hide avatar image?
+        	//this.image._visible = false;
+        	
+        	// create connection to server if parameter is given
+			if(this.connection == null) this.connection = new NetConnection();
+			if(this.streamServer == '') {
+				this.connection.connect(null);
+			} else {
+				if(!this.connection.isConnected) this.connection.connect(this.streamServer);	
+			}
+			
+			// TODO distinguish between live stream, vod stream (flv), mp3 stream, etc ...
+			
+			// (re-)connect stream
+			this.stream = new NetStream(this.connection);
+			this.stream.setBufferTime(Client.STREAM_BUFFER_TIME);
+			
+			this.video = this.videodisplay.video;
+			this.video.clear();
+			
+			// attach video to display
+			this.video.attachVideo(this.stream);
+		
+			// start playing
+			//this.stream.play(this.streamName, -1);	// did not work playing flv files
+			this.stream.play(this.streamName);
+		
+			// handle events
+			
+			var thing:Thing = this;	// get reference to thing (needed for handling events)
+			
+			// metadata for playing streamed flv
+			// see: http://docs.brajeshwar.com/as2/NetStream.html#event:onMetaData
+			this.stream.onMetaData = function(infoObj:Object) {
+				trace("NetStream.onMetaData called: (" + getTimer() + " ms)");
+			    for (var propName:String in infoObj) {
+			        trace("MetaData >> " + propName + " = " + infoObj[propName]);
+			    }
+			};
+			
+			// status events
+			// see: http://docs.brajeshwar.com/as2/NetStream.html#event:onStatus
+			this.stream.onStatus = function(infoObj:Object) {
+				
+				// log all events
+				trace("NetStream.onStatus called: (" + getTimer() + " ms)");
+        		for (var prop:String in infoObj) {
+            		trace("Status >> " + prop + ": " + infoObj[prop]);
+        		}
+				
+				// handle events
+				switch (infoObj.code) {
+					
+					// TODO still needs more testing: switching resolution, publish/unpublish, etc.
+					
+					//case 'NetStream.Play.PublishNotify':
+					//case 'NetStream.Play.Start':
+					case 'NetStream.Buffer.Full':
+						// resize avatar layer properly (video width or height might be 0! => revert to default)
+						trace('current videostream size is ' + thing.video.width + 'x' + thing.video.height);
+						if(thing.video.width == 0 || thing.video.height == 0) {
+							thing.video._width = Client.STREAM_DEFAULT_WIDTH;
+							thing.video._height = Client.STREAM_DEFAULT_HEIGHT;
+						} else {
+							thing.video._width = thing.video.width;
+							thing.video._height = thing.video.height;	
+						}
+						thing.videodisplay._visible = true;
+						//thing.image._visible = false;		// TODO hide overlay image?
+						break;
+					
+					case 'NetStream.Play.UnpublishNotify':
+					case 'NetStream.Play.Stop':
+					//case 'NetStream.Buffer.Empty':
+						// clear the stream
+						trace('clear stream');
+						thing.video.clear();
+						thing.videodisplay._visible = false;
+						//thing.image._visible = true;		// TODO show overlay image?
+						break;
+					
+					case 'NetStream.Play.StreamNotFound':
+						trace('error: stream "' + this.streamName + '" not found on ' + this.streamServer);
+						break;
+				}
+				
+			}
+        	
+        }
     };
 
 	/**
@@ -264,12 +390,29 @@ class thing.Thing extends MovieClip
  	 */
     function hide() :Void
     {
-        trace("thing.hide with" + this);
+        trace("thing.hide with " + this);
         if (this.medium == 'video' && this.videoInterval){
             //turn off the stream (if it is waiting for load there is no interval)
             clearInterval(this.videoInterval);
             this.videoInterval = 0;
         }
+        
+        if (this.medium == 'stream') {
+        	trace("hiding video stream");
+        	
+        	// stop video	
+        	
+        	// show avatar image?
+        	//this.image._visible = true;
+        	
+        	// close stream + connection
+			this.stream.close();
+			if(this.connection.isConnected) this.connection.close();
+			
+			// clear video
+			this.video.clear();
+        }
+        
         this._visible = false;
         //Construct.deepTrace(this);
     };

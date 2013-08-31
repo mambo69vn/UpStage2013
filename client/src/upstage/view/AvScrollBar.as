@@ -16,12 +16,12 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-import view.AvScrollBarItem;
-import model.ModelAvatars;
-import util.ScrollButton;
-import thing.Avatar;
-import util.Construct;
-import Client;
+import upstage.view.AvScrollBarItem;
+import upstage.model.ModelAvatars;
+import upstage.util.ScrollButton;
+import upstage.thing.Avatar;
+import upstage.util.Construct;
+import upstage.Client;
 
 
 /**
@@ -55,7 +55,7 @@ import Client;
  *  The position is never changed
  *  Modified by: Vibhu 31/08/2011 - Changed create function to take one more parameter for the color value.
  */
-class view.AvScrollBar extends MovieClip
+class upstage.view.AvScrollBar extends MovieClip
 {
     var ti            :ModelAvatars;
     var nameLayer     :Number;      // mirror text
@@ -75,7 +75,7 @@ class view.AvScrollBar extends MovieClip
 
     var tfBg:Number = Client.UI_BACKGROUND; //Vibhu 31/08/2011 - Background color
 
-    public static var symbolName :String = '__Packages.view.AvScrollBar';
+    public static var symbolName :String = '__Packages.upstage.view.AvScrollBar';
     private static var symbolLinked :Boolean = Object.registerClass(symbolName, AvScrollBar);
         
 
@@ -407,10 +407,12 @@ class view.AvScrollBar extends MovieClip
     /**
      * @brief turn on/off animator
      */
+     // FIXME obsolete
+     /*
     function showFrame(): Void
     { //XXX eh?
     }
-
+	*/
 
     function AvScrollBar(){}
 

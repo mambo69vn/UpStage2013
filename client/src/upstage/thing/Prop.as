@@ -24,15 +24,15 @@
  */
 
 
-import thing.Thing;
-import util.Icon;
-import Client;
-//import util.Construct;
+import upstage.thing.Thing;
+import upstage.util.Icon;
+import upstage.Client;
+//import upstage.util.Construct;
 
-class thing.Prop extends Thing
+class upstage.thing.Prop extends Thing
 {
 
-    private static var symbolName:String = "__Packages.thing.Prop";
+    private static var symbolName:String = "__Packages.upstage.thing.Prop";
     private static var symbolLinked:Boolean = Object.registerClass(symbolName, Prop);
 
     public static var transportSetFunctionName:String = 'SET_PROP';

@@ -16,11 +16,11 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-import Client;
-import Sender;
-import util.LoadTracker;
-import view.SplashScreen;
-import model.TransportInterface;
+import upstage.Client;
+import upstage.Sender;
+import upstage.util.LoadTracker;
+import upstage.view.SplashScreen;
+import upstage.model.TransportInterface;
 import flash.external.ExternalInterface;
 
 
@@ -30,7 +30,7 @@ import flash.external.ExternalInterface;
  * Interface between server, SplashScreen, and LoadTracker.
  *
  */
-class model.ModelSplashScreen implements TransportInterface
+class upstage.model.ModelSplashScreen implements TransportInterface
 {
     private var splashScreen :SplashScreen;
     private var sender       :Sender;

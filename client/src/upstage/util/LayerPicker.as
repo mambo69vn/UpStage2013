@@ -16,11 +16,11 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-import util.Construct;
-//import util.UiButton;
-import util.ButtonMc;
-import util.LayerPickerSet;
-import Client;
+import upstage.util.Construct;
+//import upstage.util.UiButton;
+import upstage.util.ButtonMc;
+import upstage.util.LayerPickerSet;
+import upstage.Client;
 
 /**
  * LayerPicker.as
@@ -28,7 +28,7 @@ import Client;
  * Pick a layer upon which to draw.
  */
 
-class util.LayerPicker extends MovieClip
+class upstage.util.LayerPicker extends MovieClip
 {
     private var width        :Number;
     private var height       :Number;

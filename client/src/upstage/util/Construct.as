@@ -23,10 +23,10 @@
  * static functions for drawing on screen.
  */
 
-import Client;
+import upstage.Client;
 
 
-class util.Construct
+class upstage.util.Construct
 {
     // Default text format used in many places
     static var defaultFormat :TextFormat = textFormat();
@@ -226,9 +226,6 @@ class util.Construct
     {
         rectangle(mc, x, y, w, h, Client.BORDER_COLOUR, bgColor, Client.BORDER_WIDTH);
     }
-
-
-
 
 
     // BH 29-Aug-2006 Added

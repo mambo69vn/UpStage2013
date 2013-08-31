@@ -17,14 +17,14 @@
 */
 
 /**
- * Module: newSound.as
+ * Module: NewSound.as
  * Created: 20.05.08
  * Author: Alan Crow - 2007/2008 AUT UpStage Team
  * Purpose: To allow from much better control over the audio files.
  * Notes:
  */
 
-class util.newSound extends Sound
+class upstage.util.NewSound extends Sound
 {
 	private var bPlaying    :Boolean;
 	private var bStopped	:Boolean;
@@ -36,7 +36,7 @@ class util.newSound extends Sound
 	*	Constructor
 	**********************************************************/
 	
-	function newSound() {
+	function NewSound() {
 		super();
 		this.updateState(false, true);
 		this.setLooping(false);
@@ -46,8 +46,8 @@ class util.newSound extends Sound
 	*	Local Methods
 	**********************************************************/
 
-	function loadSound(url: String, true: Boolean) {
-		super.loadSound(url, true);
+	function loadSound(url: String, flag: Boolean) {
+		super.loadSound(url, flag);
 		this.updateState(true, false);
 		trace("LOAD SOUND ::::::> isPLaying: " + this.isPlaying());
 	}

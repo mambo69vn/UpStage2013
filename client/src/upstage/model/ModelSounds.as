@@ -16,15 +16,15 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-import Client;
-import util.Construct;
-import model.TransportInterface;
-import Sender;
-import thing.Audio;
-import view.AuScrollBar;
+import upstage.Client;
+import upstage.util.Construct;
+import upstage.model.TransportInterface;
+import upstage.Sender;
+import upstage.thing.Audio;
+import upstage.view.AuScrollBar;
 
-import util.newSound;
-//import model.ModelChat;
+import upstage.util.NewSound;
+//import upstage.model.ModelChat;
 
 /**
  * Module: ModelSounds.as
@@ -43,7 +43,7 @@ import util.newSound;
  * 8-04-2013 Craig Farrell  CF      - made the _play method stop playing audios that are being replaced.
  * 
  */
-class model.ModelSounds implements TransportInterface
+class upstage.model.ModelSounds implements TransportInterface
 {
 	private var audioScrollBar : AuScrollBar;
 	public var audios		:Array;
@@ -186,16 +186,16 @@ class model.ModelSounds implements TransportInterface
 	        if (isNaN(slot)) //still no luck (all loading?). go for default
 	            slot = offset;
             //CF - stops playing sounds that are being replaced
-            var ns: newSound = sounds[slot];
+            var ns: NewSound = sounds[slot];
             ns.stop();
             audioScrollBar.clearSlot(arrayName, slot);
             //CF - assigns new audio
-	        sounds[slot] = new newSound();
+	        sounds[slot] = new NewSound();
 			sounds[slot].url = url;
 			sounds[slot].type = arrayName;
 			sounds[slot].setLooping(false);
 
-			if arrayName == 'speeches' {
+			if (arrayName == 'speeches') {
 	        	sounds[slot].loadSound(url, true);
 			}
 
@@ -217,7 +217,7 @@ class model.ModelSounds implements TransportInterface
 		var sounds:Array = this[type];
 
 		for (var x:Number = 0; x < sounds.length; x++) {
-			if (sounds[x].url == url) && (sounds[x] != null) {
+			if ((sounds[x].url == url) && (sounds[x] != null)) {
 
 				// Clear these things
 				sounds[x] = null;

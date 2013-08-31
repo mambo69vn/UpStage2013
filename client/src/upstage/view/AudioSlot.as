@@ -16,12 +16,12 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-//import model.TransportInterface; - Alan (23.01.08) - Import not used warning.
-import util.UiButton;
-import util.Construct;
-import Client;
-import util.Slider;
-import model.ModelSounds;
+//import .model.TransportInterface; - Alan (23.01.08) - Import not used warning.
+import upstage.util.UiButton;
+import upstage.util.Construct;
+import upstage.Client;
+import upstage.util.Slider;
+import upstage.model.ModelSounds;
 
 /**
  * Module: AudioSlot.as
@@ -38,7 +38,7 @@ import model.ModelSounds;
  * 		url of currently assigned audio clip, 
  * Modified by: Vibhu 31/08/2011 - Changed create function to take one more parameter for the color value.
  */
-class view.AudioSlot extends MovieClip
+class upstage.view.AudioSlot extends MovieClip
 {
 
 	public var modelSounds   :ModelSounds;
@@ -54,8 +54,7 @@ class view.AudioSlot extends MovieClip
 	var mirrorLayer   		 :Number;		// PQ: Added 31.10.0
 	var bPlay		 		 :Boolean;	    // AC: Added 15.05.08
 
-    public static var symbolName :String =
-        '__Packages.view.AudioSlot';
+    public static var symbolName :String = '__Packages.upstage.view.AudioSlot';
     private static var symbolLinked :Boolean =
         Object.registerClass(symbolName, AudioSlot);
 

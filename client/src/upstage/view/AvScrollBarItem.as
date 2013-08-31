@@ -16,10 +16,10 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-import util.LoadTracker;
-import thing.Avatar;
-import util.Construct;
-import Client;
+import upstage.util.LoadTracker;
+import upstage.thing.Avatar;
+import upstage.util.Construct;
+import upstage.Client;
 
 
 /**
@@ -32,9 +32,11 @@ import Client;
  * Modified by: 
  * Purpose: The audio item scrollbar (list box) in the audio widget
  * Notes: BH, WW (AUT 2006) created AvScrollBar.as, we took that and created this class)
+ * 
+ * Modified by David Daniels & Lisa Helm 27/08/2013 - Merged Martins fork
  */
 
-class view.AvScrollBarItem extends MovieClip
+class upstage.view.AvScrollBarItem extends MovieClip
 {
     //Var here ...
     var nameField    :TextField;  // Name in scrollbar
@@ -53,7 +55,7 @@ class view.AvScrollBarItem extends MovieClip
     var ID           :Number;   // Of avatar
     var available    :Boolean;  // Is the avatar currently available
 
-    public static var symbolName :String = '__Packages.view.AvScrollBarItem';
+    public static var symbolName :String = '__Packages.upstage.view.AvScrollBarItem';
     private static var symbolLinked :Boolean = Object.registerClass(symbolName, AvScrollBarItem);
 
     static public function create(av: Avatar, scrollbar :MovieClip, 
@@ -96,19 +98,22 @@ class view.AvScrollBarItem extends MovieClip
      */
     function loadThumb() :Void                       
     {
-        var parent: MovieClip = this;
+    	
+    	trace('');
+        trace('loadThumb(): thumb URL: ' + this.thumbUrl + ' thumb layer: ' + this.thumbLayer);
+        trace('');
+    	
+    	//var parent: MovieClip = this;
         var listener: Object = LoadTracker.getLoadListener();
-        listener.onLoadInit = function()
-            {
-                //trace("scrollbar button apparently loaded");
-                // Resize icon to fit on scrollbar
-                Construct.constrainSize(parent.btn, Client.ICON_SIZE, Client.ICON_SIZE);
-            };
+        listener.onLoadInit = function(mc: MovieClip)
+        {
+            trace('loadTumb(): onLoadInit(): ' + mc);
+            
+            // Resize icon to fit on scrollbar
+            Construct.constrainSize(mc, Client.ICON_SIZE, Client.ICON_SIZE);
+        };
 
         this.btn = LoadTracker.loadImage(this, this.thumbUrl, this.thumbLayer, listener);
-        trace('');
-        trace('Thumburl: ' + this.thumbUrl + 'thumblayer: ' + this.thumbLayer);
-        trace('');
     }
 
     /**
@@ -116,21 +121,37 @@ class view.AvScrollBarItem extends MovieClip
      */
     function loadMirror(scrollBar:MovieClip)                       
     {
+    	
+    	trace('');
+        trace('loadMirror(): scrollbar: ' + scrollBar + ' icon layer: ' + this.mirrorLayer);
+        trace('');
+    	
         var parent: MovieClip = this;
         var listener: Object = LoadTracker.getLoadListener();
-        listener.onLoadInit = function()
-            {
-                // Shrink to mirror size, move into position, and turn invisible.
-                //trace("mirror image apparently loaded");
-                parent.mir._visible = false;
-                Construct.constrainSize(parent.mir, Client.MIRROR_ICON_W, Client.MIRROR_ICON_H);
-                parent.mir._x = (Client.AV_MIRROR_WIDTH - parent.mir._width) / 2;
-                parent.mir._y = (Client.AV_MIRROR_HEIGHT - parent.mir._height) / 2;
+       
+        listener.onLoadInit = function(mc : MovieClip)	
+        {
+        	trace('loadMirror(): onLoadInit(): mc=' + mc + ', parent = ' + parent + ', parent.mir (mirror icon) = ' + parent.mir);
+        	
+        	// handle library items accordingly (passed as mc not as parent.mir)
+        	if (parent.mir == undefined) {
+        		parent.mir = mc;
+        		trace('loadMirror(): onLoadInit(): possibly handed over library item => parent.mir was undefined and is now the passed mc ' + parent.mir);
+        	} else {
+        		trace('loadMirror(): onLoadInit(): passed mc '+ mc +' is ignored as parent.mir is set');
+        	}
+        	
+            // Shrink to mirror size, move into position, and turn invisible.
+            parent.mir._visible = false;
+            Construct.constrainSize(parent.mir, Client.MIRROR_ICON_W, Client.MIRROR_ICON_H);
+            parent.mir._x = (Client.AV_MIRROR_WIDTH - parent.mir._width) / 2;
+            parent.mir._y = (Client.AV_MIRROR_HEIGHT - parent.mir._height) / 2;
 
-                parent.loaded();
-            };
-
+            parent.loaded();
+        };
+        
         this.mir = LoadTracker.loadImage(scrollBar, this.thumbUrl, this.mirrorLayer, listener);
+        trace('loadMirror(): completed loading mirror image ' + this.mir);
     }
 
     function createName()

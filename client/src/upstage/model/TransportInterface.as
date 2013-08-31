@@ -33,7 +33,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * useful in all cases.
  */
 
-interface model.TransportInterface 
+interface upstage.model.TransportInterface 
 {
 	/**
 	 * @brief Draw the control on the stage 

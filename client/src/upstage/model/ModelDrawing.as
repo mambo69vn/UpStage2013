@@ -16,16 +16,16 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-import Client;
-import thing.Avatar;
-//import util.Construct;
-import Sender;
-import model.TransportInterface;
+import upstage.Client;
+import upstage.thing.Avatar;
+//import upstage.util.Construct;
+import upstage.Sender;
+import upstage.model.TransportInterface;
 
 /**
    shows pictures drawn by players, on all screens.
  */
-class model.ModelDrawing implements TransportInterface
+class upstage.model.ModelDrawing implements TransportInterface
 {
     private var sender        :Sender;
     private var layers        :Array;

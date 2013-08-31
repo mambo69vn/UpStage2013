@@ -16,18 +16,18 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-import thing.Thing;
-import Client;
-//import util.Construct;
-import util.Icon;
-import util.LoadTracker;
+import upstage.thing.Thing;
+import upstage.Client;
+//import upstage.util.Construct;
+import upstage.util.Icon;
+import upstage.util.LoadTracker;
 
 /**
  * Class handles a backdrop on stage.
  *
  * Modified by: Heath / Vibhu 08/08/2011 - modified function finalize to the scale the backdrop on stage.
  */
-class thing.BackDrop extends Thing
+class upstage.thing.BackDrop extends Thing
 {	
 	// Aaron (21/04/08) Testing multi-frame backdrop
 	// image and its loader.
@@ -36,7 +36,7 @@ class thing.BackDrop extends Thing
     private var frameNumber		:Number;
     
     
-    private static var symbolName:String = "__Packages.thing.BackDrop";
+    private static var symbolName:String = "__Packages.upstage.thing.BackDrop";
     private static var symbolLinked:Boolean = Object.registerClass(symbolName, BackDrop);
 
     public static var transportSetFunctionName:String = 'SET_BACKDROP';

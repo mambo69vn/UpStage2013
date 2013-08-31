@@ -16,13 +16,13 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-//import util.Construct;
-import Client;
-import util.Slider;
-import util.Construct;
-import util.ButtonMc;
+//import .util.Construct;
+import upstage.Client;
+import upstage.util.Slider;
+import upstage.util.Construct;
+import upstage.util.ButtonMc;
 
-class util.SizeSlider extends MovieClip
+class upstage.util.SizeSlider extends MovieClip
 {
     private var baseLayer    :Number;
     private var circleLayer  :Number;
@@ -37,7 +37,7 @@ class util.SizeSlider extends MovieClip
     private var listener     :Function;
 
 
-    public static var symbolName :String = '__Packages.util.SizeSlider';
+    public static var symbolName :String = '__Packages.upstage.util.SizeSlider';
     private static var symbolLinked :Boolean = Object.registerClass(symbolName, SizeSlider);
 
 

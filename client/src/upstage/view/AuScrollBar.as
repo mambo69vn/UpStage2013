@@ -16,15 +16,15 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-import view.AuScrollBarItem;
-import util.UiButton; //PQ: Added 7.10.07
-import model.ModelAvatars;
-import model.ModelSounds;
-import util.ScrollButton;
-import thing.Audio;
-import util.Construct;
-import Client;
-import view.AudioSlot;
+import upstage.view.AuScrollBarItem;
+import upstage.util.UiButton; //PQ: Added 7.10.07
+import upstage.model.ModelAvatars;
+import upstage.model.ModelSounds;
+import upstage.util.ScrollButton;
+import upstage.thing.Audio;
+import upstage.util.Construct;
+import upstage.Client;
+import upstage.view.AudioSlot;
 
 /**
  * Author: Phill & Endre
@@ -34,7 +34,7 @@ import view.AudioSlot;
  * Notes: BH, WW (AUT 2006) created AvScrollBar.as, we took that and created this class)
  * Modified by: Vibhu Patel 31/08/2011 - Changed create function to take one more parameter for the color value.
  */
-class view.AuScrollBar extends MovieClip
+class upstage.view.AuScrollBar extends MovieClip
 {
 	// PQ: Added 7.10.07
 	var actBtn          	:UiButton;       // Act button
@@ -63,7 +63,7 @@ class view.AuScrollBar extends MovieClip
 	private var audioSlot2 : MovieClip;
 	private var audioSlot3  : MovieClip;
 
-    public static var symbolName :String = '__Packages.view.AuScrollBar';
+    public static var symbolName :String = '__Packages.upstage.view.AuScrollBar';
     private static var symbolLinked :Boolean = Object.registerClass(symbolName, AuScrollBar);
         
 

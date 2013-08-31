@@ -16,9 +16,9 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-import util.Construct;
-import util.PictureButton;
-import Client;
+import upstage.util.Construct;
+import upstage.util.PictureButton;
+import upstage.Client;
 
 /**
  * ColourPalette.as
@@ -26,7 +26,7 @@ import Client;
  * A set of sliders to pick an RGB colour.
  */
 
-class util.ColourPalette extends MovieClip
+class upstage.util.ColourPalette extends MovieClip
 {
     public var slots         :Number;
     public var fixedSlots    :Number = Client.PALETTE_FIXED.length;
@@ -41,7 +41,7 @@ class util.ColourPalette extends MovieClip
     private var width        :Number;
     private var height       :Number;
 
-    public static var symbolName :String = '__Packages.util.ColourPalette';
+    public static var symbolName :String = '__Packages.upstage.util.ColourPalette';
     private static var symbolLinked :Boolean = Object.registerClass(symbolName, ColourPalette);
 
     static public function factory(parent :MovieClip, layer:Number,

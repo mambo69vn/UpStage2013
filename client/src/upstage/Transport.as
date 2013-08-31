@@ -16,18 +16,18 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-import Auth;
-import Client;
+import upstage.Auth;
+import upstage.Client;
 import flash.external.ExternalInterface;
-import Sender;
-import util.Construct;
-import model.ModelChat;
-import model.ModelInfo;
-import model.ModelBackDropItems;
-import model.ModelAvatars;
-import model.ModelSplashScreen;
-import model.ModelSounds;
-import model.ModelDrawing;
+import upstage.Sender;
+import upstage.util.Construct;
+import upstage.model.ModelChat;
+import upstage.model.ModelInfo;
+import upstage.model.ModelBackDropItems;
+import upstage.model.ModelAvatars;
+import upstage.model.ModelSplashScreen;
+import upstage.model.ModelSounds;
+import upstage.model.ModelDrawing;
 
 
 /**
@@ -41,7 +41,7 @@ import model.ModelDrawing;
  * Notes: 
  */
 
-class Transport extends XMLSocket
+class upstage.Transport extends XMLSocket
 {
     // Internal variables
     private var connectionTried :Number;
@@ -75,12 +75,12 @@ class Transport extends XMLSocket
      */
     function Transport(stage :MovieClip)
     {
+    	super();  // Call XMLSocket constructor
     	
         trace('Transport constructor...');
 
         this.stage = stage;
-        super();  // Call XMLSocket constructor
-
+        
         this.connectionTried = 0;
 
         this.parseUrlVars();
@@ -127,7 +127,10 @@ class Transport extends XMLSocket
         trace('Transport constructor done...');
     };
 
-    function parseUrlVars(){
+    function parseUrlVars() {
+		
+		// TODO set defaults if no vars are given?
+		
         trace("parsing url vars");
         var args:String = _root._url.split('?')[1];
         var decoder:LoadVars = new LoadVars();
@@ -247,7 +250,7 @@ class Transport extends XMLSocket
         var mode :String = vars.mode.toUpperCase();
         if (mode && this[mode])
             {
-                // Get the reciever functions below to handle the message
+                // Get the receiver functions below to handle the message
                 this[mode](vars);
             }
         else if (msg)
@@ -585,8 +588,9 @@ class Transport extends XMLSocket
         var ID :Number = Number(x.ID);
         var allowed :Boolean = (x.allowed == 'True');
         var available :Boolean = (x.available == 'True');
-        this.modelAvatars.GET_LOAD_AV(ID, x.name, x.url, x.thumbnail, allowed,
-                                      available, x.medium, x.frame);
+        
+    	this.modelAvatars.GET_LOAD_AV(ID, x.name, x.url, x.thumbnail, allowed,
+                                      available, x.medium, x.frame, x.streamserver, x.streamname);
     };
 
 

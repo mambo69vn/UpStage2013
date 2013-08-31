@@ -17,10 +17,10 @@
 */
 
 import flash.external.ExternalInterface;
-import Client;
-import model.TransportInterface;
-import util.UiButton;
-import util.Construct;
+import upstage.Client;
+import upstage.model.TransportInterface;
+import upstage.util.UiButton;
+import upstage.util.Construct;
 
 /**
  * Module: SplashScreen.as
@@ -30,7 +30,7 @@ import util.Construct;
  *
  */
 
-class view.SplashScreen extends MovieClip
+class upstage.view.SplashScreen extends MovieClip
 {
     public var tf :TextField;
     private var tfStartupMsg :TextField;
@@ -62,7 +62,7 @@ class view.SplashScreen extends MovieClip
 	'browser window, or log in as a different user.';
 
 	
-    public static var symbolName :String = '__Packages.view.SplashScreen';
+    public static var symbolName :String = '__Packages.upstage.view.SplashScreen';
     private static var symbolLinked :Boolean = Object.registerClass(symbolName, SplashScreen);
 
 

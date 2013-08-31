@@ -21,16 +21,16 @@
 */
 
 
-import util.Construct;
-import Client;
-import util.ButtonMc;
+import upstage.util.Construct;
+import upstage.Client;
+import upstage.util.ButtonMc;
 
 
-class util.ScrollButton extends ButtonMc
+class upstage.util.ScrollButton extends ButtonMc
 {
     private static var buttonPoints :Array = Client.SCROLL_BUTTON_POINTS;
 
-    private static var symbolName:String = "__Packages.util.ScrollButton";
+    private static var symbolName:String = "__Packages.upstage.util.ScrollButton";
     private static var symbolLinked:Boolean = Object.registerClass(symbolName, ScrollButton);
     //drawer is used by ButtonMc to draw the box.
     public static var drawer:Function = Construct.polygon;

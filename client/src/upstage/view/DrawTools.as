@@ -16,15 +16,15 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-//import model.TransportInterface;
-import util.UiButton;
-import util.Slider;
-import util.SizeSlider;
-import util.Construct;
-import util.ColourPicker;
-import util.ColourPalette;
-import util.LayerPicker;
-import Client;
+//import .model.TransportInterface;
+import upstage.util.UiButton;
+import upstage.util.Slider;
+import upstage.util.SizeSlider;
+import upstage.util.Construct;
+import upstage.util.ColourPicker;
+import upstage.util.ColourPalette;
+import upstage.util.LayerPicker;
+import upstage.Client;
 
 /**
  * Author: Douglas Bagnall
@@ -35,7 +35,7 @@ import Client;
  * Modified by: Vibhu Patel 31/08/2011 - Changed create function to take one more parameter for the color value.
  * Modified by: Daniel Han	14/09/2012 - added layer number as a parameter of drawings.
  */
-class view.DrawTools extends MovieClip
+class upstage.view.DrawTools extends MovieClip
 {
     private var actBtn         :UiButton;
     private var alphaSlider    :Slider;
@@ -53,7 +53,7 @@ class view.DrawTools extends MovieClip
     private var traceIndex     :Number;
     private var traceInterval   :Number = 0;
     
-    public static var symbolName :String = '__Packages.view.DrawTools';
+    public static var symbolName :String = '__Packages.upstage.view.DrawTools';
     private static var symbolLinked :Boolean = Object.registerClass(symbolName, DrawTools);
 
 

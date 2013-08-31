@@ -29,7 +29,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * Modified by: Daniel Han					13/09/2012 - Added ADMIN_STAGE_URL, visibility property for DrawingLayers 
  * Modified by: Craig Farrell (CF) 08/04/2013 -  changed prop max height and width to 50 because props aren't meant to be big.
  */
-class Client
+class upstage.Client
 {
 	// AC (27.05.08) - Port for receiving policy files.
 	public static var POLICY_PORT  	 :Number = 3000;
@@ -230,6 +230,10 @@ class Client
     public static var VIDEO_INTERVAL_TARGET :Number = 1500; //tries to adapt wait time to reach this rate
     public static var VIDEO_INTERVAL_MIN    :Number = 500;  //but never waits for less than this.
     public static var VIDEO_MAX_FAILURES    :Number = 10;   // this many consequtive 404s before quitting
+	
+	public static var STREAM_BUFFER_TIME	:Number = 0.1;	// for streaming audio/video (see: http://docs.brajeshwar.com/as2/NetStream.html#bufferTime)
+	public static var STREAM_DEFAULT_WIDTH	:Number = 320;
+	public static var STREAM_DEFAULT_HEIGHT	:Number = 240;
 
     public static var BUBBLE_SOLID_T        :Number = 1800; //how long before bubble starts to fade
     public static var SCROLL_REPEAT         :Number = 120;
@@ -324,8 +328,11 @@ class Client
                                                       
 	// PQ: Added
 	// Path to the music note and sfx icon that display in the audio widget
-	public static var MUSIC_ICON_IMAGE_URL	:String = '/media/thumb/music.jpg';
-	public static var SFX_ICON_IMAGE_URL	:String = '/media/thumb/sfx.jpg';
+	public static var MUSIC_ICON_IMAGE_URL	:String = '/image/icon/icon-music.png';
+	public static var SFX_ICON_IMAGE_URL	:String = '/image/icon/icon-bullhorn.png';
+	
+	// Icon displayed for stream avatars
+	//public static var STREAM_ICON_IMAGE_URL	:String = '/media/thumb/stream.jpg';	// TODO not needed?
 
 	// PQ: Added 30.10.07
 	// Text to display on the audio widget's "Stop All Audio" button
@@ -645,4 +652,8 @@ class Client
 
     // id 0 means no thing in communication (ie, drop the prop/ backdrop/av) 
     public static var NULL_THING_ID        :Number = 0; 
+	
+	// prefix for built-in library images
+    public static var LIBRARY_PREFIX		:String = 'library:';
+    public static var LIBRARY_ID_LENGTH		:Number = 8;			// 8 digits
 };

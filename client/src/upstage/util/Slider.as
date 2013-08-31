@@ -16,10 +16,10 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-//import util.Construct;
-import Client;
-import util.ButtonMc;
-import util.Construct;
+//import upstage.util.Construct;
+import upstage.Client;
+import upstage.util.ButtonMc;
+import upstage.util.Construct;
 
 /**
  * Author: 
@@ -27,7 +27,7 @@ import util.Construct;
  * Notes: 
  */
 
-class util.Slider extends MovieClip
+class upstage.util.Slider extends MovieClip
 {
 
 	public var parent       :MovieClip;
@@ -55,7 +55,7 @@ class util.Slider extends MovieClip
     
     public var _onMouseRelease: Function;
 
-    public static var symbolName :String = '__Packages.util.Slider';
+    public static var symbolName :String = '__Packages.upstage.util.Slider';
     private static var symbolLinked :Boolean = Object.registerClass(symbolName, Slider);
 
     /**

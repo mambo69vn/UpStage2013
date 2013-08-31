@@ -16,15 +16,15 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-import model.TransportInterface;
-//import model.ModelAvatars;
-import thing.Thing;
-//import thing.Prop;
-import util.Icon;
-import Client;
-import util.Construct;
-import util.ScrollButton;
-//import Auth;
+import upstage.model.TransportInterface;
+//import upstage.model.ModelAvatars;
+import upstage.thing.Thing;
+//import upstage.thing.Prop;
+import upstage.util.Icon;
+import upstage.Client;
+import upstage.util.Construct;
+import upstage.util.ScrollButton;
+//import upstage.Auth;
 
 /**
  * Author: 
@@ -41,7 +41,7 @@ import util.ScrollButton;
  * the main things are classes for avatars and props.
  */
 
-class view.ItemGroup extends MovieClip
+class upstage.view.ItemGroup extends MovieClip
 {
 	private var backgroundColor	:Number; //AB: 01.08.08
     private var mcName    :MovieClip;  // MovieClip to place textField on
@@ -75,7 +75,7 @@ class view.ItemGroup extends MovieClip
 
     private var textLayer:Number;
 
-    public static var symbolName :String = '__Packages.view.ItemGroup';
+    public static var symbolName :String = '__Packages.upstage.view.ItemGroup';
     private static var symbolLinked :Boolean = Object.registerClass(symbolName, ItemGroup);
 
     /**

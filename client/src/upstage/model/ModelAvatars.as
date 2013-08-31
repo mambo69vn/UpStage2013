@@ -16,21 +16,21 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-import Client;
+import upstage.Client;
 import flash.geom.Point;
-//import util.Construct;
-import Sender;
-import thing.Avatar;
-import thing.Prop;
-import view.ActorButtons;
-import view.AvScrollBar;
-//import util.Construct; - Alan (23.01.08) - Import not used warning.
-import view.ItemGroup;
-import view.DrawTools;
-//import view.AudioTools; // PQ: Added 22.9.07
-import view.AuScrollBar;
-import model.ModelSounds;
-import model.TransportInterface;
+//import upstage.util.Construct;
+import upstage.Sender;
+import upstage.thing.Avatar;
+import upstage.thing.Prop;
+import upstage.view.ActorButtons;
+import upstage.view.AvScrollBar;
+//import upstage.util.Construct; - Alan (23.01.08) - Import not used warning.
+import upstage.view.ItemGroup;
+import upstage.view.DrawTools;
+//import upstage.view.AudioTools; // PQ: Added 22.9.07
+import upstage.view.AuScrollBar;
+import upstage.model.ModelSounds;
+import upstage.model.TransportInterface;
 
 /**
  * Author: 
@@ -45,24 +45,25 @@ import model.TransportInterface;
  * Modified by: Craig Farrell	11/04/2013 - added new varible 'rotateClockWise' boolean.
  *                                         - added  rotate left(ani-clockwise)
  *                                         - added new right click 'rotate avatar left' menu item.
+ * Modified by David Daniels & Lisa Helm 27/08/2013 - Merged Martins fork
  *                                         
  */
-class model.ModelAvatars implements TransportInterface
+class upstage.model.ModelAvatars implements TransportInterface
 {
-    var sender       :Sender;    // Handle to Sender
-    var stage        :MovieClip; // Handle to main stage
+    var sender       			:Sender;    // Handle to Sender
+    var stage        			:MovieClip; // Handle to main stage
 
 	//Prop Pane Backdrop Color //AB: added 02.08.08
 	public var NumPropBackGroundColour :Number = 0xFFFFFF;
     // Views
-    private var drawTools    :DrawTools;
-    //public var audioTools   :AudioTools; // PQ: Added 22.9.07
+    private var drawTools    	:DrawTools;
+    //public var audioTools   	:AudioTools; // PQ: Added 22.9.07
     public var audioScrollBar   :AuScrollBar; // PQ: Added 22.9.07
-    private var actorButtons :ActorButtons;
-    private var avScrollBar  :AvScrollBar;
-    private var propIcons    :ItemGroup;
+    private var actorButtons 	:ActorButtons;
+    private var avScrollBar  	:AvScrollBar;
+    private var propIcons    	:ItemGroup;
 
-	private var modelsounds  :ModelSounds;
+	private var modelsounds  	:ModelSounds;
 
     // Internal variables
     private var avatar    :Avatar;
@@ -72,10 +73,10 @@ class model.ModelAvatars implements TransportInterface
     public var rotateClockWise  :Boolean;//(11/04/2013) Craig
     
 
-    private var drawing   :Boolean;
-    private var bAudioing  :Boolean; // PQ: Added
+    private var drawing    		:Boolean;
+    private var bAudioing  		:Boolean; // PQ: Added
 
-    private var renaming    :Boolean; //Vibhu Patel 08/08/2011 - used to check whether avatar is being renamed
+    private var renaming    	:Boolean; //Vibhu Patel 08/08/2011 - used to check whether avatar is being renamed
 
     private var avscrollBarColor    :Number; //Vibhu Patel 31/08/2011 - background color of tool box items
 
@@ -508,7 +509,6 @@ class model.ModelAvatars implements TransportInterface
 
     function SET_DRAW_LAYER(layer:Number)
     {
-		
         this.sender.DRAW_LAYER(layer);
         /* send the draw style. due to bad separation this is a bit
            hacky Another way would be to actually adopt the settings
@@ -542,13 +542,12 @@ class model.ModelAvatars implements TransportInterface
      */
     function GET_LOAD_AV(ID :Number, name :String, url :String,
                          thumbnail :String, allowed :Boolean, available :Boolean,
-                         medium :String, frame: Number)
+                         medium :String, frame: Number, streamserver :String, streamname :String)
     {
         var av :Avatar;
 
         av = Avatar.factory(stage, ID, name, url, thumbnail,
-                            medium, this.avScrollBar, available, frame);
-        
+                            medium, this.avScrollBar, available, frame, streamserver, streamname);
 
         //XXX this.avatars *might* be a sparse array -- ID range is not necessarily contiguous
         trace(ID);

@@ -16,8 +16,8 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-import util.Construct;
-import Client;
+import upstage.util.Construct;
+import upstage.Client;
 
 /**
  * Module: Info.as
@@ -26,7 +26,7 @@ import Client;
  * Shows player and audience counts
  *
  */
-class view.Info
+class upstage.view.Info
 {
     private var tf :TextField;
 

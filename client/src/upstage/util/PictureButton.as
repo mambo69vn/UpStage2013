@@ -20,15 +20,15 @@
 */
 
 
-import util.Construct;
-//import Client;
-import util.ButtonMc;
+import upstage.util.Construct;
+//import upstage.Client;
+import upstage.util.ButtonMc;
 
-class util.PictureButton extends ButtonMc
+class upstage.util.PictureButton extends ButtonMc
 {
     public var value     :Number;
 
-    private static var symbolName:String = "__Packages.util.PictureButton";
+    private static var symbolName:String = "__Packages.upstage.util.PictureButton";
     private static var symbolLinked:Boolean = Object.registerClass(symbolName, PictureButton);
 
     /* factory returns the button */

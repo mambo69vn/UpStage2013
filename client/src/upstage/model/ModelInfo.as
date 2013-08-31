@@ -16,11 +16,11 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-import Client;
-import view.Info;
-import view.InfoAudience;
-import model.TransportInterface;
-//import util.Construct;
+import upstage.Client;
+import upstage.view.Info;
+import upstage.view.InfoAudience;
+import upstage.model.TransportInterface;
+//import upstage.util.Construct;
 
 /**
  * Module: ModelInfo.as
@@ -29,7 +29,7 @@ import model.TransportInterface;
  * Process messages relating to displaying player & audience count
  * 
  */
-class model.ModelInfo implements TransportInterface
+class upstage.model.ModelInfo implements TransportInterface
 {
     private var info   :Info;
     private var infoAudience   :InfoAudience;

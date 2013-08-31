@@ -16,11 +16,11 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-import util.LoadTracker;
-//import thing.Avatar;
-import util.Construct;
-import Client;
-import thing.Audio;
+import upstage.util.LoadTracker;
+//import upstage.thing.Avatar;
+import upstage.util.Construct;
+import upstage.Client;
+import upstage.thing.Audio;
 
 // PQ & EB - 7.10.07
 // This class was born from the AvScrollBarItem.as class and modified to work with audio files
@@ -37,7 +37,7 @@ import thing.Audio;
  * audio icons (list options).
  */
 
-class view.AuScrollBarItem extends MovieClip
+class upstage.view.AuScrollBarItem extends MovieClip
 {
 
     var nameField    :TextField;  // Name in scrollbar
@@ -58,7 +58,7 @@ class view.AuScrollBarItem extends MovieClip
     public var ID           :Number;   // Of avatar
     public var available    :Boolean;  // Is the avatar currently available
 
-    public static var symbolName :String = '__Packages.view.AuScrollBarItem';
+    public static var symbolName :String = '__Packages.upstage.view.AuScrollBarItem';
     private static var symbolLinknameed :Boolean = Object.registerClass(symbolName, AuScrollBarItem);
 
     static public function create(audio: Audio, scrollbar :MovieClip) :AuScrollBarItem

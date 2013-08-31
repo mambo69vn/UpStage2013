@@ -16,9 +16,9 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-import util.Slider;
-import util.Construct;
-import Client;
+import upstage.util.Slider;
+import upstage.util.Construct;
+import upstage.Client;
 
 /**
  * ColourPicker.as
@@ -26,7 +26,7 @@ import Client;
  * A set of sliders to pick an RGB colour.
  */
 
-class util.ColourPicker extends MovieClip
+class upstage.util.ColourPicker extends MovieClip
 {
     public var colour        :Number;
     public var sliderX       :Number;
@@ -44,7 +44,7 @@ class util.ColourPicker extends MovieClip
     private var borderColour :Number = Client.SLIDER_BORDER;
 
 
-    public static var symbolName :String = '__Packages.util.ColourPicker';
+    public static var symbolName :String = '__Packages.upstage.util.ColourPicker';
     private static var symbolLinked :Boolean = Object.registerClass(symbolName, ColourPicker);
 
     static public function factory(parent :MovieClip, layer:Number,

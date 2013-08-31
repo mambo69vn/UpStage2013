@@ -16,10 +16,10 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-import model.TransportInterface;
-import util.UiButton;
-import util.Construct;
-import Client;
+import upstage.model.TransportInterface;
+import upstage.util.UiButton;
+import upstage.util.Construct;
+import upstage.Client;
 
 
 
@@ -31,7 +31,7 @@ import Client;
  *         Reside on a wrapper MovieClip to allow easy show / hide
  * Modified by: Vibhu 31/08/2011 - Changed create function to take one more parameter for the color value.
  */
-class view.ActorButtons extends MovieClip
+class upstage.view.ActorButtons extends MovieClip
 {
     private var clearBtn   :UiButton;
     private var dropBtn    :UiButton;
@@ -42,8 +42,7 @@ class view.ActorButtons extends MovieClip
     private var drawBtn    :UiButton;
     private var audioBtn   :UiButton; // PQ: 22.9.07
 
-    public static var symbolName :String =
-        '__Packages.view.ActorButtons';
+    public static var symbolName :String = '__Packages.upstage.view.ActorButtons';
     private static var symbolLinked :Boolean =
         Object.registerClass(symbolName, ActorButtons);
 

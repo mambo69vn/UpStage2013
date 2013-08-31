@@ -16,10 +16,10 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-//import util.Construct;
-import Client;
+//import upstage.util.Construct;
+import upstage.Client;
 
-class util.ButtonMc extends MovieClip
+class upstage.util.ButtonMc extends MovieClip
 {
 
     // member variables
@@ -37,7 +37,7 @@ class util.ButtonMc extends MovieClip
     static var _nextButtonLayer: Number = Client.L_UI_BUTTONS;
 
     private var scale     :Number;
-    public static var symbolName :String = '__Packages.util.ButtonMc';
+    public static var symbolName :String = '__Packages.upstage.util.ButtonMc';
     private static var symbolLinked :Boolean = Object.registerClass(symbolName, ButtonMc);
 
 

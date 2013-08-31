@@ -16,8 +16,8 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-import Client;
-import util.Construct;
+import upstage.Client;
+import upstage.util.Construct;
 
 /**
  * Module: Bubble.as
@@ -26,7 +26,7 @@ import util.Construct;
  * Modified: Alan Crow (AC)
  * Purpose: Speech bubble for Avatar.
  */
-class view.Bubble
+class upstage.view.Bubble
 {
     //var av        :MovieClip;
     var mc        :MovieClip;

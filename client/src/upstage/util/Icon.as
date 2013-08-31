@@ -16,14 +16,14 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-import util.Construct;
-import Client;
-import util.LoadTracker;
+import upstage.util.Construct;
+import upstage.Client;
+import upstage.util.LoadTracker;
 
 /**
  * Icon image for things.
  */
-class util.Icon extends MovieClip
+class upstage.util.Icon extends MovieClip
 {
     var name         :String;
     var image        :MovieClip;
@@ -33,7 +33,7 @@ class util.Icon extends MovieClip
     var baseLayer	:Number;
  
 
-    public static var symbolName :String = '__Packages.util.Icon';
+    public static var symbolName :String = '__Packages.upstage.util.Icon';
     private static var symbolLinked :Boolean = Object.registerClass(symbolName, Icon);
 
     /**

@@ -16,15 +16,15 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-import model.ModelChat;
-import view.ChatInput;
-import util.ScrollButton;
-import util.Construct;
-import Client;
-import util.UiButton;
-import Transport;
+import upstage.model.ModelChat;
+import upstage.view.ChatInput;
+import upstage.util.ScrollButton;
+import upstage.util.Construct;
+import upstage.Client;
+import upstage.util.UiButton;
+import upstage.Transport;
 // PQ & LK: Added 31.10.07
-import Sender;
+import upstage.Sender;
 
 /**
  * Author: Douglas Bagnall, Wise Wang, Beau Hardy, Francis Palma, Lucy Chu
@@ -35,7 +35,7 @@ import Sender;
  * Notes: 
  */
 
-class view.ChatField
+class upstage.view.ChatField
 {
     public var tf           :TextField;
     private var backScrolled :Boolean;

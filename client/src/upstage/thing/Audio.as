@@ -16,11 +16,11 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-//import thing.Thing; - Alan (23.01.08) Import not used warning.
-//import util.Icon; - Alan (23.01.08) Import not used warning.
-import Client;
-import view.AuScrollBarItem;
-import view.AuScrollBar;
+//import upstage.thing.Thing; - Alan (23.01.08) Import not used warning.
+//import upstage.util.Icon; - Alan (23.01.08) Import not used warning.
+import upstage.Client;
+import upstage.view.AuScrollBarItem;
+import upstage.view.AuScrollBar;
 
 /**
  * Module: Audio.as
@@ -30,7 +30,7 @@ import view.AuScrollBar;
  * Notes: Originally the class for prop images transformed into class for audio.
  */
  
-class thing.Audio
+class upstage.thing.Audio
 {
 
 	var ID:Number;
@@ -41,7 +41,7 @@ class thing.Audio
 	var icon : AuScrollBarItem;
 	var iconLayer : Number;
 
-    private static var symbolName:String = "__Packages.thing.Audio";
+    private static var symbolName:String = "__Packages.upstage.thing.Audio";
     private static var symbolLinked:Boolean = Object.registerClass(symbolName, Audio);
 
     public static var transportSetFunctionName:String = 'SET_AUDIO';

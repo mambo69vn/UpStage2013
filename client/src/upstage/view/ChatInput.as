@@ -16,8 +16,8 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-import Client;
-import util.Construct;
+import upstage.Client;
+import upstage.util.Construct;
 
 /**
  * Module: ChatInput.as
@@ -26,7 +26,7 @@ import util.Construct;
  * Chat Input view.
  *
  */
-class view.ChatInput
+class upstage.view.ChatInput
 {
     private var tf           :TextField;
     private var history      :Array;

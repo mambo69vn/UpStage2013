@@ -24,12 +24,15 @@
  * face of ModelSplashScreen.  Modules loading images use
  * getLoadListener() and loadImage() to tell the splach screen how
  * things are going.  
+ * 
+ * Modified by David Daniels & Lisa Helm 27/08/2013 - Merged Martins fork
  */
-import Client;
-import util.Construct;
+ 
+import upstage.Client;
+import upstage.util.Construct;
 import flash.external.ExternalInterface;
 
-class util.LoadTracker
+class upstage.util.LoadTracker
 {
     // How many images are currently loading
     private static var failed      :Number;  // Failed to load
@@ -38,7 +41,7 @@ class util.LoadTracker
     private static var finished    :Number;  
     
     // MovieClip constants for on screen display
-    private static var view        :MovieClip;
+    private static var view        :MovieClip;	// TODO: is this needed as it is currently replaced by the HTML progress view (via ExternalInterface)?
     private static var modelSplash :Object;
 
 
@@ -87,6 +90,7 @@ class util.LoadTracker
      */
     private static function redraw() :Void
     {
+    	// TODO: is this needed as we now have the HTML interface showing the progress (via ExternalInterface)?
         LoadTracker.view.redrawProgressBar(LoadTracker.expected,
                                            LoadTracker.started,
                                            LoadTracker.finished,
@@ -103,7 +107,7 @@ class util.LoadTracker
     {
 //        trace('**getting LoadListener. expected is ' + LoadTracker.expected);
         return {
-            onLoadError: function(mc :Object, error :String){
+            onLoadError: function(mc :Object, error :String):Void {
                 LoadTracker.failed++;
                 LoadTracker.redraw();
                 LoadTracker.modelSplash.fail();    
@@ -111,8 +115,9 @@ class util.LoadTracker
 //                trace('**Didnt load: ' + mc._name + ' because: ' + error);
                 Construct.deepTrace(LoadTracker);
             },
-            onLoadComplete: function(mc :Object){
+            onLoadComplete: function(mc :Object, httpStatus:Number):Void {
                 //trace('Load Complete is done...');
+                trace('Loading of '+mc+' completed with (http) status ' + httpStatus);
                 LoadTracker.finished++;
                 ExternalInterface.call("stage_loading("+Math.floor(LoadTracker.finished*100/LoadTracker.expected) +")");
                 LoadTracker.redraw();
@@ -120,7 +125,7 @@ class util.LoadTracker
                 if(LoadTracker.finished == LoadTracker.expected)
                     LoadTracker.modelSplash.complete();
             },
-            onLoadStart: function(mc :Object){
+            onLoadStart: function(mc :Object):Void {
                 //trace('Load started...');
 //                trace('**started ' + mc._name );
                 LoadTracker.started++;
@@ -130,24 +135,56 @@ class util.LoadTracker
     }
 
 
-    /**@brief Load an image, keeping track of its progress if its
-     * listener object is null, or derived from
-     * LoadTracker.getLoadListener()
+    /**
+     * @brief Load an image/swf, keeping track of its progress if its listener object is null, or derived from LoadTracker.getLoadListener()
+     * @see http://livedocs.adobe.com/flash/9.0/main/wwhelp/wwhimpl/common/html/wwhelp.htm?context=LiveDocs_Parts&file=00001993.html
      */
-
-
-    static function loadImage(mc: MovieClip, url : String, 
-                              layer: Number, listener: Object) :MovieClip
+    static function loadImage(mc: MovieClip, url : String, layer: Number, listener: Object) : MovieClip
     {
-        if (!listener){
-            listener = LoadTracker.getLoadListener();
+        if (!listener){ listener = LoadTracker.getLoadListener(); }
+        
+        var img : MovieClip;
+        var layerName : String = "layer" + layer;
+        
+        var isLibraryItem :Boolean = (url.substr(0,Client.LIBRARY_PREFIX.length) == Client.LIBRARY_PREFIX);
+        
+        if(isLibraryItem) {
+    		
+    		var libraryItemId   :String = url.substr(Client.LIBRARY_PREFIX.length,Client.LIBRARY_ID_LENGTH);	// NOTE: id is _not_ used for MovieClip creation
+    		var libraryItemName :String = url.slice(Client.LIBRARY_PREFIX.length+Client.LIBRARY_ID_LENGTH+1);
+    		
+    		trace("get library item '" + libraryItemName +"' with given ID " + libraryItemId);
+ 
+ 			// TODO check if valid url parameter was given (e.g. 'library:XXXXXXXX:YYY...') [XXXXXXXX = ID, YYY... = library item name] 
+    		
+    		// callback: we have started (simulates event normally initiated by MovieClipLoader)
+		    listener.onLoadStart();
+		    
+		    img = mc.attachMovie(libraryItemName,layerName,layer);
+		    
+		    // callback: ensure some initial operations are executed (simulates event normally initiated by MovieClipLoader)
+		    listener.onLoadInit(img);
+		    
+		    // callback: always successful completed (simulates event normally initiated by MovieClipLoader)
+		    // NOTE: throwing an error event for mismatched items not possible due to runtime restrictions of ActionScript 
+		    listener.onLoadComplete(img,0);
+    		
+    	} else {
+    		
+    		trace("get image from url '" + url + "'");
+        
+	        img = mc.createEmptyMovieClip(layerName, layer);
+	        var loadWatcher : MovieClipLoader = new MovieClipLoader();
+			loadWatcher.addListener(listener);
+	        loadWatcher.loadClip(url, img);
+	        
         }
         
-        var layerName:String = "layer" + layer;
-        var img:MovieClip = mc.createEmptyMovieClip(layerName, layer);
-        var loadWatcher  :MovieClipLoader = new MovieClipLoader();
-	loadWatcher.addListener(listener);
-        loadWatcher.loadClip(url, img);
+        // DEBUG:
+	    trace('parent mc = '+ mc +' with size: '+ mc._width +' x ' + mc._height);
+	    trace('image mc  = '+ img +' with size: '+ img._width +' x '+ img._height);
+        
         return img;
     }
+    
 };

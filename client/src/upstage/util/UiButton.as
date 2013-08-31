@@ -19,9 +19,9 @@
   ordinary button.
 */
 
-import util.Construct;
-import Client;
-import util.ButtonMc;
+import upstage.util.Construct;
+import upstage.Client;
+import upstage.util.ButtonMc;
 
 /**
  * Author: 
@@ -29,12 +29,12 @@ import util.ButtonMc;
  * Notes: 
  */
 
-class util.UiButton extends ButtonMc
+class upstage.util.UiButton extends ButtonMc
 {
     private var tf        :TextField;
     private var textLayer :Number;
 
-    private static var symbolName:String = "__Packages.util.UiButton";
+    private static var symbolName:String = "__Packages.upstage.util.UiButton";
     private static var symbolLinked:Boolean = Object.registerClass(symbolName, UiButton);
 
     /* points for standard ui button */

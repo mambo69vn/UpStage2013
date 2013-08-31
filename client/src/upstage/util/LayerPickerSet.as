@@ -16,14 +16,14 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-import util.Construct;
-import util.ButtonMc;
-import util.PictureButton;
-import util.UiButton;
-import util.Slider;
-import Client;
+import upstage.util.Construct;
+import upstage.util.ButtonMc;
+import upstage.util.PictureButton;
+import upstage.util.UiButton;
+import upstage.util.Slider;
+import upstage.Client;
 
-class util.LayerPickerSet extends MovieClip
+class upstage.util.LayerPickerSet extends MovieClip
 {
     private var pressed      :Boolean;
     private var greyed       :Boolean;
@@ -43,7 +43,7 @@ class util.LayerPickerSet extends MovieClip
     private var taken        :MovieClip;
 
 
-    public static var symbolName :String = '__Packages.util.LayerPickerSet';
+    public static var symbolName :String = '__Packages.upstage.util.LayerPickerSet';
     private static var symbolLinked :Boolean = Object.registerClass(symbolName, LayerPickerSet);
 
     static var eyePoints:Array = [{line:0x0000ff, fill:0x330077, points:Client.DRAWING_EYE_1},

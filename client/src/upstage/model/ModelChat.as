@@ -16,12 +16,12 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-//import Client;
-import Sender;
-//import util.Construct;
-import view.ChatField;
-import model.TransportInterface;
-import Transport;
+//import .Client;
+import upstage.Sender;
+//import upstage.util.Construct;
+import upstage.view.ChatField;
+import upstage.model.TransportInterface;
+import upstage.Transport;
 
 /**
  * Module: ModelChat.as
@@ -32,7 +32,7 @@ import Transport;
  * Model for ChatField object sits between ChatField and Transport
  * Modified by: Heath / Vibhu 09/08/2011 - Added function SET_CHAT_PANE_COLOUR so part of fix for media management system colour changing.
  */
-class model.ModelChat implements TransportInterface
+class upstage.model.ModelChat implements TransportInterface
 {
     private var sender    :Sender;    // Handle to sender
     private var chatField :ChatField; // View
