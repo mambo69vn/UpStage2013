@@ -20,13 +20,13 @@ Modified by: Alan Crow
 Notes: 
 """
 
-"""Orphanage for useful functions with no twisted dependencies."""
+"""Orphanage for useful functions with no twisted dependencies (except logging)."""
 
 from upstage import config
 
-from random import choice, random
-import tempfile
-import os, sys
+import os, sys, string, tempfile, random
+from time import strftime
+from twisted.python import log
 
 def id_generator(start=1, wrap=2000000000, prefix='', suffix='', pattern ='%s%s%s'):
     """Generator that can count. By default returns stringified 
@@ -42,9 +42,12 @@ def new_filename(length=8, suffix='.swf', prefix=''):
     """Make up a short uniquish file name"""
     letters = 'abcdefghijklmnopqrstuvwxyz0123456789_ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     return  "%s%s%s" %(prefix, 
-                       ''.join([choice(letters) for x in range(length)]), 
+                       ''.join([random.choice(letters) for _x in range(length)]), 
                        suffix)
 
+def random_string(length, pool=(string.letters+string.digits)):
+    """Create a random string of given length"""
+    return ''.join(random.choice(pool) for _x in xrange(length))
 
 #XXX unused
 def log_rotate(filename):
@@ -105,3 +108,55 @@ def validSizes(sizes, super_admin):
         if (item > limit):
             valid = False
     return valid
+
+def createHTMLOptionTags(data_list_or_set):
+    if (not(isinstance(data_list_or_set, list) or (isinstance(data_list_or_set, set)))):
+        raise TypeError('Can not create HTML options from type other than list or set.')
+    string = ''
+    for data_list_item in data_list_or_set:
+        string += "<option value=""%s"">%s</option>\n" % (data_list_item, data_list_item)
+    return string
+
+def convertLibraryItemToImageFilePath(library_item):
+    if (not isinstance(library_item, str)):
+        raise TypeError('Can not convert library item to image path for type other than string.')
+    image_path = ''
+    
+    # FIXME unsecure method
+    extracted_library_item = library_item.split(':')[2] # get third element of list
+    
+    log.msg("convertLibraryItemToImageFilePath(): library_item=%s, extracted_library_item=%s" % (library_item, extracted_library_item))
+    
+    # FIXME hardcoded for now, should be defined with mapping in config 
+    if extracted_library_item == 'IconVideoStream':
+        image_path = '/image/icon/icon-film.png'
+    elif extracted_library_item == 'IconLiveStream':
+        image_path = '/image/icon/icon-play-circle.png'
+    elif extracted_library_item == 'IconAudioStream':
+        image_path = '/image/icon/icon-volume-up.png'
+    elif extracted_library_item == 'VideoOverlay':
+        image_path = '' # we do not want anything here
+    
+    return image_path
+
+def convertLibraryItemToImageName(library_item):
+    if (not isinstance(library_item, str)):
+        raise TypeError('Can not convert library item to image path for type other than string.')
+    image_name = ''
+    
+    # FIXME unsecure method
+    extracted_library_item = library_item.split(':')[2] # get third element of list
+    
+    log.msg("convertLibraryItemToImageName(): library_item=%s, extracted_library_item=%s" % (library_item, extracted_library_item))
+    
+    # FIXME hardcoded for now, should be defined with mapping in config 
+    if extracted_library_item == 'IconVideoStream':
+        image_name = 'icon-film'
+    elif extracted_library_item == 'IconLiveStream':
+        image_name = 'icon-play-circle'
+    elif extracted_library_item == 'IconAudioStream':
+        image_name = 'icon-volume-up'
+    elif extracted_library_item == 'VideoOverlay':
+        image_name = '' # we do not want anything here
+    
+    return image_name

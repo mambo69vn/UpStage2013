@@ -693,11 +693,11 @@ class _Stage(object):
     
     def get_player_access(self, person):
         if person in self.access_level_one:
-           return "Full Access Player"
+            return "Full Access Player"
         elif person in self.access_level_two:
-           return "Player"
+            return "Player"
         else:
-           return "Audience"
+            return "Audience"
 
     #added by Craig (08/04/2013) - sets the onstagelist on or off
     def set_ifOnStageList(self,iss):
@@ -731,8 +731,8 @@ class _Stage(object):
         if text:
             log.msg("text before conversion" + text)
             
-	    text = text.replace('&lt;', '<')# Vishaal 15/10/09 Changed to ACTUALLY fix < > chatlog problem
-            text = text.replace('&gt;', '>')# Vishaal 15/10/09 Changed to ACTUALLY fix < > chatlog problem
+            text = text.replace('&lt;', '<') # Vishaal 15/10/09 Changed to ACTUALLY fix < > chatlog problem
+            text = text.replace('&gt;', '>') # Vishaal 15/10/09 Changed to ACTUALLY fix < > chatlog problem
 
             log.msg("text after conversion" + text)
             self.chat.append(text)
@@ -797,7 +797,16 @@ class _Stage(object):
                     break
 
         self.sockets[client.ID] = client
-       
+        
+        if client.player.can_act():
+            self.player_sockets[client.ID] = client
+        if client.player.can_su():
+            self.admin_sockets[client.ID] = client
+
+        # Added checking if user is player access or admin access
+        # admin needs to be added to player as well.
+        # Disabling it for now.
+        """
         if client.player.name in self.access_level_two or client.player.name in self.access_level_one:
             self.player_sockets[client.ID] = client
         else:
@@ -806,12 +815,12 @@ class _Stage(object):
         #Added checking if user is player access or admin access
         if client.player.name in self.access_level_one:
             self.admin_sockets[client.ID] = client
-
+		"""
             
         return True
 
     def drop_socket(self, client):
-        #Drop a client socket from the stage
+        """Drop a client socket from the stage"""
         try:
             self.sockets.pop(client.ID)
         except KeyError:
@@ -1080,7 +1089,7 @@ class _Stage(object):
                     socket.send(x[0], x=x[1], y=x[2], layer=i)
                 elif x[0] == 'DRAW_STYLE':
                     socket.send('DRAW_STYLE', colour=x[1],
-                            thickness=x[2], alpha=x[3], layer=i)
+                                thickness=x[2], alpha=x[3], layer=i)
 
         if socket.ID in self.player_sockets:
             self.draw_send_layer_state(socket)

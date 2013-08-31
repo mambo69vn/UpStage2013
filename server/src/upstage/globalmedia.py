@@ -32,7 +32,8 @@ Modified by: Heath Behrens 16/08/2011 - added code in update_from_form to extrac
                                                     - Note the tags are retrieved from the collection first then 
                                                       re added to keep the current tags            
              Heath Behrens / Corey / Karena 26/08/2011 - Added code to update media name, along with a fix for tags which kept adding
-                                                        a blank tag when saving name.                                                                    
+                                                        a blank tag when saving name.  
+Modified by: Lisa Helm 21/08/2013       - removed all code relating to old video avatar                                                                                                                              
 
 Notes: 
 """
@@ -42,6 +43,9 @@ Notes:
 
 
 import os, inspect
+
+# pretty print for debugging (see: http://docs.python.org/2/library/pprint.html)
+import pprint
 
 #siblings
 from upstage.misc import Xml2Dict, UpstageError
@@ -78,26 +82,42 @@ class _MediaFile(object):
         if (self.file[-4:] == '.mp3'):
             self.url = config.AUDIO_URL + self.file
         else:
-            self.url = config.MEDIA_URL + self.file
-        self.thumbnail = ''
-        self.web_thumbnail = config.MISSING_THUMB_URL
-        tn = kwargs.pop('thumbnail', None)  #or self.file.replace('.swf','.jpg')
-        if tn:
-            if not config.CHECK_THUMB_SANITY or _check_thumb_sanity(tn):
-                self.web_thumbnail = tn
-                self.thumbnail = tn
-        self.name = kwargs.pop('name', 'nameless')
+            library_prefix_length = len(config.LIBRARY_PREFIX)
+            if(self.file[:library_prefix_length] == config.LIBRARY_PREFIX):   # handle library items (included in client.swf)
+                self.url = self.file
+            else:
+                self.url = config.MEDIA_URL + self.file
+        
+        # handle thumbnail images
+        self.thumbnail = kwargs.pop('thumbnail',None)
+        if(self.thumbnail is None):
+            self.thumbnail = ''
+            self.web_thumbnail = config.MEDIA_URL + self.file   # config.MISSING_THUMB_URL    # FIXME hanlde thumbnails (see also #20)
+            tn = kwargs.pop('thumbnail', None)  #or self.file.replace('.swf','.jpg')
+            if tn:
+                if not config.CHECK_THUMB_SANITY or _check_thumb_sanity(tn):
+                    self.web_thumbnail = tn
+                    self.thumbnail = tn
+        else:
+            self.web_thumbnail = self.thumbnail
+                    
+        self.name = kwargs.pop('name', 'nameless').strip()
         self.voice = kwargs.pop('voice', None)
         self._type = kwargs.pop('type', None)
         self.height = kwargs.pop('height', None)
         self.width = kwargs.pop('width', None)
-        self.medium = kwargs.pop('medium', None) #medium - video for video/ None for stills.
-        self.description = kwargs.pop('description', '') # no form entry for it.
+        self.medium = kwargs.pop('medium', None) # medium: 'video' for video, 'stream' for streaming, None for stills.
+        self.description = kwargs.pop('description', '').strip() # no form entry for it.
         
         # AC (29.09.07) - 
-        self.uploader = kwargs.pop('uploader', '') # user name of uploader.
-        self.dateTime = kwargs.pop('dateTime', '') # Date and time of upload.
-        self.tags = kwargs.pop('tags', '')#Karena, Corey, Heath
+        self.uploader = kwargs.pop('uploader', '').strip() # user name of uploader.
+        self.dateTime = kwargs.pop('dateTime', '').strip() # Date and time of upload.
+        self.tags = kwargs.pop('tags', '').strip() # Karena, Corey, Heath
+        
+        # add stream parameters
+        self.streamserver = kwargs.pop('streamserver','').strip()
+        self.streamname = kwargs.pop('streamname','').strip()
+        
         if kwargs:
             log.msg('left over arguments in _MediaFile', kwargs)
 
@@ -141,7 +161,9 @@ class MediaDict(Xml2Dict):
                         thumbnail=node.getAttribute('thumbnail') or '',
                         uploader=node.getAttribute('uploader') or '', # AC - Adds uploader field to dictionary.
                         dateTime=node.getAttribute('dateTime') or '', # AC - Adds dateTime field to dictionary.
-                        tags=node.getAttribute('tags') or '', #Heath, Corey, Karena 24/08/2011 - added tags to mediafile 
+                        tags=node.getAttribute('tags') or '', # Heath, Corey, Karena 24/08/2011 - added tags to mediafile
+                        streamname=node.getAttribute('streamname') or '',
+                        streamserver=node.getAttribute('streamserver') or '',
                         )           
         dict.__setitem__(self, f, av)
 
@@ -155,15 +177,24 @@ class MediaDict(Xml2Dict):
         
         # AC (29.09.07) - Added uploader and datetime fields in XML media item files.
         node = root.add(self.element, file=mf.file, url=mf.url, name=mf.name,
-                        thumbnail=mf.thumbnail, uploader=mf.uploader, dateTime=mf.dateTime, tags=mf.tags)
+                        thumbnail=mf.thumbnail, uploader=mf.uploader, dateTime=mf.dateTime, tags=mf.tags,
+                        streamserver=mf.streamserver, streamname=mf.streamname)
         
-        for attr in ('voice', 'medium'):
+        #for attr in ('voice', 'medium'):
+        for attr in ('voice', 'medium', 'streamserver', 'streamname'):
             v = getattr(mf, attr, None)
             if v is not None:
                 node[attr] = v
 
     def path(self, f):
         """Convert a relative path to absolute."""
+        # obviously it is rather relative than absolute
+        
+        # if there is no file return empty string:
+        library_prefix_length = len(config.LIBRARY_PREFIX)
+        if(f[:library_prefix_length] == config.LIBRARY_PREFIX):   # handle library items (included in client.swf)
+            return ""
+        
         # PQ & EB: Added 13.10.07
         # If it's an audio file (ends with .mp3) add in the folder 'audio' in front so it's /media/audio/
         if (f[-4:] == '.mp3') :
@@ -172,9 +203,9 @@ class MediaDict(Xml2Dict):
             return os.path.join(config.MEDIA_DIR, f)
 
     def add(self, **kwargs):
-        """Put a new item in, and save it (implicitly, through __setitem__)
-        """
+        """Put a new item in, and save it (implicitly, through __setitem__)"""
         f = kwargs.get('file', None)
+        log.msg("add(): file = %s" % f)
         if f is not None:
             self[f] = _MediaFile(**kwargs)
             return self[f]
@@ -183,6 +214,8 @@ class MediaDict(Xml2Dict):
     def addItem(self, form): 
         self.form = form
         f = form.get('file', None)
+        log.msg("addItem(): file = %s" % f)
+        log.msg("addItem(): form = %s" % form)
         if f is not None:
             self[f] = _MediaFile(form)
             return self[f]
@@ -201,7 +234,13 @@ class MediaDict(Xml2Dict):
             else:
                 os.remove(self.path(f))
         except OSError, e:
-            if not f.startswith(config.WEBCAM_SUBURL):
+            #Lisa 21/08/2013 - removed video avatar code
+            # builtin library items are no files so nothing to delete ...
+            if f.startswith(config.LIBRARY_PREFIX):
+                pass
+            
+            # all other errors are probably real errors
+            else:
                 raise KeyError("%s: %s" %(self.path(f), e))
 
         return Xml2Dict.__delitem__(self, f)
@@ -212,7 +251,7 @@ class MediaDict(Xml2Dict):
         ThingDict being the relevant collection for this type of
         media, for the corresponding stage.
         """
-         #more direct ways possible -- using a ThingDict 'element'
+        #more direct ways possible -- using a ThingDict 'element'
         collections = []
       
         # Alan (28.01.08) - Enables the sorting of stage collection alphabetically.
@@ -260,6 +299,352 @@ class MediaDict(Xml2Dict):
                     messages.append('<b>Not deleting %s</b> (used in %s)' %(self[x].name, links))
         return '<br />\n'.join(messages)
 
+
+    def delete(self, key=None, player=None, force=False):
+        """Rewritten function: Delete a Thing identified by 'file key' and return True if successful. If force is False do not delete media which is assigned to stages."""
+        success = False
+        
+        log.msg("MediaDict: delete(): key=%s, player=%s, force=%s" % (key,player,force))
+        
+        # key must be given
+        if key is None:
+            log.msg("MediaDict: delete(): no media key given!")
+            return success
+        
+        # player must be given
+        if player is None:
+            log.msg("MediaDict: delete(): no player given!")
+            return success
+        
+        # only admins are allowed to delete data
+        if not player.can_admin():
+            log.msg("MediaDict: delete(): Insufficient rights. Player '%s' is not in role 'admin'." % player.name)
+            return success
+        
+        # evaluate force flag:
+        if (force):
+            log.msg("MediaDict: delete(): force flags set - removing from all stages even when in use")
+            # delete entry and naively assume all went well (well, that's what always was done anyway)
+            if not self[key] is None:
+                del self[key]
+                log.msg("MediaDict: delete(): actually media with key '%s' was forcibly deleted!" % key)
+                # ugly clean method for things left on stages: if files do not exist they will be cleaned up! may cause unwanted side-effects as it is smelly... 
+                thing_stage_tuple = self._get_stage_collections()
+                for things, stage in thing_stage_tuple:
+                    if things.reap_zombies():
+                        log.msg("MediaDict: delete(): reaping zombies and soft resetting stage!")   # well, some better logging would be good
+                        stage.soft_reset()
+                        stage.save()
+        
+        # if not forced, do not remove when in use on a stage
+        else:
+            log.msg("MediaDict: delete(): force flags NOT set - removing only when NOT in use on a stage")
+            #log.msg("MediaDict: delete(): self[key]=%s" % self[key])
+            if not self[key] is None:
+                
+                # check if this media is used on any stage:
+                thing_stage_tuple = self._get_stage_collections()
+                
+                # DEBUG:
+                for things, stage in thing_stage_tuple:
+                    log.msg("MediaDict: delete(): collection=%s, stage=%s" % (things,stage))
+                
+                assigned_stages = [stage.ID for things, stage in thing_stage_tuple if key in things.media]
+                for stage in assigned_stages:
+                    log.msg("MediaDict: delete(): assigned stage=%s" % stage)
+                
+                if not assigned_stages:
+                    del self[key]
+                    log.msg("MediaDict: delete(): actually media with key '%s' was deleted!" % key)
+                else:
+                    log.msg("MediaDict: delete(): actually media with key '%s' was NOT deleted as it is used on some stages!" % key)
+        
+        # finally confirm success by inspecting dict if media is still contained
+        if not (key in self):
+            # dict does not contain media, at first this looks like successful deletion
+            success = True
+            # also check if media is still assigned to any of the stages (this would mean deletion was not successful)
+            thing_stage_tuple = self._get_stage_collections()
+            for things, stage in thing_stage_tuple:
+                stage_name = stage.ID
+                log.msg("MediaDict: delete(): checking stage '%s': things=%s" % (stage_name,pprint.saferepr(things)))
+                for media in things.media:
+                    # DEBUG:
+                    log.msg("MediaDict: delete(): checking stage '%s': media=%s" % (stage_name,pprint.saferepr(media)))
+                    if key in media:
+                        success = False # media still assigned to a stage
+                        break
+            
+        return success
+
+    def assign_stages(self, key=None, player=None, new_stages=[], force_reload=True):
+        """Rewritten function: Assign a Thing identified by 'file key' to new stages and return True if successful."""
+        success = False
+        
+        log.msg("MediaDict: assign_stages(): key=%s, player=%s, new_stages=%s" % (key,player,new_stages))
+        
+        # key must be given
+        if key is None:
+            log.msg("MediaDict: assign_stages(): no media key given!")
+            return success
+        
+        # player must be given
+        if player is None:
+            log.msg("MediaDict: assign_stages(): no player given!")
+            return success
+        
+        # only admins are allowed to assign stages
+        if not player.can_admin():
+            log.msg("MediaDict: assign_stages(): Insufficient rights. Player '%s' is not in role 'admin'." % player.name)
+            return success
+        
+        # get already assigned stages
+        thing_stage_tuple = self._get_stage_collections()
+        current_assigned_stages = [stage.ID for things, stage in thing_stage_tuple if key in things.media]
+        log.msg("MediaDict: assign_stages(): current_assigned_stages=%s" % current_assigned_stages)
+        
+        # get newly added (assigned) stages
+        new_assigned_stages = [x for x in new_stages if x not in current_assigned_stages]
+        log.msg("MediaDict: assign_stages(): new_assigned_stages=%s" % new_assigned_stages)
+        
+        # get newly removed (unassigned) stages
+        new_removed_stages = [x for x in current_assigned_stages if x not in new_stages]
+        log.msg("MediaDict: assign_stages(): new_removed_stages=%s" % new_removed_stages)
+        
+        if self.stages is not None:
+            
+            # assign media: add media to those stages
+            for assign_stage in new_assigned_stages:
+                stage = self.stages.get(assign_stage)
+                if stage is not None:
+                    stage.add_mediato_stage(key)
+                    if(force_reload):
+                        stage.soft_reset()  # broadcast "reload" on stage
+       
+            # unassign media: remove media from those stages     
+            for unassign_stage in new_removed_stages:
+                stage = self.stages.get(unassign_stage)
+                if stage is not None:
+                    stage.remove_media_from_stage(key)
+                    if(force_reload):
+                        stage.soft_reset()  # broadcast "reload" on stage
+         
+        # confirm success
+        thing_stage_tuple = self._get_stage_collections()
+        current_assigned_stages = [stage.ID for things, stage in thing_stage_tuple if key in things.media]
+        if sorted(current_assigned_stages) == sorted(new_stages):
+            success = True
+            
+        return success
+
+
+    def update_data(self,key=None,player=None,update_data=None,force_reload=False,media_type=None,all_media_names={}):
+        """Rewritten function: Update media attributes and return True if successful."""
+        
+        success = False
+        
+        log.msg("MediaDict: update_data(): key=%s, player=%s, update_data=%s, force_reload=%s, media_type=%s" % (key,player,update_data,force_reload,media_type))
+        
+        # key must be given
+        if key is None:
+            log.msg("MediaDict: update_data(): no media key given!")
+            return success
+        
+        # media type must be given
+        if media_type is None:
+            log.msg("MediaDict: update_data(): no media type given!")
+            return success
+        
+        # validate media type
+        if not media_type in ('avatars','props','backdrops','audios'):
+            log.msg("MediaDict: update_data(): invalid media type '%s' given!" % media_type)
+            return success
+        
+        # player must be given
+        if player is None:
+            log.msg("MediaDict: update_data(): no player given!")
+            return success
+        
+        # only admins are allowed to edit data
+        if not player.can_admin():
+            log.msg("MediaDict: update_data(): Insufficient rights. Player '%s' is not in role 'admin'." % player.name)
+            return success
+        
+        # try to get media
+        media = None
+        try:
+            media = self[key]
+        except KeyError:
+            log.msg("MediaDict: update_data(): Can not edit '%s' (media not present in %s)" % (key, self))
+            return success
+        
+        if media is None:
+            log.msg("MediaDict: update_data(): Media was not found.")
+            return success
+        
+        log.msg("MediaDict: update_data(): Found media='%s'." % pprint.saferepr(media))
+        
+        # prepare data step 1: check and transform values if needed
+        prepare_data = dict()
+        for datakey, newvalue in update_data.items():
+            
+            log.msg("MediaDict: update_data(): prepare data: datakey='%s', newvalue='%s'." % (datakey, newvalue))
+            
+            # check for 'None' values
+            if ((datakey is None) or (newvalue is None)):
+                log.msg("MediaDict: update_data(): data key or new value is None.")
+                return success
+            
+            # always strip spaces from string values
+            newvalue = newvalue.strip()
+            
+            # check if attribute exists
+            try:
+                # attribute exists
+                oldvalue = getattr(media,datakey)
+                prepare_data[datakey] = newvalue
+                
+                # TODO change web_thumbnail for stream?
+                
+            except AttributeError:
+                # attribute does not exist: check special keys which require transformation (audiotype, videoimagepath)
+                if(datakey == 'audiotype'):
+                    log.msg("MediaDict: update_data(): processing data key '%s' ... " % datakey)
+                    
+                    # prepare data for audios
+                    if (newvalue != '') and (media_type == 'audios'):
+                        if(newvalue == 'music'):
+                            prepare_data['medium'] = 'music'
+                            prepare_data['web_thumbnail'] = config.MUSIC_ICON_IMAGE_URL
+                        elif (newvalue == 'sfx'):
+                            prepare_data['medium'] = 'sfx'
+                            prepare_data['web_thumbnail'] = config.SFX_ICON_IMAGE_URL
+                        else:
+                            log.msg("MediaDict: update_data(): invalid value '%s' for data key '%s' ... " % (newvalue,datakey))
+                            return success
+                        
+                elif (datakey == 'videoimagepath'):
+                    log.msg("MediaDict: update_data(): processing data key '%s' ... " % datakey)
+                    
+                    # prepare data for video
+                    if (newvalue != '') and (media_type == 'avatars') and (media.medium == 'video'):
+                        prepare_data['file'] = ('%s/%s' % (config.WEBCAM_SUBURL, newvalue))
+                        prepare_data['web_thumbnail'] = ('%s%s' % (config.WEBCAM_STILL_URL, newvalue))
+                    
+                else:
+                    log.msg("MediaDict: update_data(): unknown data key '%s'. Unable to update data." % datakey)
+                    return success            
+        
+        # prepare data step 2: remove items not relevant for media type
+        allowed_keys = ['name','tags']
+        if media_type == 'avatars':
+            allowed_keys.extend(['voice'])
+            if media.medium == 'stream':
+                allowed_keys.extend(['streamserver','streamname'])  # TODO add web_thumbnail
+            elif media.medium == 'video':
+                allowed_keys.extend(['file','web_thumbnail'])
+        elif media_type == 'audios':
+            allowed_keys.extend(['medium','web_thumbnail'])
+        
+        log.msg("MediaDict: update_data(): allowed_keys='%s'." % pprint.saferepr(allowed_keys))
+        
+        for datakey in prepare_data.keys():
+            if not datakey in allowed_keys:
+                prepare_data.pop(datakey)
+                log.msg("MediaDict: update_data(): data key %s removed because it is not allowed to be modified for this kind of media type (%s)." % (pprint.saferepr(datakey),media_type))
+
+
+        # prepare data step 3: check "illegal" keys (e.g. unmodifyable or nonempty attributes)
+        for datakey, newvalue in prepare_data.items():
+            
+            # check keys which should not be modified (e.g. stages) and always remove from prepare_data dict
+            if (datakey == 'stages'):
+                _removedvalue = prepare_data.pop(datakey)
+                log.msg("MediaDict: update_data(): prepare data: removed data key '%s' because it is not allowed in general to be modified by this method." % datakey)
+            
+            # check for empty values where nonempty values are expected
+            if((datakey == 'name') or
+               #(datakey == 'streamserver') or
+               #(datakey == 'streamname') or
+               (datakey == 'file')):
+                if (newvalue == ''):
+                    log.msg("MediaDict: update_data(): prepare data: expected data key '%s' to contain nonempty value." % datakey)
+                    return success
+            
+            # set default if no value is given
+            if(datakey == 'web_thumbnail'):
+                if (newvalue == ''):
+                    prepare_data[datakey] = config.MISSING_THUMB_URL
+
+            # check for duplicate values for name
+            # TODO try to fix by appending digits to the name?
+            # TODO use list comprehension to gather reserved name values?
+            if(datakey == 'name'):
+                log.msg("MediaDict: update_data(): prepare data: all_media_names=%s" % pprint.saferepr(all_media_names))
+                reserved_media_names_dict = all_media_names
+                reserved_media_names_dict.pop(media.file)
+                reserved_media_names = [x for x in reserved_media_names_dict.values()]
+                log.msg("MediaDict: update_data(): prepare data: reserved_media_names=%s" % pprint.saferepr(reserved_media_names))
+                if newvalue in reserved_media_names:
+                    log.msg("MediaDict: update_data(): prepare data: name '%s' already used for another media." % newvalue)
+                    return success
+            
+
+        log.msg("MediaDict: update_data(): prepare_data=%s" % pprint.saferepr(prepare_data))
+
+        # iterate over data dictionary and apply new values
+        modified_global = False
+        # update global config
+        for attrkey, newvalue in prepare_data.items():
+            oldvalue = getattr(media,attrkey)
+            if oldvalue != newvalue:
+                setattr(media,attrkey,newvalue)
+                modified_global = True
+                log.msg("MediaDict: update_data(): updated global attribute '%s'." % attrkey)
+            else:
+                log.msg("MediaDict: update_data(): attribute '%s' has not changed: '%s'='%s'." % (attrkey,oldvalue,newvalue))
+
+        if modified_global:
+            
+            # save changes to global config
+            self.save()
+       
+            # get assigned stages
+            thing_stage_tuple = self._get_stage_collections()
+            current_assigned_stages = [stage for things, stage in thing_stage_tuple if key in things.media]
+            log.msg("MediaDict: update_data(): current_assigned_stages=%s" % current_assigned_stages)
+            
+            # check attributes which may be existing on stages and should be changed too (e.g. name, voice)
+            if(len(current_assigned_stages)>0):
+                # iterate through stages
+                for assigned_stage in current_assigned_stages:
+                    log.msg("MediaDict: update_data(): checking things on assigned stage '%s'." % assigned_stage.ID)
+                    for thingcollection in (assigned_stage.avatars, assigned_stage.props, assigned_stage.backdrops, assigned_stage.audios):
+                        #log.msg("MediaDict: update_data(): collection=%s." %  pprint.saferepr(thingcollection))
+                        medialist = thingcollection.media
+                        for mediakey in medialist:
+                            #log.msg("MediaDict: update_data(): checking mediakey=%s." % pprint.saferepr(mediakey))
+                            if mediakey == key:
+                                #log.msg("MediaDict: update_data(): found mediakey=%s." % pprint.saferepr(mediakey))
+                                # newly add media to collection to overwrite old media
+                                thing = thingcollection.add_media(media)
+                                log.msg("MediaDict: update_data(): updated thing=%s." % pprint.saferepr(thing))
+                                assigned_stage.save()
+                                if(force_reload):
+                                    assigned_stage.soft_reset()
+        else:
+            log.msg("MediaDict: update_data(): nothing changed: no need to change attributes.")
+        
+        # check if changes were successfully applied to global config
+        success = True
+        for attribute, value in prepare_data.items():
+            if getattr(media,attribute) != value:
+                success = False
+                break
+            
+        # TODO check if changes were successfully applied to stage configs?
+        
+        return success
 
     """
 
@@ -340,6 +725,8 @@ class MediaDict(Xml2Dict):
             _update('name')
             _update('voice')
             
+            # TODO add stream parameters?
+            
             if 'audio_type' in form:
                 audiotype = form.get('audio_type')[0];
 
@@ -367,9 +754,13 @@ class MediaDict(Xml2Dict):
                             'prefix': prefix,
                             'row_class':v.medium,
                             'stages':'',
-                            'tags':v.tags # Vibhu and Heath (01/09/2011) - Added tags attribute to return associated tags for a media.
-                            })
-          for k, v in self.iteritems()]
+                            'tags':v.tags, # Vibhu and Heath (01/09/2011) - Added tags attribute to return associated tags for a media.
+                            
+                            # add stream parameters:
+                            'streamname':v.streamname,
+                            'streamserver':v.streamserver,
+                            
+                            }) for k, v in self.iteritems()]
         if things:
             things.sort()
             

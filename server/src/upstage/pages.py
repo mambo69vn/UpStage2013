@@ -95,17 +95,27 @@ Modified by: Craig Farrell  02/05/2013  - added new varible to EditStage page  f
                                         - added if statement to let superuser to edit locked stages.
 Modified by: Craig Farrell  05/05/2013  - added new redirect to the errorpage
                                         - added new redirect to the 'something went wrong' page
+Modified by: Lisa Helm 21/08/2013       - removed all code relating to old video avatar                                        
 """
 
 #standard lib
-import os, re, datetime
+import os, re, datetime, time, string
 from urllib import urlencode
 import tempfile # natasha
+
+# pretty print for debugging (see: http://docs.python.org/2/library/pprint.html)
+import pprint
+
+# json
+try:
+    import json
+except ImportError:
+    import simplejson as json 
 
 #upstage
 from upstage import config
 from upstage.misc import new_filename, no_cache, UpstageError  
-from upstage.util import save_tempfile, get_template, new_filename, validSizes, getFileSizes
+from upstage.util import save_tempfile, get_template, new_filename, validSizes, getFileSizes, createHTMLOptionTags, convertLibraryItemToImageFilePath, convertLibraryItemToImageName
 from upstage.voices import VOICES
 from upstage.globalmedia import MediaDict
 from upstage.player import PlayerDict
@@ -150,6 +160,9 @@ class Template(Resource):
     errorRedirect = ''
     
     def render_GET(self, request):
+        
+        log.msg("Template: render_GET()");
+        
         s = get_template(self.filename)
         #read in includes before expanding magic bits.
         for m in re.finditer('<!include ([\w\.-]+)>', s):
@@ -175,6 +188,9 @@ class Template(Resource):
         return str
 
     def render_POST(self, request):
+        
+        log.msg("Template: render_POST()");
+        
         s = get_template(self.filename)
         #read in includes before expanding magic bits.
         for m in re.finditer('<!include ([\w\.-]+)>', s):
@@ -294,7 +310,7 @@ class AdminBase(Template):
             else:
                 return '&nbsp;'
         except:
-               return '&nbsp;'
+            return '&nbsp;'
 
 
 
@@ -378,84 +394,84 @@ Added by: Daniel Han (29/06/2012)
 """
 class HomeEditPage(AdminBase):
 
-	filename="edit.xhtml"
-	postback = ''
-	def __init__(self, player, collection={}):
-		AdminBase.__init__(self, player, collection)
-		self.player = player
-		self.collection = collection
+    filename="edit.xhtml"
+    postback = ''
+    def __init__(self, player, collection={}):
+        AdminBase.__init__(self, player, collection)
+        self.player = player
+        self.collection = collection
     
-	def text_editable(self, request):
-		s = get_template('home_editable.inc')	
-		form = request.args
+    def text_editable(self, request):
+        s = get_template('home_editable.inc')	
+        form = request.args
 
-		if 'action' in form:
-			content = form.get('action',[''])[0]
+        if 'action' in form:
+            content = form.get('action',[''])[0]
 
-			if content == 'Default':
-				s = get_template('home_editable.default')
-		
-		return s 
+            if content == 'Default':
+                s = get_template('home_editable.default')
+
+        return s 
         
-	def render_GET(self, request):
-		return AdminBase.render_GET(self, request)
+    def render_GET(self, request):
+        return AdminBase.render_GET(self, request)
 
-	def render_POST(self, request):
-		"""Save changes and create new state"""
-		form = request.args
-		if 'action' in form:		
-			content = form["action"][0]
-			if content == 'Submit':
-				if 'editor' in form:
-					content = form["editor"][0]
-					f = open(os.path.join(config.TEMPLATE_DIR, 'home_editable.inc'), 'w')
-					f.write(content)
-					f.close()
-					self.postback = "Successfully Saved"
+    def render_POST(self, request):
+        """Save changes and create new state"""
+        form = request.args
+        if 'action' in form:		
+            content = form["action"][0]
+            if content == 'Submit':
+                if 'editor' in form:
+                    content = form["editor"][0]
+                    f = open(os.path.join(config.TEMPLATE_DIR, 'home_editable.inc'), 'w')
+                    f.write(content)
+                    f.close()
+                    self.postback = "Successfully Saved"
 
-		return AdminBase.render_POST(self, request)
+        return AdminBase.render_POST(self, request)
 
 """
 Added by: Daniel Han (29/06/2012) 
 """
 class WorkshopEditPage(AdminBase):
 
-	filename="edit.xhtml"
-	postback = ''
-	def __init__(self, player, collection={}):
-		AdminBase.__init__(self, player, collection)
-		self.player = player
-		self.collection = collection
+    filename="edit.xhtml"
+    postback = ''
+    def __init__(self, player, collection={}):
+        AdminBase.__init__(self, player, collection)
+        self.player = player
+        self.collection = collection
     
-	def text_editable(self, request):
-		s = get_template('workshop_editable.inc')	
-		form = request.args
+    def text_editable(self, request):
+        s = get_template('workshop_editable.inc')	
+        form = request.args
 
-		if 'action' in form:
-			content = form.get('action',[''])[0]
+        if 'action' in form:
+            content = form.get('action',[''])[0]
 
-			if content == 'Default':
-				s = get_template('workshop_editable.default')
-				print 'error'
-		
-		return s
+            if content == 'Default':
+                s = get_template('workshop_editable.default')
+                print 'error'
 
-	def render_GET(self, request):
-		return AdminBase.render_GET(self, request)
+        return s
 
-	def render_POST(self, request):
-		"""Save changes and create new state"""
-		form = request.args
-		if 'action' in form:		
-			content = form["action"][0]
-			if content == 'Submit':
-				if 'editor' in form:
-					content = form["editor"][0]
-					f = open(os.path.join(config.TEMPLATE_DIR, 'workshop_editable.inc'), 'w')
-					f.write(content)
-					f.close()
-					self.postback = "Successfully Saved"
-		return AdminBase.render_POST(self, request)
+    def render_GET(self, request):
+        return AdminBase.render_GET(self, request)
+
+    def render_POST(self, request):
+        """Save changes and create new state"""
+        form = request.args
+        if 'action' in form:		
+            content = form["action"][0]
+            if content == 'Submit':
+                if 'editor' in form:
+                    content = form["editor"][0]
+                    f = open(os.path.join(config.TEMPLATE_DIR, 'workshop_editable.inc'), 'w')
+                    f.write(content)
+                    f.close()
+                    self.postback = "Successfully Saved"
+        return AdminBase.render_POST(self, request)
 
 
 """
@@ -463,42 +479,42 @@ Added by: Daniel Han (11/09/2012)
 """
 class StagesEditPage(AdminBase):
 
-	filename="edit.xhtml"
-	postback = ''
-	def __init__(self, player, collection={}):
-		AdminBase.__init__(self, player, collection)
-		self.player = player
-		self.collection = collection
+    filename="edit.xhtml"
+    postback = ''
+    def __init__(self, player, collection={}):
+        AdminBase.__init__(self, player, collection)
+        self.player = player
+        self.collection = collection
     
-	def text_editable(self, request):
-		s = get_template('stages_editable.inc')	
-		form = request.args
+    def text_editable(self, request):
+        s = get_template('stages_editable.inc')	
+        form = request.args
 
-		if 'action' in form:
-			content = form.get('action',[''])[0]
+        if 'action' in form:
+            content = form.get('action',[''])[0]
 
-			if content == 'Default':
-				s = get_template('stages_editable.default')
-		
-		return s 
+            if content == 'Default':
+                s = get_template('stages_editable.default')
+
+        return s 
         
-	def render_GET(self, request):
-		return AdminBase.render_GET(self, request)
+    def render_GET(self, request):
+        return AdminBase.render_GET(self, request)
 
-	def render_POST(self, request):
-		"""Save changes and create new state"""
-		form = request.args
-		if 'action' in form:		
-			content = form["action"][0]
-			if content == 'Submit':
-				if 'editor' in form:
-					content = form["editor"][0]
-					f = open(os.path.join(config.TEMPLATE_DIR, 'stages_editable.inc'), 'w')
-					f.write(content)
-					f.close()
-					self.postback = "Successfully Saved"
+    def render_POST(self, request):
+        """Save changes and create new state"""
+        form = request.args
+        if 'action' in form:		
+            content = form["action"][0]
+            if content == 'Submit':
+                if 'editor' in form:
+                    content = form["editor"][0]
+                    f = open(os.path.join(config.TEMPLATE_DIR, 'stages_editable.inc'), 'w')
+                    f.write(content)
+                    f.close()
+                    self.postback = "Successfully Saved"
 
-		return AdminBase.render_POST(self, request)
+        return AdminBase.render_POST(self, request)
 
 
         
@@ -507,42 +523,42 @@ Added by: Daniel Han (11/09/2012)
 """
 class NonAdminEditPage(AdminBase):
 
-	filename="edit.xhtml"
-	postback = ''
-	def __init__(self, player, collection={}):
-		AdminBase.__init__(self, player, collection)
-		self.player = player
-		self.collection = collection
+    filename="edit.xhtml"
+    postback = ''
+    def __init__(self, player, collection={}):
+        AdminBase.__init__(self, player, collection)
+        self.player = player
+        self.collection = collection
     
-	def text_editable(self, request):
-		s = get_template('nonadmin_editable.inc')	
-		form = request.args
+    def text_editable(self, request):
+        s = get_template('nonadmin_editable.inc')	
+        form = request.args
 
-		if 'action' in form:
-			content = form.get('action',[''])[0]
+        if 'action' in form:
+            content = form.get('action',[''])[0]
 
-			if content == 'Default':
-				s = get_template('nonadmin_editable.default')
-		
-		return s 
+            if content == 'Default':
+                s = get_template('nonadmin_editable.default')
+
+        return s 
         
-	def render_GET(self, request):
-		return AdminBase.render_GET(self, request)
+    def render_GET(self, request):
+        return AdminBase.render_GET(self, request)
 
-	def render_POST(self, request):
-		"""Save changes and create new state"""
-		form = request.args
-		if 'action' in form:		
-			content = form["action"][0]
-			if content == 'Submit':
-				if 'editor' in form:
-					content = form["editor"][0]
-					f = open(os.path.join(config.TEMPLATE_DIR, 'nonadmin_editable.inc'), 'w')
-					f.write(content)
-					f.close()
-					self.postback = "Successfully Saved"
+    def render_POST(self, request):
+        """Save changes and create new state"""
+        form = request.args
+        if 'action' in form:		
+            content = form["action"][0]
+            if content == 'Submit':
+                if 'editor' in form:
+                    content = form["editor"][0]
+                    f = open(os.path.join(config.TEMPLATE_DIR, 'nonadmin_editable.inc'), 'w')
+                    f.write(content)
+                    f.close()
+                    self.postback = "Successfully Saved"
 
-		return AdminBase.render_POST(self, request)
+        return AdminBase.render_POST(self, request)
         
 class AdminWarning(AdminError):
     """A wrapper for errors (warnings)"""
@@ -636,27 +652,27 @@ Added by Daniel Han (03/07/2012)	- To set the session of player
 									- it checks both username:password combination to be more safe.
 """
 class SessionCheckPage(Resource):
-	def __init__(self, collection={}):
-		self.collection = collection
+    def __init__(self, collection={}):
+        self.collection = collection
 
-	def render_POST(self, request):
-		session = request.getSession()
-		userSession = websession.IUserSession(session)
-		username = '_NO_PLAYER_'
-		password = ''
+    def render_POST(self, request):
+        session = request.getSession()
+        userSession = websession.IUserSession(session)
+        username = '_NO_PLAYER_'
+        password = ''
 
-		if 'username' in request.args:
-			username = request.args['username'][0]
+        if 'username' in request.args:
+            username = request.args['username'][0]
 
-		if 'password' in request.args:
-			password = request.args['password'][0]		
+        if 'password' in request.args:
+            password = request.args['password'][0]		
 
-		player = self.collection.getPlayer(username)
-		if player.check_password(password):
-			userSession.value = player
-			return 'Success'
-		else:
-			return 'Failure'
+        player = self.collection.getPlayer(username)
+        if player.check_password(password):
+            userSession.value = player
+            return 'Success'
+        else:
+            return 'Failure'
  
 class SignUpPage(AdminBase):
     
@@ -830,9 +846,9 @@ class StageEditPage(Workshop):
         keys = self.collection.stages.getKeys()
         table = []
         if not self.stage:
-           table.extend('<option value="new_stage" selected="selected">New Stage</option>')
+            table.extend('<option value="new_stage" selected="selected">New Stage</option>')
         else:
-           table.extend('<option value="new_stage">New Stage</option>') 
+            table.extend('<option value="new_stage">New Stage</option>') 
            
         for k in keys:
             current_stage = self.collection.stages.getStage(k)
@@ -848,7 +864,7 @@ class StageEditPage(Workshop):
             table = []
             players = self.stage.get_al_two()
             if not players is None:
-               players.sort()
+                players.sort()
             for p in players:
                 table.extend('<option value="%s">%s</option>' %(p, p))
             return ''.join(table)
@@ -860,7 +876,7 @@ class StageEditPage(Workshop):
             table = []
             players = self.stage.get_al_three(self.collection.players)
             if not players is None:
-               players.sort()
+                players.sort()
             for p in players:
                 table.extend('<option value="%s">%s</option>' %(p, p))
             return ''.join(table)
@@ -872,7 +888,7 @@ class StageEditPage(Workshop):
             table = []
             players = self.stage.get_al_one()
             if not players is None:
-               players.sort()
+                players.sort()
             for p in players:
                 table.extend('<option value="%s">%s</option>' %(p, p))
             return ''.join(table)
@@ -1046,38 +1062,38 @@ class StageEditPage(Workshop):
         ###     - removed remove_al_three from being called. (al_three not used)
 	    ##one to two
         elif action=='one_to_two':
-             items = request.args.get('cantaccess',[''])
-             for i in range(0, len(items)):
-                 pname = items[i]
-                 if self.stagename and pname:
+            items = request.args.get('cantaccess',[''])
+            for i in range(0, len(items)):
+                pname = items[i]
+                if self.stagename and pname:
                     #self.stage.remove_al_three(pname)
                     self.stage.add_al_two(pname)
                     self.message+='Changed rights. '
 
 	
         elif action=='two_to_one':
-             items = request.args.get('canaccess',[''])
-             for i in range(0, len(items)):
-                 pname = items[i]
-                 if self.stagename and pname:
+            items = request.args.get('canaccess',[''])
+            for i in range(0, len(items)):
+                pname = items[i]
+                if self.stagename and pname:
                     self.stage.remove_al_two(pname)
                     self.stage.add_al_three(pname)
                     self.message+='Changed rights. '
 
         elif action=='two_to_three':
-             items = request.args.get('canaccess',[''])
-             for i in range(0, len(items)):
-                 pname = items[i]
-                 if self.stagename and pname:
+            items = request.args.get('canaccess',[''])
+            for i in range(0, len(items)):
+                pname = items[i]
+                if self.stagename and pname:
                     self.stage.remove_al_two(pname)
                     self.stage.add_al_one(pname)
                     self.message+='Changed rights. '
 
         elif action=='three_to_two':
-             items = request.args.get('stageaccess',[''])
-             for i in range(0, len(items)):
-                 pname = items[i]
-                 if self.stagename and pname:
+            items = request.args.get('stageaccess',[''])
+            for i in range(0, len(items)):
+                pname = items[i]
+                if self.stagename and pname:
                     self.stage.remove_al_one(pname)
                     self.stage.add_al_two(pname)
                     self.message+='Changed rights. '
@@ -1086,9 +1102,530 @@ class StageEditPage(Workshop):
         self.setupStageLock(request)#(02/05/2013) Craig
         return AdminBase.render(self, request)
 
+""" Rewrite of MediaEditPage using Ajax POST calls """
+class MediaEditPage(Workshop):
+
+    filename="mediaedit.xhtml"
+    
+    def __init__(self, player, collection):
+        AdminBase.__init__(self, player, collection)
+        self.player = player
+        self.collection = collection    # UpstageData
+        self.set_defaults()
+        
+        
+    def set_defaults(self):
+        
+        # --- external values (given) ---
+        
+        # update data
+        self.filter_user = ''
+        self.filter_stage = ''
+        self.filter_type = ''
+        self.filter_medium = ''
+        
+        # delete data / assign stages
+        self.select_key = ''
+        
+        # --- internal values (determined) ---
+        
+        # FIXME underscore internal variable names ("private" access)
+        
+        # filter update data
+        self.apply_filter = False
+        
+        # force flag: deleteIfInUse (delete media)
+        self.deleteIfInUse = False
+        
+        # force flag: forceReload (edit media)
+        self.force_reload = False
+        
+        # selected media (update, delete, assign stages)
+        self.selected_media = None
+        self.selected_media_type = None
+        self.selected_media_key = None
+        self.selected_collection = None
+        
+        # selected stages (assign stages)
+        self.selected_stages = []
+        
+        # data to update (tag media, edit media)
+        self.update_data = {}
+        
+        # meta response values
+        self.status = 500   # default error code, using HTTP error codes for status
+        self.error_msg = 'Unknown error'    # default message
+    
+    def text_user(self, request):
+        if (self.player):
+            return self.player.name
+    
+    def text_list_voices_as_html_option_tag(self,request):
+        voicelist = ['<option value=""> -- none -- </option>']
+        voices = VOICES.keys()
+        voices.sort()
+        for voice in voices:
+            voicelist.extend('<option value="%s">%s</option>' % (voice, voice))
+        return ''.join(voicelist)
+    
+   #Lisa Helm (30/8/13)- removed Video Avatar Code
+    
+    def text_list_stages_as_json(self, request):
+        keys = self.collection.stages.getKeys()
+        data_list = []
+        for key in keys:
+            data_list.append(key)
+        return json.dumps(data_list)
+        
+    def text_list_stages_as_html_option_tag(self, request):
+        keys = self.collection.stages.getKeys()
+        data_list = []
+        for key in keys:
+            data_list.append(key)
+        return createHTMLOptionTags(sorted(set(data_list)))
+    
+    def text_list_users_as_html_option_tag(self, request):
+        keys = self.collection.stages.getKeys()
+        data_list = []
+        for key in keys:
+            stage = self.collection.stages.get(key)
+            if (self.player.name is not None):
+                for user in stage.get_uploader_list():
+                    data_list.append(user)
+                   
+        return createHTMLOptionTags(sorted(set(data_list)))
+        
+    # we want to be able to respond to ajax calls on POST requests:        
+    def render_POST(self,request):
+        
+        args = request.args
+        log.msg("MediaEditPage: render_POST(): args=%s" % args)
+        
+        # handle ajax calls
+        if 'ajax' in args:
+            log.msg("MediaEditPage: render_POST(): routed as ajax call")
+            
+            # set the request content type
+            request.setHeader('Content-Type', 'application/json')
+            
+            # set jsonp callback if argument given
+            if 'callback' in args:
+                request.jsonpcallback = args['callback'][0]
+                log.msg("MediaEditPage: render_POST(): callback=%s" % request.jsonpcallback)
+            
+            # reset default values
+            self.set_defaults()
+            
+            # get POST variables
+            
+            # get filters
+            if 'filter_user' in args:
+                self.filter_user = args['filter_user'][0]
+            if 'filter_stage' in args:
+                self.filter_stage = args['filter_stage'][0]
+            if 'filter_type' in args:
+                self.filter_type = args['filter_type'][0]
+            if 'filter_medium' in args:
+                self.filter_medium = args['filter_medium'][0]
+            
+            # are filters set?
+            if ((self.filter_user == '') & (self.filter_type == '') & (self.filter_stage == '') & (self.filter_medium == '')):
+                self.apply_filter = False
+            else:
+                self.apply_filter = True
+            
+            # get selected media
+            if 'select_key' in args:
+                self.select_key = args['select_key'][0]
+            
+            # was an existing media selected?
+            if(self.select_key != ''):
+                
+                # collect data
+                media = self.collection.avatars.get_media_list()
+                media.extend(self.collection.props.get_media_list())
+                media.extend(self.collection.backdrops.get_media_list())
+                media.extend(self.collection.audios.get_media_list())
+                
+                log.msg("MediaEditPage: render_POST(): media collection: media=%s" % pprint.saferepr(media))
+                
+                # process all list elements
+                for media_item in media:
+                    log.msg("MediaEditPage: render_POST(): key=%s, media_item=%s" % (pprint.saferepr(media_item[0]),pprint.saferepr(media_item)))
+                    # check if key exists in media
+                    if self.select_key == media_item[0]:
+                        log.msg("MediaEditPage: render_POST(): select_key='%s' - found in global media collection" % self.select_key)
+                        
+                        # TODO check if media_item[1] exists ...
+                        
+                        # get the selected_media_key
+                        self.selected_media_key = media_item[1].get('media')
+                        break
+                
+                log.msg("MediaEditPage: render_POST(): selected_media_key=%s" % self.selected_media_key)            
+                
+                # determine which collection holds the selected media
+                if (self.collection.avatars.get(self.selected_media_key)):
+                    self.selected_media_type = 'avatars'
+                    self.selected_collection = self.collection.avatars
+                     
+                elif (self.collection.backdrops.get(self.selected_media_key)):
+                    self.selected_media_type = 'backdrops'
+                    self.selected_collection = self.collection.backdrops
+                
+                elif (self.collection.props.get(self.selected_media_key)):
+                    self.selected_media_type = 'props'
+                    self.selected_collection = self.collection.props
+                
+                elif (self.collection.audios.get(self.selected_media_key)):
+                    self.selected_media_type = 'audios'
+                    self.selected_collection = self.collection.audios
+                
+                else:
+                    # TODO throw error
+                    log.msg("MediaEditPage: render_POST(): selected media key '%s' not found! unable to determine selected media type!" % self.selected_media_key)
+                    
+                log.msg("MediaEditPage: render_POST(): selected_media_type=%s, selected_collection=%s" % (self.selected_media_type,pprint.saferepr(self.selected_collection)))
+                
+                self.selected_media = self.selected_collection.get(self.selected_media_key)
+                
+                log.msg("MediaEditPage: render_POST(): selected_media=%s" % pprint.saferepr(self.selected_media))
+            
+            
+            # any stages selected?
+            if 'select_stages[]' in args:
+                self.selected_stages = args['select_stages[]']    
+            log.msg("MediaEditPage: render_POST(): selected_stages=%s" % (pprint.saferepr(self.selected_stages)))
+            
+            # TODO rename flag "deleteIfInUse" to "force_stage_reload" for consistency 
+            # "deleteIfInUse" force flag?
+            if 'deleteIfInUse' in args:
+                #self.deleteIfInUse = False    # already reset by setting defaults ...
+                # FIXME safer type casting to bool please
+                argDeleteIfInUse = args['deleteIfInUse']
+                if (argDeleteIfInUse == ['true']):
+                    self.deleteIfInUse = True
+            log.msg("MediaEditPage: render_POST(): deleteIfInUse=%s" % (pprint.saferepr(self.deleteIfInUse)))
+            
+            if 'force_reload' in args:
+                forceReload = args['force_reload']
+                if(forceReload == ['true']):
+                    self.force_reload = True
+            log.msg("MediaEditPage: render_POST(): force_reload=%s" % (pprint.saferepr(self.force_reload)))
+            
+            # parse args for update_data
+            for arg in args:
+                if 'update_data' in arg:
+                    log.msg("MediaEditPage: render_POST(): found update data: arg=%s" % (arg))
+                    entry = {}
+                    # extract key from arg
+                    match = re.search(r"\[(\w+)\]", arg)
+                    key = match.group(1)
+                    if(key != ""):
+                        value = args[arg][0]
+                        entry[key] = value
+                        log.msg("MediaEditPage: render_POST(): add update data: entry=%s" % (pprint.saferepr(entry)))
+                        self.update_data.update(entry)
+            log.msg("MediaEditPage: render_POST(): update_data=%s" % (pprint.saferepr(self.update_data)))
+            
+            # get type of call
+            ajax_call = args['ajax'][0]
+            
+            # prepare response data
+            data = {}
+            
+            log.msg("MediaEditPage: render_POST(): ajax call for '%s'!" % ajax_call)
+            
+            # assume default is successful status (200)
+            self.status = 200
+            
+            if ajax_call == 'get_data':
+                data = self._get_data()
+            
+            elif ajax_call == 'delete_data':
+                # TODO flag 'delete_even_if_in_use': see globalmedia.py:update_from_form how it may be used ...
+                data = self._delete_data(self.selected_media_key, self.selected_collection, self.deleteIfInUse)
+                
+            elif ajax_call == 'assign_to_stage':
+                # TODO add flag 'force_stage_reload' to reload newly assigned and unassigned stages (just concerning changes to assignments!)
+                data = self._assign_to_stage(self.selected_media_key, self.selected_collection, self.selected_stages)
+                
+            elif ajax_call == 'update_data':
+                data = self._update_data(self.selected_media_key, self.selected_collection, self.update_data, self.force_reload, self.selected_media_type)
+            
+            else:
+                self.status = 500
+                log.msg("MediaEditPage: render_POST(): ajax call for '%s' not understood." % ajax_call)
+            
+            # return the data
+            if self.status == 200:  # success (200)
+                return self.__format_ajax_response(request, self.status, data)
+            else:
+                return self.__format_ajax_response(request, self.status, self.error_msg)
+           
+            # tell the client we're not done yet
+            return server.NOT_DONE_YET
+        
+        # handle form POST
+        else:
+            log.msg("MediaEditPage: render_POST(): form post not supported!")
+            return server.NOT_DONE_YET
+
+    def __format_ajax_response(self, request, status, data):
+        """ Format responses """
+        
+        # Set the response in a json format
+        response = json.dumps({'status':status,'timestamp': int(time.time()), 'data':data})
+       
+        log.msg("MediaEditPage: __format_ajax_response: response=%s" % response)
+       
+        # Format with callback format if this was a jsonp request
+        if hasattr(request, 'jsonpcallback'):
+            return request.jsonpcallback+'('+response+')'
+        else:
+            return response
+    
+    def _get_data(self):
+        """ collect data while applying filters """ 
+        
+        result = []
+        
+        # collect data
+        media = self.collection.avatars.get_media_list()
+        media.extend(self.collection.props.get_media_list())
+        media.extend(self.collection.backdrops.get_media_list())
+        media.extend(self.collection.audios.get_media_list())
+        
+        for key, value in media:
+            
+            log.msg("MediaEditPage: _get_data(): key=%s, value=%s" % (key,value))
+            
+            # prepare data (like resolve thumbnail and file paths, etc.)
+            
+            typename=value['typename']
+            file_path = value['media']
+            if config.LIBRARY_PREFIX in file_path:
+                file_path = convertLibraryItemToImageFilePath(file_path)
+            elif (len(file_path) > 0):
+                if typename == 'audio':
+                    file_path = config.AUDIO_URL+file_path
+                else:
+                    file_path = config.MEDIA_URL+file_path
+            
+            thumbnail_icon = ''
+            thumbnail = value['thumb']
+            if config.LIBRARY_PREFIX in thumbnail:
+                thumbnail_icon = convertLibraryItemToImageName(thumbnail)
+                thumbnail = convertLibraryItemToImageFilePath(thumbnail)
+            elif thumbnail == '':
+                thumbnail = file_path
+            
+            # hardcode thumbnail_icon for audio (music, sfx)
+            if thumbnail == config.MUSIC_ICON_IMAGE_URL:
+                thumbnail_icon = config.MUSIC_ICON
+            elif thumbnail == config.SFX_ICON_IMAGE_URL:
+                thumbnail_icon = config.SFX_ICON
+            # hardcode missing image
+            elif thumbnail == config.MISSING_THUMB_URL:
+                thumbnail_icon = config.MISSING_THUMB_ICON
+            
+            # determine file size (in bytes)
+            size = 0    # default
+            relative_file_path = self.collection.avatars.path(value['media'])   # TODO better use utility function?
+            log.msg('MediaEditPage: relative_file_path=%s' % relative_file_path)
+            if(relative_file_path != ""):
+                size = os.path.getsize(relative_file_path)
+                
+            # determine a safe save_filename for downloading the media as file
+            save_filename = value['media']
+            if config.LIBRARY_PREFIX in save_filename:
+                save_filename = ''
+            else:
+                # get file extension
+                _fileName, fileExtension = os.path.splitext(save_filename)
+                # make a safe file name
+                safechars = '_-()' + string.digits + string.ascii_letters
+                allchars = string.maketrans('', '')
+                deletions = ''.join(set(allchars) - set(safechars))
+                filename = value['name']
+                safe_filename = string.translate(filename, allchars, deletions)
+                if safe_filename == '':
+                    safe_filename = 'media'
+                # make save filename by adding the extension to the safe filename
+                save_filename = '%s%s' % (safe_filename, fileExtension)
+            
+            # create dataset as dictionary
+            
+            dataset = dict(key=key,
+                           tags=value['tags'],
+                           user=value['uploader'],
+                           thumbnail_original=value['thumb'],
+                           thumbnail=thumbnail,
+                           thumbnail_icon=thumbnail_icon,
+                           stages=value['stages'],
+                           file_original=value['media'],
+                           file=file_path,
+                           save_filename=save_filename,
+                           size=size,
+                           name=value['name'],
+                           date=value['dateTime'],
+                           type=typename,
+                           voice=value['voice'],
+                           medium=value['type'],
+                           streamserver=value['streamserver'],
+                           streamname=value['streamname'],
+                           )
+            
+            # apply filtering
+            add_dataset = False
+            if self.apply_filter:
+                
+                log.msg("MediaEditPage: _get_data(): apply filtering ...");
+                
+                match_user = False
+                match_stage = False
+                match_type = False
+                match_medium = False
+                
+                # check if user matches
+                if self.filter_user != '':
+                    if dataset['user'] == self.filter_user:
+                        match_user = True
+                else:
+                    match_user = True
+                
+                log.msg("MediaEditPage: _get_data(): filter_user matched: %s" % match_user);
+                
+                # check if type matches    
+                if self.filter_type != '':
+                    if dataset['type'] == self.filter_type:
+                        match_type = True
+                else:
+                    match_type = True
+                
+                log.msg("MediaEditPage: _get_data(): filter_type matched: %s" % match_type);
+                    
+                # check if stage matches
+                if self.filter_stage != '':
+                    
+                    # split stages string into list
+                    stages = dataset['stages'].split(',')
+                    # remove empty stage if any
+                    try:
+                        stages.remove('')
+                    except ValueError:
+                        pass
+                    
+                    # match special case: unassigned stage:
+                    if self.filter_stage == '^':    # dummy char for 'unassigned stages'
+                        if len(stages) == 0:
+                            match_stage = True 
+                    # stages exist, so media has stages assigned
+                    else:
+                        # is the stage in the list?
+                        log.msg("MediaEditPage: _get_data(): looking for stage '%s', stages found: %s" % (self.filter_stage, stages))
+                        
+                        # we want exact string matches so using regex
+                        for stage in stages:
+                            matching = re.findall('\\b'+self.filter_stage+'\\b', stage)
+                            if matching:
+                                log.msg("MediaEditPage: _get_data(): matched stage %s" % stage)
+                                match_stage = True
+                else:
+                    match_stage = True
+                    
+                log.msg("MediaEditPage: _get_data(): filter_stage matched: %s" % match_stage);
+                    
+                # check if medium matches
+                if self.filter_medium != '':
+                    if dataset['medium'] == self.filter_medium:
+                        match_medium = True
+                else:
+                    match_medium = True
+                    
+                log.msg("MediaEditPage: _get_data(): filter_medium matched: %s" % match_medium);
+                    
+                # add record if all matches
+                add_dataset = match_user & match_type & match_stage & match_medium
+                
+            else:
+                add_dataset = True
+                
+            if add_dataset:
+                log.msg("MediaEditPage: _get_data(): adding dataset=%s" % dataset);
+                result.append(dataset)
+            else:
+                log.msg("MediaEditPage: _get_data(): skipping dataset=%s" % dataset);
+        
+        log.msg("MediaEditPage: _get_data(): result=%s" % result);
+        return result
+   
+#    def _get_detail(self):
+#        
+#        # TODO get detail of given media
+#        
+#        pass
+    
+    def _delete_data(self,selected_media_key=None, selected_collection=None, force_delete=False):
+        log.msg("MediaEditPage: _delete_data: selected_media_key=%s" % selected_media_key)
+        log.msg("MediaEditPage: _delete_data: selected_collection=%s" % pprint.saferepr(selected_collection))
+        log.msg("MediaEditPage: _delete_data: force_delete=%s" % force_delete)
+        log.msg("MediaEditPage: _delete_data: player=%s" % self.player)
+        
+        success = selected_collection.delete(selected_media_key,self.player,force_delete)
+        
+        if not success:
+            self.status = 500
+            log.msg("MediaEditPage: _delete_data: no success! deletion failed.")
+        else:
+            log.msg("MediaEditPage: _delete_data: successfully deleted.")
+        
+    def _assign_to_stage(self,selected_media_key=None,selected_collection=None,selected_stages=None):
+        log.msg("MediaEditPage: _assign_to_stage: selected_media_key=%s" % selected_media_key)
+        log.msg("MediaEditPage: _assign_to_stage: selected_collection=%s" % pprint.saferepr(selected_collection))
+        log.msg("MediaEditPage: _assign_to_stage: selected_stages=%s" % pprint.saferepr(selected_stages))
+        
+        success = selected_collection.assign_stages(selected_media_key,self.player,selected_stages)
+        
+        if not success:
+            self.status = 500
+            log.msg("MediaEditPage: _assign_to_stage: no success! assigning failed.")
+        else:
+            log.msg("MediaEditPage: _assign_to_stage: successfully assigned.")
+
+
+    def _update_data(self,selected_media_key=None,selected_collection=None,update_data=None,force_reload=False,media_type=None):
+        log.msg("MediaEditPage: _update_data: selected_media_key=%s" % selected_media_key)
+        log.msg("MediaEditPage: _update_data: selected_collection=%s" % pprint.saferepr(selected_collection))
+        log.msg("MediaEditPage: _update_data: update_data=%s" % pprint.saferepr(update_data))
+        log.msg("MediaEditPage: _update_data: force_reload=%s" % force_reload)
+        log.msg("MediaEditPage: _update_data: media_type=%s" % media_type)
+        
+        # workaround for #105: get names for all media
+        media = self.collection.avatars.get_media_list()
+        media.extend(self.collection.props.get_media_list())
+        media.extend(self.collection.backdrops.get_media_list())
+        media.extend(self.collection.audios.get_media_list())
+        all_media_names = dict()
+        for _key, value in media:
+            mediakey = value['media']
+            name = value['name']
+            all_media_names[mediakey] = name
+                
+        log.msg("MediaEditPage: _update_data: collected all_media_names=%s" % pprint.saferepr(all_media_names))
+        
+        success = selected_collection.update_data(selected_media_key,self.player,update_data,force_reload,media_type,all_media_names)
+        
+        if not success:
+            self.status = 500
+            log.msg("MediaEditPage: _update_data: no success! update failed.")
+        else:
+            log.msg("MediaEditPage: _update_data: successfully updated.")
+        
+    
 """ Shaun Narayan (02/16/10) - Handles medrequest.argsia editing.
     Should probably move media list HTML into a template."""
-class MediaEditPage(Workshop):
+"""class MediaEditPage(Workshop):
     
     filename="mediaedit.xhtml"
     media = None
@@ -1119,16 +1656,21 @@ class MediaEditPage(Workshop):
         msg = ''
         tag = ''
         for k,v in media:
-            if(v['thumb'] == '/missing.png'):
+            
+            log.msg("MediaEditPage: text_list_media(): key=%s, value=%s" % (_k,v))
+            
+            if(v['thumb'] == config.MISSING_THUMB_URL):
                 tag = '<object width="70" height="80" scale="showAll" classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://fpdownload.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=8,0,0,0" ><param name="allowScriptAccess" value="sameDomain"/><param name="movie" value="/media/%s?playSound=var_stop"/><param name="quality" value="high"/><param name="bgcolor" value="#ffffff"/><embed src="/media/%s?playSound=var_stop" width="70" height="80" scale="showAll" type="application/x-shockwave-flash"/></object>' %(v['media'], v['media'])
             else:   
                 tag = '<img src="%s" alt="" width="70" height="80"/>' %(v['thumb'])
                 #Vibhu Patel (18/08/2011) Added links to media
                 #Vibhu Patel (31/08/2011) Added one more parameter to the getmedia function call that tells wabout the type of audio (music/sfx) and blank in other cases
                 #Vibhu and Heath (01/09/2011) Added tags to the media list, that will be used during the search.
-            add = '<table id="%s_%s_%s_%s"><tr><td width="20px"></td><td><a href="javascript:getMedia(\'%s\',\'%s\',\'%s\')">' %(v['media'], v['typename'], v['uploader'], v['stages'], v['media'], v['typename'], v['type'])+tag+'</a></td><td width="20px"></td></tr><tr><td width="20px"></td><td class="disableLink"><a href="javascript:getMedia(\'%s\',\'%s\',\'%s\')"><b>Name:&nbsp;</b>%s</a></td><td width="20px"></td></tr><tr><td width="20px"></td><td class="disableLink"><a href="javascript:getMedia(\'%s\',\'%s\',\'%s\')"><b>Uploader:&nbsp;</b>%s</a></td><td width="20px"></td></tr></tr><tr><td width="20px"></td><td class="disableLink"><a href="javascript:getMedia(\'%s\',\'%s\',\'%s\')"><b>Type:&nbsp;</b>%s</a></td><td width="20px"><input name="hidden%s" type="hidden" value="%s" /></td></tr></table>' % (v['media'], v['typename'], v['type'], v['name'], v['media'], v['typename'], v['type'], v['uploader'], v['media'], v['typename'], v['type'], v['typename'], v['media'], v['tags'])
+            add = '<table id="%s_%s_%s_%s"><tr><td width="20px"></td><td><a href="javascript:getMedia(\'%s\',\'%s\',\'%s\')">' %(v['media'], v['typename'], v['uploader'], v['stages'], v['media'], v['typename'], v['type'])+tag+'</a></td><td width="20px"></td></tr><tr><td width="20px"></td><td class="disableLink"><a href="javascript:getMedia(\'%s\',\'%s\',\'%s\')"><b>Name:&nbsp;</b>%s</a></td><td width="20px"></td></tr><tr><td width="20px"></td><td class="disableLink"><a href="javascript:getMedia(\'%s\',\'%s\',\'%s\')"><b>Uploader:&nbsp;</b>%s</a></td><td width="20px"></td></tr><tr><td width="20px"></td><td class="disableLink"><a href="javascript:getMedia(\'%s\',\'%s\',\'%s\')"><b>Type:&nbsp;</b>%s</a></td><td width="20px"><input name="hidden%s" type="hidden" value="%s" /></td></tr></table>' % (v['media'], v['typename'], v['type'], v['name'], v['media'], v['typename'], v['type'], v['uploader'], v['media'], v['typename'], v['type'], v['typename'], v['media'], v['tags'])
             msg += add
             num += 1
+        
+        log.msg("MediaEditPage: text_list_media(): msg=%s" % msg);
         return msg
     
     def text_list_stages(self, request):
@@ -1153,7 +1695,8 @@ class MediaEditPage(Workshop):
         return ''.join(table)
     
     def typelist(self):
-        """radio buttons with the audio type options"""
+        radio buttons with the audio type options
+        
         out = []
         for x in 'music', 'sfx':
             out.append('<label>')
@@ -1165,24 +1708,24 @@ class MediaEditPage(Workshop):
         return ''.join(out)
     
     def voicelist(self):
-        """dropdown list of available voices"""
+        dropdown list of available voices
         out = []
         vk = VOICES.keys()
         vk.sort()
         for x in vk:
             if x == self.selectedMedia.voice:
-                out.append('<option selected="selected">%s</option>' % x)
+                out.append('<option value="%s" selected="selected">%s</option>' % (x, x))
             else:
-                out.append('<option>%s</option>' % x)
+                out.append('<option value="%s">%s</option>' % (x, x))
         return ''.join(out)
     
-    """
+    
 
     Heath Behrens 12/08/2011
     Function added to check if a collection of things contains
     a given thing name.
 
-    """
+    
     def contains_media(self,collection,name):
         #loop over the collections of things values
         for thing in collection.things.values():
@@ -1190,7 +1733,7 @@ class MediaEditPage(Workshop):
                 return True
         return False
     
-    """
+    
     
     Modified By Heath Behrens 12/08/2011
         -Rewrote the function as it was not returning unassigned stages, instead all stages where returned as
@@ -1199,7 +1742,7 @@ class MediaEditPage(Workshop):
          determine whether the media is on the current stage or not.                                
     Modified by Vibhu, Nessa, Craig 24/08/2011 
         - Added code to align elements correctly in mediaedit.xhtml      
-    """
+    
     def get_stage_info(self, meditype, medianame):
         selectList_html = '' #Natasha Pullan
         selectList_htmlA = ''
@@ -1280,13 +1823,13 @@ class MediaEditPage(Workshop):
         selectList_html = selectList_htmlA + selectList_htmlB
         return selectList_html
     
-    """
+    
         Added by Heath / Vibhu 24/08/2011 - Function called to add tags to the mediaedit page given a request.
                                             Extracts the tags for a media file from self.collection of _MediaFile
         Modified by: Heath / Vibhu / Nessa 26/08/2011 - Added minus sympol to remove tags from the page along with sorting the tags 
                                                         alphabetically.  
         Modified by: Vibhu / Heath 31/08/2011 - Fixed html as it was breaking tagging on main server.                                  
-    """
+    
     def text_list_tags(self,request):
         self.tags = ''
         tag_info = ''
@@ -1313,16 +1856,16 @@ class MediaEditPage(Workshop):
                 for t in self.tags:
                     t = t.strip('') # strip whitespace
                     if len(t) > 0:
-                        tag_info += '<a id="%s" href="javascript:removeTag(%s)" title="%s" class="disableLink"><img alt="" src="/style/remove_symbol.png" width="10px" height="10px" style="border:0px solid #000000;">%s</a>&nbsp;' % (count, count, t, t)
+                        tag_info += '<a id="%s" href="javascript:removeTag(%s)" title="%s" class="disableLink"><img alt="" src="/style/image/remove_symbol.png" width="10px" height="10px" style="border:0px solid #000000;">%s</a>&nbsp;' % (count, count, t, t)
                         count += 1
             tag_info += '</div>'
             
         return tag_info
      
-    """
+    
         Modified by: Vibhu, Nessa, Craig 24/08/2011 - Added to Displays tags within mediaedit.xhtml
                    : Heath / Corey / Karena 26/08/2011 - Added code to display selectedMedia names on the webpage.
-    """       
+           
     def text_editable_info(self, request):        
         html_editable_info = ''
         selectList_html = '' #Natasha Pullan
@@ -1410,10 +1953,10 @@ class MediaEditPage(Workshop):
                 #Vibhu 31/08/2011 - check what type of audio is it and assign appropiate thumbnail.
                 self.audio_type = request.args.get('audio_type',[''])[0]
                 if self.audio_type == 'music':
-                    self.url = '/media/thumb/music.jpg'
+                    self.url = config.MUSIC_ICON_IMAGE_URL
                     self.mediaDisplay = 'none'
                 elif self.audio_type == 'sfx':
-                    self.url = '/media/thumb/sfx.jpg'
+                    self.url = config.SFX_ICON_IMAGE_URL
                     self.mediaDisplay = 'none'
                 self.audio_type = ''
             log.msg("URL = %s" % self.url)
@@ -1437,7 +1980,7 @@ class MediaEditPage(Workshop):
                 self.medianame = ''
                 self.mediatype = ''
                 self.postback = "Media Deleted"
-        return AdminBase.render(self, request)
+        return AdminBase.render(self, request)"""
     
 class MediaUploadPage(Workshop):
     
@@ -1453,7 +1996,7 @@ class MediaUploadPage(Workshop):
         table = [] 
         if keys:
             for k in keys:
-                stage = self.collection.stages.get(k)
+                stage = self.collection.stages.get(k)   # FIXME this is unused?
                 table.extend('<option value="%s">%s</option>' % (k, k))
                 #return ''.join(table)
         else:
@@ -1476,26 +2019,14 @@ class MediaUploadPage(Workshop):
     
     def text_voice_list(self, request):
         """dropdown list of available voices"""
-        table = []
+        table = ['<option value=""> -- none -- </option>']
         vk = VOICES.keys()
         vk.sort()
         for v in vk:
             table.extend('<option value="%s">%s</option>' % (v, v))
         return ''.join(table)
     
-    def text_videoList(self, request):
-        if os.path.exists(config.WEBCAM_DIR):
-            files = os.listdir(config.WEBCAM_DIR)
-        else:
-            files = []
-        if files:
-            out = ['<option value=""> -- Select -- </option>']
-            for f in files:
-                out.append('<option>%s</option>' %f)                
-        else:
-            out = ['<option value=""> [none available] </option>']            
-
-        return '\n'.join(out)
+    #Lisa 21/08/2013 - removed video avatar code
         
     def render(self, request):
         
@@ -1529,8 +2060,7 @@ class MediaUploadPage(Workshop):
                         self.media = self.collection.backdrops.get(medianame)
                     elif type == 'audio':
                         self.media = self.collection.audios.get(medianame)
-                    elif type == 'video':
-                        self.media = self.collection.avatars.get(medianame)
+                   #Lisa 21/08/2013 - removed video avatar code
                     get_response(self.media, self.type)    
             except UpstageError, e:
                 log.msg(e)
@@ -1646,49 +2176,49 @@ class EditPlayer(AdminBase):
 
         # Check if argument 'page' is valid. otherwise current page = 0
         try:
-             current_page = int(request.args['page'][0])
-             if current_page is None:
+            current_page = int(request.args['page'][0])
+            if current_page is None:
                 current_page = 0
         except:
-             current_page = 0
+            current_page = 0
 
         # Check if there is a search text.
         try:
-             search = request.args['search'][0]
-             if search is None:
+            search = request.args['search'][0]
+            if search is None:
                 search = ''
         except:
-             search = ''
+            search = ''
         
         playerlist = self.collection.html_list(search)
 
         # Total Number of pages
         num_pages = len(playerlist) / user_per_page
         if len(playerlist) % user_per_page != 0:
-           num_pages += 1
+            num_pages += 1
 
 
         table = []
         for num in range(user_per_page * current_page, len(playerlist)):
             p = playerlist[num][1]
             if current_user == user_per_page:
-               break
+                break
             else:
-                 rightslist = [ x for x in ('act', 'admin', 'su', 'unlimited') if p[x]]
-                 userdiv = "<div class='user' id='user_%s' onmouseover='this.className=\"user_over\"' onmouseout='this.className=\"user\"' onclick='playerSelect(\"%s\")' selected=''>" %(p['name'],p['name'])
-                 userdiv += "<table class='user_table'> <tr> <th class='row_header'> Name </th> <td> %s (%s) </td> </tr> " %(p['name'], p['email'])
-                 userdiv += "<tr> <th class='row_header'> Register Date </th> <td> %s </td> </tr> " %(p['reg_date']) 
-                 userdiv += "<tr> <th class='row_header'> Last Login Date </th> <td> %s </td> </tr> " %(p['last_login'])
-                 userdiv += "<tr> <th class='row_header'> User Rights </th> <td> %s </td> </tr> " %(rightslist)
-                 userdiv += "</table> </div>"
-                 table.extend(userdiv)
-                 current_user += 1
+                rightslist = [ x for x in ('act', 'admin', 'su', 'unlimited') if p[x]]
+                userdiv = "<div class='user' id='user_%s' onmouseover='this.className=\"user_over\"' onmouseout='this.className=\"user\"' onclick='playerSelect(\"%s\")' selected=''>" %(p['name'],p['name'])
+                userdiv += "<table class='user_table'> <tr> <th class='row_header'> Name </th> <td> %s (%s) </td> </tr> " %(p['name'], p['email'])
+                userdiv += "<tr> <th class='row_header'> Register Date </th> <td> %s </td> </tr> " %(p['reg_date']) 
+                userdiv += "<tr> <th class='row_header'> Last Login Date </th> <td> %s </td> </tr> " %(p['last_login'])
+                userdiv += "<tr> <th class='row_header'> User Rights </th> <td> %s </td> </tr> " %(rightslist)
+                userdiv += "</table> </div>"
+                table.extend(userdiv)
+                current_user += 1
 
         # Show Page links
         table.extend('<div id="pageLink">')
         for i in range(0, num_pages):
-           strLink = ' <a href="?page=%s&search=%s">%s</a> &nbsp; ' %(i, search , i + 1)
-           table.extend(strLink)
+            strLink = ' <a href="?page=%s&search=%s">%s</a> &nbsp; ' %(i, search , i + 1)
+            table.extend(strLink)
         table.extend('</div>')
         return ''.join(table)
 
@@ -1696,11 +2226,11 @@ class EditPlayer(AdminBase):
     # Added by Daniel (03-07-2012)
     def text_search_string(self, request):
         try:
-             search = request.args['search'][0]
-             if search is None:
+            search = request.args['search'][0]
+            if search is None:
                 search = ''
         except:
-             search = ''
+            search = ''
         
         return search
 
@@ -1716,10 +2246,8 @@ class NewThing(AdminBase):
     filename = "newthing.xhtml"
 
     def text_videoList(self, request):
-        if os.path.exists(config.WEBCAM_DIR):
-            files = os.listdir(config.WEBCAM_DIR)
-        else:
-            files = []
+        #Lisa 21/08/2013 - removed video avatar code
+        files = []
         if files:
             out = ['<option value=""> -- Select -- </option>']
             for f in files:
@@ -1830,10 +2358,7 @@ class ThingsList(AdminBase):
         
         if name == '':
             return self
-        if name == config.WEBCAM_SUBURL:
-            #videos are called /video/whatever.jpg
-            #they need to be fetched in two steps
-            return VideoSublist(self)
+        #Lisa 21/08/2013 - removed video avatar code
         if name == 'player':
             return EditPassword(self.player, self.collection)
 
@@ -1848,27 +2373,7 @@ class ThingsList(AdminBase):
         else:
             return AdminError('Such a thing (%s) does not exist' % name)
 
-class VideoSublist(Resource):
-    
-    def __init__(self, parent, path=config.WEBCAM_SUBURL):
-        self.parent = parent
-        self.path = path + '/'
-        
-    def getChildWithDefault(self, name, request):
-        """look for child in the parents collection,
-        (see ThingsList above)"""
-        p = self.parent
-        if name == '':
-            return p
-        f = p.collection.get(self.path + name)
-        if f and p.childClass is not None:
-            x = p.childClass(p.player, p.collection, f)
-            if x.allows_player(p.player):
-                return x
-            else:
-                return AdminError("You can't do that")
-        else:
-            return AdminError('Such a thing (%s%s) does not exist' % (self.path, name))
+#Lisa 21/08/2013 - removed video avatar code
 
 
 class StagePage(Resource):
@@ -2020,9 +2525,9 @@ class AudioThing(Template):
         # PQ & EB Added 13.10.07
         # Chooses a thumbnail image depending on type (adds to audios.xml file)
         if type == 'sfx':
-             thumbnail = config.SFX_ICON_IMAGE_URL
+            thumbnail = config.SFX_ICON_IMAGE_URL
         else:
-             thumbnail = config.MUSIC_ICON_IMAGE_URL
+            thumbnail = config.MUSIC_ICON_IMAGE_URL
 
         media_dict = self.mediatypes[mediatype]
         log.msg('about to add audio')
@@ -2075,44 +2580,4 @@ class AudioThing(Template):
     def getChild(self, path, request):
         return self
 
-class VideoThing(Template):
-    """Page that adds videos"""
-    filename = "video.xhtml"
-    def __init__(self, mediatypes, player):
-        self.mediatypes = mediatypes
-        self.player = player
-
-    def render(self, request):
-        #XXX not checking rights.
-        args = request.args
-        # Natasha - Obtain assigned stages list
-        self.assignedstages = request.args.get('assigned')
-        name = args.pop('name',[''])[0]
-        video = args.pop('video',[''])[0]
-        voice = args.pop('voice',[''])[0]
-        mediatype = args.pop('type',['avatar'])[0]
-        self.message ='video %s registered as a %s, called %s. ' % (video, mediatype, name)
-        
-        media_dict = self.mediatypes[mediatype]
-        log.msg('about to add video')
-        now = datetime.datetime.now() # AC () - Unformated datetime value
-        media_dict.add(file='%s/%s' % (config.WEBCAM_SUBURL, video), #XXX dodgy? (windows safe?)
-                       name=name,
-                       voice=voice,
-                       thumbnail= config.WEBCAM_STILL_URL + video,
-                       medium="video",
-                       uploader=self.player.name,
-                       dateTime=(now.strftime("%d/%m/%y @ %I:%M %p")))
-       
-        # Natasha - Assign video to stages
-        if self.assignedstages is not None:
-            log.msg('Video: Assigned stages is not none')
-            for x in self.assignedstages:
-                log.msg("Audio file with stage: %s" % x)
-                self.media_dict.set_media_stage(x, mp3name)
-
-        return Template.render(self, request)
-    
-    def getChild(self, path, request):
-        return self
-    
+#Lisa 21/08/2013 - removed video avatar code

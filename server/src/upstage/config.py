@@ -21,6 +21,8 @@ Modified Again by: Heath Behrens, Henry Goh and Vibhu Patel (2011)
 Changelog:
 	Added Voices on line 168 - 219. Called by speaker.py.
 
+  Modified by: Lisa Helm 21/08/2013       - removed all code relating to old video avatar    
+
 """
 
 """global configuration variables go here"""
@@ -31,8 +33,8 @@ Changelog:
 
 from os.path import join as _join
 
-#debug volume
-VERBOSE = 0
+#VERBOSE = True
+VERBOSE = False
 
 POLICY_FILE = "<?xml version=\"1.0\"?> \
                <cross-domain-policy> \
@@ -64,11 +66,10 @@ THUMBNAILS_URL =     '/media/thumb/'
 SPEECH_URL =         '/speech/'
 # PQ & EB: Added AUDIO_URL - 17.9.07 & PQ & EB: Edited 13/10/07
 AUDIO_URL =          MEDIA_URL + AUDIO_PATH
-WEBCAM_URL =         '/media/video/'
-WEBCAM_STILL_URL =   '/media/video-still/'
-MISSING_THUMB_URL =  '/missing.png'
-WEBCAM_SUBURL =      'video'
-WEBCAM_STILL_SUBURL ='video-still'
+#MISSING_THUMB_URL = '/missing.png'
+#Lisa 21/08/2013 - removed video avatar code
+MISSING_THUMB_URL =  '/image/icon/icon-warning-sign.png'
+MISSING_THUMB_ICON = 'icon-warning-sign'
 
 MEDIA_SUBURL     = MEDIA_URL.strip('/')
 OLD_MEDIA_SUBURL = OLD_MEDIA_URL.strip('/')
@@ -78,15 +79,20 @@ AUDIO_SUBURL     = AUDIO_URL.strip('/') #PQ & EB: Added 17.9.07
 
 # PQ & EB Added 13.10.07
 # Paths to music and sfx thumbnail images for the workshop to display
-MUSIC_ICON_IMAGE_URL    = '/media/thumb/music.jpg'
-SFX_ICON_IMAGE_URL      = '/media/thumb/sfx.jpg'
+MUSIC_ICON_IMAGE_URL    = '/image/icon/icon-music.png'
+SFX_ICON_IMAGE_URL      = '/image/icon/icon-bullhorn.png'
+
+# icon styles for music and sfx thumbnails
+#MUSIC_ICON	= 'icon-music' #Martins
+#SFX_ICON	= 'icon-bullhorn' #Martins
 
 # file system paths
 # these relate to the above url paths
 MEDIA_DIR        =  _join(HTDOCS, MEDIA_SUBURL)
 OLD_MEDIA_DIR    =  _join(HTDOCS, OLD_MEDIA_SUBURL)
 THUMBNAILS_DIR   =  _join(HTDOCS, MEDIA_SUBURL, 'thumb')
-WEBCAM_DIR       =  _join(HTDOCS, MEDIA_SUBURL, WEBCAM_SUBURL)
+
+#Lisa 21/08/2013 - removed video avatar code
 SWF_DIR          =  _join(HTDOCS, SWF_SUBURL)
 
 ADMIN_DIR        =  _join(HTDOCS, 'admin')
@@ -123,13 +129,8 @@ SPEECH_TIMEOUT = 15
 
 ## @brief MEDIA_DESTRUCT_TIME time until old media is dropped altogether
 MEDIA_DESTRUCT_TIME = 90
-## VIDEO_DESTRUCT_TIME how long a video web resource lasts.
-#it is simply recreated if it is still needed
-VIDEO_DESTRUCT_TIME = 1800 #half an hour
-#how long to wait for next frame of video before sending the old one again
-VIDEO_TIMEOUT = 30
 
-VIDEO_FRAME_LENGTH = 0.67
+#Lisa 21/08/2013 - removed video avatar code
 
 ## @brief STORED_UTTERANCES how many utterances are kept on disk
 STORED_UTTERANCES = 500 #XXX unused?
@@ -170,6 +171,11 @@ REGENERATE_VOICE_SCRIPTS=True
 ADMIN_SIZE_LIMIT = 1000000
 SUPER_ADMIN_SIZE_LIMIT = 2000000
 
+# @brief prefix for built-in library images
+LIBRARY_PREFIX = 'library:'
+LIBRARY_ID_LENGTH = 8
+
+# FIXME all settings below should go to voices.py
 
 """Added by: Henry, Vibhu and Heath AUT Team 2011"""
 
