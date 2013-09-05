@@ -18,15 +18,16 @@
 
 import upstage.thing.Thing;
 import upstage.Client;
-//import upstage.util.Construct;
+import upstage.util.Construct;
 import upstage.util.Icon;
 import upstage.util.LoadTracker;
 
 /**
  * Class handles a backdrop on stage.
  *
- * Modified by: Heath / Vibhu 08/08/2011 - modified function finalize to the scale the backdrop on stage.
- * Modified by: David / Nikos 05/09/2013 - removed resizing
+ * Modified by: Heath / Vibhu   08/08/2011 - modified function finalize to the scale the backdrop on stage.
+ * Modified by: David / Nikos   05/09/2013 - removed resizing
+ * Modified by: David           06/09/2013 - modified resizing so aspect ratios are maintained
  */
 class upstage.thing.BackDrop extends Thing
 {	
@@ -96,7 +97,7 @@ class upstage.thing.BackDrop extends Thing
 
         // Fit to screen onload without changing aspect ratio
         //But no resizing up.
-        //Construct.constrainSize(this.image, Client.SCREEN_WIDTH, Client.SCREEN_HEIGHT);
+        Construct.constrainSize(this.image, Client.SCREEN_WIDTH, Client.SCREEN_HEIGHT);
     };	
     
     // Aaron (21/04/08) Testing multi-frame backdrop
