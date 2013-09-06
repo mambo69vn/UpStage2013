@@ -31,7 +31,9 @@ Modified by Craig Farrell 30/04/2013 - added new check box for lock stage.
 Modified by Craig Farrell 01/05/2013 - replaced the checkbox with a attr which is linked to python. which replaces it with a checkbox.
                                      - changed the hidden input value to a different call to python.
                                      - added new hidden input for owner of stage. 
-Modified by David Daniels 22/05/2013 - fixed captials                                    
+Modified by David Daniels 22/05/2013 - fixed captials  
+Modified by Vanessa Henderson 06/09/2013 - Changed the text displayed on the revert changes button
+                                           - Swapped position of revert changes button and Delete button
 -->
 <!include master_a.inc>
 <!include workshop_nav.inc>
@@ -231,8 +233,9 @@ window.onresize = resizePage;
 			  		<!-- <td colspan="3" style="width:50%;"><span id="warning">Warning: This will cause the stage to reload for everyone currently on it, and you will lose the chat log.</span></td> -->
 				</tr>
 				<tr>	
-					<td style="width:0%;"><input type="button" id="seDelete" onclick="warn(5);" value="Delete"></input></td>
-					<td style="width:0%;" ><input type="button" id="seRevertC" onclick="warn(1);" value="Revert changes  "></input></td>					
+                <!--#(06/09/2013) Vanessa-->
+                    <td style="width:0%;" ><input type="button" id="seCancel" onclick="warn(1);" value="Cancel"></input></td>
+					<td style="width:0%;"><input type="button" id="seDelete" onclick="warn(5);" value="Delete"></input></td>				
 					<td style="width:0%;"><input type="button" id="seClearS" onclick="warn(3);" value="Clear stage"></input></td>
 					<td style="width:50%;">Clears the text chat and drawing layers.</td>
 				</tr>	
