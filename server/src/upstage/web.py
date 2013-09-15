@@ -254,7 +254,7 @@ class AdminRealm:
 			tree.putChild('save_thing', SwfConversionWrapper(self.data.mediatypes, player, self.data.stages))
 			#Lisa 21/08/2013 - removed video avatar code
 			# PQ & EB Added 12.10.07
-			tree.putChild('save_audio', AudioThing(self.data.mediatypes, player))
+			tree.putChild('save_audio', AudioThing(self.data.mediatypes, player, self.data.stages))
 			tree.putChild('id', SessionID(player, self.data.clients))
 			# This is the test sound file for testing avatar voices in workshop - NOT for the audio widget
 			tree.putChild('test.mp3', SpeechTest(self.data.stages.speech_server))
@@ -341,9 +341,10 @@ def dumbRedirect(x):
 class AudioThing(Resource):
     
     isLeaf = True
-    def __init__(self, mediatypes, player):
+    def __init__(self, mediatypes, player, stages):
         self.mediatypes = mediatypes
         self.player = player
+        self.stages = stages
 
     def render(self, request):
         #XXX not checking rights.
@@ -371,8 +372,15 @@ class AudioThing(Resource):
              thumbnail = config.MUSIC_ICON_IMAGE_URL
 
         self.media_dict = self.mediatypes[mediatype]
+
+        mp3name = ''
+        mode = args.pop('mode', [''])[0]
+        if mode == 'replace':
+            mp3name = args.pop('oldfile', [''])[0]
+            self.media_dict.deleteFile(mp3name)
+        else:
+            mp3name = new_filename(suffix=".mp3")
         
-        mp3name = new_filename(suffix=".mp3")
         the_url = config.AUDIO_DIR +"/"+ mp3name
         
         file = open(the_url, 'wb')
@@ -387,22 +395,47 @@ class AudioThing(Resource):
         if not (fileSizes is None):
             if (validSizes(fileSizes, self.player.can_su()) or self.player.can_unlimited()):
                 now = datetime.datetime.now() # AC () - Unformated datetime value
-                self.media_dict.add(url='%s/%s' % (config.AUDIO_SUBURL, mp3name), #XXX dodgy? (windows safe?)
-                               file=mp3name,
-                               name=name,
-                               voice="",
-                               thumbnail=thumbnail, # PQ: 13.10.07 was ""
-                               medium="%s" %(type),
-                               # AC (14.08.08) - Passed values to be added to media XML files.
-                               uploader=self.player.name,
-                               dateTime=(now.strftime("%d/%m/%y @ %I:%M %p")),
-                               tags=self.tags)#Corey, Heath, Karena 24/08/2011 - Added for media tagging set the tags to self.tags
-                
-                if self.assignedstages is not None:
-                    for x in self.assignedstages:
-                        self.media_dict.set_media_stage(x, mp3name)
+
+                success_message = ''
+                if mode == 'replace':
+                    media = self.media_dict[mp3name]
+
+                    setattr(media, 'uploader', self.player.name)
+                    setattr(media, 'dateTime', now.strftime("%d/%m/%y @ %I:%M %p"))
+                    self.media_dict.save()
+
+                    success_message = 'Your Media "' + name + '" has been replaced successfully! '
+
+                    # refresh assigned stages
+                    stages = args.pop('stages', [''])[0]
+                    if stages:
+                        success_message += 'The following stage(s) has been reloaded:<strong> ' + stages +'</strong>.<br />'
+                        reloadStagesInList(self.stages, stages.split(', '))
+                    
+                    success_message += 'Redirecting back to <a href="admin/workshop/mediaedit">Media Management...</a>'
+                    redirectTo = 'mediaedit'
+
+                else:
+                    # upload new assets
+                    self.media_dict.add(url='%s/%s' % (config.AUDIO_SUBURL, mp3name), #XXX dodgy? (windows safe?)
+                                       file=mp3name,
+                                       name=name,
+                                       voice="",
+                                       thumbnail=thumbnail, # PQ: 13.10.07 was ""
+                                       medium="%s" %(type),
+                                       # AC (14.08.08) - Passed values to be added to media XML files.
+                                       uploader=self.player.name,
+                                       dateTime=(now.strftime("%d/%m/%y @ %I:%M %p")),
+                                       tags=self.tags)#Corey, Heath, Karena 24/08/2011 - Added for media tagging set the tags to self.tags
+
+                    if self.assignedstages is not None:
+                        for x in self.assignedstages:
+                            self.media_dict.set_media_stage(x, mp3name)
+
+                    redirectTo = 'mediaupload'
+                    success_message = 'Your Media "' + name + '" has uploaded successfully'
                         
-                request.write(successpage(request, 'Your Media "' + name + '" has uploaded successfully'))
+                request.write(successpage(request, success_message, redirect=redirectTo))
                 request.finish()
             else:
                 try:
@@ -413,8 +446,18 @@ class AudioThing(Resource):
                     request.redirect('/admin/new/%s' %(mediatype))
                     request.finish()
                     """
-                    AdminError.errorMsg = 'File over 1MB' #Change error message to file exceed - Gavin
-                    request.write(errorpage(request, 'Media uploads are limited to files of 1MB or less, to help ensure that unnecessarily large files do not cause long loading times for your stage. Please make your file smaller or, if you really need to upload a larger file, contact the administrator of this server to ask for permission.'))
+                    errMsg = 'File over 1MB' #Change error message to file exceed - Gavin
+
+                    if mode == 'replace':
+                        errMsg += ' Your media was not replaced.'
+                        # restore old file
+                        self.media_dict.restoreOldFile(mp3name)
+
+                    AdminError.errorMsg = errMsg
+                    request.write(errorpage(request, 'Media uploads are limited to files of 1MB or less, \
+                                                    to help ensure that unnecessarily large files do not cause long loading times for your stage. \
+                                                    Please make your file smaller or, if you really need to upload a larger file, \
+                                                    contact the administrator of this server to ask for permission.'))
                     request.finish()
                 except OSError, e:
                     log.err("Error removing temp file %s (already gone?):\n %s" % (tfn, e))
@@ -760,9 +803,9 @@ class SwfConversionWrapper(Resource):
             stages = form.get('stages', '')
             if stages:
                 success_message += 'The following stage(s) has been reloaded:<strong> ' + stages +'</strong>.<br />'
-                self.reloadStagesInList(stages.split(', '))
+                reloadStagesInList(self.stages, stages.split(', '))
             
-            success_message += 'Redirecting back to <a href="admin/workshop/mediaedit">Media Management</a>...'
+            success_message += 'Redirecting back to <a href="admin/workshop/mediaedit">Media Management...</a>'
             redirectTo = 'mediaedit'
 
         else:
