@@ -683,11 +683,15 @@ function setupDataGrid() {
 					clickHandlerExecuteReplace = function(e) {
 					
 						log.debug("clickHandlerExecuteReplace: click: #buttonExecuteReplace, key="+selectedMediaData['key']);
-					
+						e.preventDefault();
+						checkFieldsBeforeReplace();
+						if (sendPostAction()) {
+							$('#replaceMediaUploadPanel form').submit();
+						}
 					}
 					
 					// bind click handler for final deletion
-					//$("#buttonExecuteReplace").on('click',clickHandlerExecuteReplace);
+					$("#buttonExecuteReplace").on('click',clickHandlerExecuteReplace);
 					$("#buttonExecuteReplaceCancel").on('click',clickHandlerExecuteReplaceCancel);
 
 					// show assign panel
