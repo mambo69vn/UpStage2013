@@ -39,6 +39,7 @@ Modified by: Lisa Helm 21/08/2013       - removed all code relating to old video
 Modified by: Lisa Helm 05/09/2013       - added Edit/Signup 
 Modified by: Nitkalya Wiriyanuparb  10/09/2013  - Added swfdump calls to get swf file's width and height for resizing media on stage in success_upload()
 Modified by: Nitkalya Wiriyanuparb  14/09/2013  - Fixed player/audience stat info bug in workshop by passing the whole data collection
+Modified by: Nitkalya Wiriyanuparb  14/09/2013  - Added media replacing functionality
 """
 
 
@@ -178,7 +179,8 @@ def _getWebsiteTree(data):
     """Set up and return the web tree"""
     
     #media = static.File(config.MEDIA_DIR)
-    media = CachedFile(config.MEDIA_DIR)           # cached
+    #media = CachedFile(config.MEDIA_DIR)           # cached
+    media = NoCacheFile(config.MEDIA_DIR)           # not cached for replacing media to take effect after stage reload
    
     #Lisa 21/08/2013 - removed video avatar code
     #docroot = static.File(config.HTDOCS)
@@ -249,7 +251,7 @@ class AdminRealm:
 			# password changer.       
 			# Assign the new and edit pages to the website tree         
 			tree.putChild('workshop', CreateDir(player, workshop_pages))
-			tree.putChild('save_thing', SwfConversionWrapper(self.data.mediatypes, player))
+			tree.putChild('save_thing', SwfConversionWrapper(self.data.mediatypes, player, self.data.stages))
 			#Lisa 21/08/2013 - removed video avatar code
 			# PQ & EB Added 12.10.07
 			tree.putChild('save_audio', AudioThing(self.data.mediatypes, player))
@@ -445,13 +447,14 @@ class SwfConversionWrapper(Resource):
     """
     isLeaf = True
     
-    def __init__(self, mediatypes, player):
+    def __init__(self, mediatypes, player, stages):
         Resource.__init__(self)
         self.mediatypes = mediatypes
         # Alan (14/09/07) - Gets the player trying to upload
         self.player = player
         self.assignedstages = '' #natasha
         self.mediatype = '' # Natasha trying to make it a global variable
+        self.stages = stages
                  
     def render(self, request):
         """Don't actually render, but calls a process which returns a
@@ -522,8 +525,14 @@ class SwfConversionWrapper(Resource):
                 # natasha getfilesize
                 fileSizes = getFileSizes(tfns)
                 
-                # imported from misc.py
-                swf = new_filename(suffix='.swf')
+                swf = ''
+                if form.get('mode', '') == 'replace':
+                    swf = form.get('oldfile')
+                    self.media_dict.deleteFile(swf)
+                else:
+                    # imported from misc.py
+                    swf = new_filename(suffix='.swf')
+
                 thumbnail = swf.replace('.swf', '.jpg')         # FIXME: see #20 (Uploaded media is not converted to JPEG)
                 swf_full = os.path.join(config.MEDIA_DIR, swf)
                 thumbnail_full = os.path.join(config.THUMBNAILS_DIR, thumbnail)
@@ -728,59 +737,100 @@ class SwfConversionWrapper(Resource):
             size_x = commands.getoutput("swfdump -X html/media/" + swf).split()[1];
             size_y = commands.getoutput("swfdump -Y html/media/" + swf).split()[1];
 
-        #if not mimetype.startswith('image/'):
-        if not is_image:
-            self.media_dict.add(file=swf,
-                                name=name,
-                                voice=form.get('voice', ''),
-                                # AC (10.04.08) - This section needs uploader and dateTime also.
-                                uploader=self.player.name,
-                                dateTime=(now.strftime("%d/%m/%y @ %I:%M %p")),
-                                tags=tags, # Corey, Heath, Karena 24/08/2011 - Added for tagging media
-                                streamserver=streamserver,
-                                streamname=streamname,
-                                medium=medium,
-                                width=size_x,
-                                height=size_y,
-                                )
+        success_message = ''
+
+
+        if form.get('mode', '') == 'replace':
+            oldfilename = form.get('oldfile')
+            media = self.media_dict[oldfilename]
+
+            setattr(media, 'uploader', self.player.name)
+            setattr(media, 'dateTime', now.strftime("%d/%m/%y @ %I:%M %p"))
+            setattr(media, 'width', size_x)
+            setattr(media, 'height', size_y)
+            # thumbnail conversion is currently broken - not really converted
+            # if is_image:
+            #    media.setThumbnail(config.THUMBNAILS_URL + thumbnail)
+            media.setThumbnail('')
+
+            self.media_dict.save()
+            success_message = 'Your Media "' + form.get('name') + '" has been replaced successfully! '
+
+            # refresh assigned stages
+            stages = form.get('stages', '')
+            if stages:
+                success_message += 'The following stage(s) has been reloaded:<strong> ' + stages +'</strong>.<br />'
+                self.reloadStagesInList(stages.split(', '))
+            
+            success_message += 'Redirecting back to <a href="admin/workshop/mediaedit">Media Management</a>...'
+            redirectTo = 'mediaedit'
 
         else:
-            #Corey, Heath, Karena 24/08/2011
-            self.media_dict.add(file=swf,
-                                name=name,
-                                voice=form.get('voice', ''),
-                                thumbnail=config.THUMBNAILS_URL + thumbnail,
-                                # AC (29.09.07) - Passed values to be added to media XML files.
-                                uploader=self.player.name,
-                                dateTime=(now.strftime("%d/%m/%y @ %I:%M %p")),
-                                tags=tags, # Corey, Heath, Karena 24/08/2011 - Added for tagging media
-                                streamserver=streamserver,
-                                streamname=streamname,
-                                medium=medium,
-                                )
-        
-        log.msg("success_upload(): got past media_dict.add, YES")
-        
-        #form['media'] = swf
-        
-        # NB: doing external redirect, but really there's no need!
-        # could just call the other pages render method
-        # assign_media_to_stages()
-        
-        #def _value(x):
-        #    return form.get(x, [None])
-        
-        # assign to stage?
-        self.media_dict = self.mediatypes[self.mediatype]
-        if self.assignedstages is not None:
-            log.msg("success_upload(): assigning to stages: %s" % self.assignedstages)
-            self.assign_media_to_stages(self.assignedstages, swf, self.mediatype)
-        
-        #self.refresh(request, swf)
+            # upload new assets
 
-        request.write(successpage(request, 'Your Media "' + name + '" has uploaded successfully'))
-        request.finish()
+            # if not mimetype.startswith('image/'):
+            if not is_image:
+                self.media_dict.add(file=swf,
+                                    name=name,
+                                    voice=form.get('voice', ''),
+                                    # AC (10.04.08) - This section needs uploader and dateTime also.
+                                    uploader=self.player.name,
+                                    dateTime=(now.strftime("%d/%m/%y @ %I:%M %p")),
+                                    tags=tags, # Corey, Heath, Karena 24/08/2011 - Added for tagging media
+                                    streamserver=streamserver,
+                                    streamname=streamname,
+                                    medium=medium,
+                                    width=size_x,
+                                    height=size_y,
+                                    )
+
+            else:
+                #Corey, Heath, Karena 24/08/2011
+                self.media_dict.add(file=swf,
+                                    name=name,
+                                    voice=form.get('voice', ''),
+                                    thumbnail=config.THUMBNAILS_URL + thumbnail,
+                                    # AC (29.09.07) - Passed values to be added to media XML files.
+                                    uploader=self.player.name,
+                                    dateTime=(now.strftime("%d/%m/%y @ %I:%M %p")),
+                                    tags=tags, # Corey, Heath, Karena 24/08/2011 - Added for tagging media
+                                    streamserver=streamserver,
+                                    streamname=streamname,
+                                    medium=medium,
+                                    width=size_x,
+                                    height=size_y,
+                                    )
         
+            log.msg("success_upload(): got past media_dict.add, YES")
+            
+            #form['media'] = swf
+            
+            # NB: doing external redirect, but really there's no need!
+            # could just call the other pages render method
+            # assign_media_to_stages()
+            
+            #def _value(x):
+            #    return form.get(x, [None])
+            
+            # assign to stage?
+            self.media_dict = self.mediatypes[self.mediatype]
+            if self.assignedstages is not None:
+                log.msg("success_upload(): assigning to stages: %s" % self.assignedstages)
+                self.assign_media_to_stages(self.assignedstages, swf, self.mediatype)
+            
+            #self.refresh(request, swf)
+            success_message = 'Your Media "' + name + '" has uploaded successfully'
+            redirectTo = 'mediaupload'
+
+        request.write(successpage(request, success_message, redirect=redirectTo))
+        request.finish()
+
+    def reloadStagesInList(self, stageList):
+        """Reload stages according to the names in stages list"""
+        log.msg('resetting stages: ', stageList)
+        for s in stageList:
+            stage = self.stages.getStage(s)
+            stage.soft_reset()
 
     def assign_media_to_stages(self, assignedstages, medianame, mediatype):
         for x in assignedstages:
@@ -798,7 +848,7 @@ class SwfConversionWrapper(Resource):
         return False
 
     def refresh(self, request, swf):
-        url = '/admin/workshop/mediaupload'
+        url = '/admin/workshop/'#mediaupload'
         request.redirect(url)
         request.finish()
     
@@ -812,7 +862,18 @@ class SwfConversionWrapper(Resource):
 
     def failure_upload(self, exitcode, swf, thumbnail, form, request):
         """Nothing much to do but spread the word"""
-        AdminError.errorMsg = 'Something went wrong' #Change error message back to default - Gavin
+        errMsg = 'Something went wrong.' #Change error message back to default - Gavin
+
+        if form.get('mode', '') == 'replace':
+            errMsg += ' Your media was not replaced.'
+            # restore old file
+            inMediaFolder = self.media_dict.path(swf)
+            inOldMediaFolder = os.path.join(config.OLD_MEDIA_DIR, swf)
+            if ( os.path.exists( inOldMediaFolder ) and
+                not os.path.exists(inMediaFolder) ):
+                os.rename(inOldMediaFolder, inMediaFolder)
+
+        AdminError.errorMsg = errMsg
         request.write(errorpage(request, 'SWF creation failed - maybe the image was bad. See img2swf.log for details'))
         request.finish() 
         
