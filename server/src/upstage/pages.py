@@ -99,6 +99,7 @@ Modified by: Lisa Helm 21/08/2013       - removed all code relating to old video
 Modified by: Lisa Helm 04/09/2013       - called a correct method when clearing a stage
 Modified by: Lisa Helm 05/09/2013       - added Sign Up page edit mode 
 Modified by: Nitkalya Wiriyanuparb  14/09/2013  - Fixed player/audience stat info bug in workshop. AdminBase needs data.stages collection (from web.py) to calculate the stat
+Modified by: Nitkalya Wiriyanuparb  15/09/2013  - Made success redirection target more flexible
 """
 
 #standard lib
@@ -349,12 +350,13 @@ class AdminSuccess(AdminBase):
     log_message = 'Reporting Success: %s'
     code = 200
 
-    def __init__(self, msg, code=None):
+    def __init__(self, msg, code=None, redirect='mediaupload'):
         log.msg(self.log_message % msg)
         #Template.__init__(self)
         self.msg = str(msg)
         if code is not None:
             self.code = code
+        self.page = str(redirect)
 
     def render(self, request):
         """render from the template, and set the http response code."""
@@ -626,12 +628,12 @@ def errorpage(request, message='bad posture', code=500):
     r = p.render(request)
     return r
 
-def successpage(request, message='success', code=200):
+def successpage(request, message='success', code=200, redirect='mediaupload'):
     """Convenience success writer
     Makes an success page, and returns a rendering thereof.
     @param request request that is being handled
     @param message message to send to AdminSuccess"""
-    p = AdminSuccess(message, code)
+    p = AdminSuccess(message, code, redirect)
     r = p.render(request)
     return r    
 
