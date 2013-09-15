@@ -76,7 +76,7 @@ class _MediaFile(object):
 
     def __init__(self, **kwargs):
         """@param kwargs argument list 
-           (name, voice, type, height, width, medium, description, uploader, dateTime)"""
+           (name, voice, type, tags, height, width, medium, description, uploader, dateTime, streamserver, streamname)"""
         self.file = kwargs.pop('file', None)
         
         if (self.file[-4:] == '.mp3'):
@@ -87,20 +87,9 @@ class _MediaFile(object):
                 self.url = self.file
             else:
                 self.url = config.MEDIA_URL + self.file
-        
-        # handle thumbnail images
-        self.thumbnail = kwargs.pop('thumbnail',None)
-        if(self.thumbnail is None):
-            self.thumbnail = ''
-            self.web_thumbnail = config.MEDIA_URL + self.file   # config.MISSING_THUMB_URL    # FIXME hanlde thumbnails (see also #20)
-            tn = kwargs.pop('thumbnail', None)  #or self.file.replace('.swf','.jpg')
-            if tn:
-                if not config.CHECK_THUMB_SANITY or _check_thumb_sanity(tn):
-                    self.web_thumbnail = tn
-                    self.thumbnail = tn
-        else:
-            self.web_thumbnail = self.thumbnail
-                    
+
+        self.setThumbnail(kwargs.pop('thumbnail', None))
+
         self.name = kwargs.pop('name', 'nameless').strip()
         self.voice = kwargs.pop('voice', None)
         self._type = kwargs.pop('type', None)
@@ -120,6 +109,21 @@ class _MediaFile(object):
         
         if kwargs:
             log.msg('left over arguments in _MediaFile', kwargs)
+
+    def setThumbnail(self, thumbnail):
+        """set thumbnail images"""
+        self.thumbnail = thumbnail
+        if(self.thumbnail is None or self.thumbnail == ''):
+            self.thumbnail = ''
+            self.web_thumbnail = config.MEDIA_URL + self.file   # config.MISSING_THUMB_URL    # FIXME hanlde thumbnails (see also #20)
+            tn = thumbnail  #or self.file.replace('.swf','.jpg')
+            if tn:
+                if not config.CHECK_THUMB_SANITY or _check_thumb_sanity(tn):
+                    self.web_thumbnail = tn
+                    self.thumbnail = tn
+        else:
+            self.web_thumbnail = self.thumbnail
+                    
 
 
 class MediaDict(Xml2Dict):
@@ -166,7 +170,7 @@ class MediaDict(Xml2Dict):
                         tags=node.getAttribute('tags') or '', # Heath, Corey, Karena 24/08/2011 - added tags to mediafile
                         streamname=node.getAttribute('streamname') or '',
                         streamserver=node.getAttribute('streamserver') or '',
-                        )           
+                        )
         dict.__setitem__(self, f, av)
 
     def write_element(self, root, av, mf):
