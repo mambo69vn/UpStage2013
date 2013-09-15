@@ -227,27 +227,38 @@ class MediaDict(Xml2Dict):
             return self[f]
         log.msg('tried to add file with no file attribute! %s' % form)
 
-        
-    def __delitem__(self, f):
-        """Deletes an item from XML dictionary and from the file system
+    def deleteFile(self, f):
+        """Deletes from the file system only
         Won't work if f is a directory name not a file
         @param f file name"""
         try:
             if config.SAVE_DELETED_MEDIA:
                 if not os.path.exists(config.OLD_MEDIA_DIR):
                     os.makedirs(config.OLD_MEDIA_DIR, 0755)
-                os.rename(self.path(f), os.path.join(config.OLD_MEDIA_DIR, f))
+                toOldMedia = os.path.join(config.OLD_MEDIA_DIR, f)
+                if os.path.exists(toOldMedia): # if file name exists (been replaced multiple times)
+                    # ensure that the old one is deleted (for now)
+                    os.remove(toOldMedia)
+                os.rename(self.path(f), toOldMedia) # on UNIX this will overwrite the file silently anyway
             else:
                 os.remove(self.path(f))
+
+            return True
         except OSError, e:
-            #Lisa 21/08/2013 - removed video avatar code
             # builtin library items are no files so nothing to delete ...
             if f.startswith(config.LIBRARY_PREFIX):
-                pass
-            
+                return True
+
             # all other errors are probably real errors
             else:
                 raise KeyError("%s: %s" %(self.path(f), e))
+
+
+    def __delitem__(self, f):
+        """Deletes an item from XML dictionary and from the file system
+        Won't work if f is a directory name not a file
+        @param f file name"""
+        self.deleteFile(f)
 
         return Xml2Dict.__delitem__(self, f)
 
