@@ -71,6 +71,7 @@ Modified by: Craig Farrell  01/05/2013  - added new tOwner varible
 
 Modified by: Nitkalya Wiriyanuparb  29/08/2013  - add toggle_stream_audio to mute/unmute streaming avatar
 Modified by: Nitkalya Wiriyanuparb  04/09/2013  - clear user access list (access_level_one/two/three) before appending items to them to avoid duplicates
+Modified by: Nitkalya Wiriyanuparb  15/09/2013  - added reloadStagesInList
 """
 
 #std lib
@@ -96,6 +97,13 @@ from twisted.web import  microdom
 
 
 NUL = chr(0)
+
+def reloadStagesInList(stages, stageList):
+    """Reload stages according to the names in stages list"""
+    log.msg('resetting stages: ', stageList)
+    for s in stageList:
+        stage = stages.getStage(s)
+        stage.soft_reset()
 
 class _Stage(object):
     """The _Stage class provides an object that mirrors
