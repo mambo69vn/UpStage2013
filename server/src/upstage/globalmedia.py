@@ -35,6 +35,7 @@ Modified by: Heath Behrens 16/08/2011 - added code in update_from_form to extrac
                                                         a blank tag when saving name.  
 Modified by: Lisa Helm 21/08/2013       - removed all code relating to old video avatar
 Modified by: Nitkalya Wiriyanuparb  10/09/2013  - Added media width and height in various placess (for avatar and prop resizing issues)
+Modified by: Nitkalya Wiriyanuparb  10/09/2013  - Added new methods (setThumbnail, restoreOldFile, deleteFile) to support media replacing functionality
 Notes: 
 """
 
@@ -226,6 +227,15 @@ class MediaDict(Xml2Dict):
             self[f] = _MediaFile(form)
             return self[f]
         log.msg('tried to add file with no file attribute! %s' % form)
+
+    def restoreOldFile(self, filename):
+        """Restores old file from the old media folder if it has been replaced earlier.
+        It doesn't not update the xml file, just move the file on system"""
+        inMediaFolder = self.path(filename)
+        inOldMediaFolder = os.path.join(config.OLD_MEDIA_DIR, filename)
+        if ( os.path.exists( inOldMediaFolder ) and
+            not os.path.exists(inMediaFolder) ):
+            os.rename(inOldMediaFolder, inMediaFolder)
 
     def deleteFile(self, f):
         """Deletes from the file system only

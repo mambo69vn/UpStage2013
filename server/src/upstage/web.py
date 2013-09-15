@@ -867,11 +867,7 @@ class SwfConversionWrapper(Resource):
         if form.get('mode', '') == 'replace':
             errMsg += ' Your media was not replaced.'
             # restore old file
-            inMediaFolder = self.media_dict.path(swf)
-            inOldMediaFolder = os.path.join(config.OLD_MEDIA_DIR, swf)
-            if ( os.path.exists( inOldMediaFolder ) and
-                not os.path.exists(inMediaFolder) ):
-                os.rename(inOldMediaFolder, inMediaFolder)
+            self.media_dict.restoreOldFile(swf)
 
         AdminError.errorMsg = errMsg
         request.write(errorpage(request, 'SWF creation failed - maybe the image was bad. See img2swf.log for details'))
