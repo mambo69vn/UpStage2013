@@ -15,8 +15,7 @@ Changelog: Vibhu Patel - Aut UpStage 2011
 	
 </div>
 
-<!-- FIXME naming a form 'natasha' seems not appropriate - better name it for what it actually does, probably something like 'form_mediaupload' ... -->
-<form name="natasha" method="post" enctype="multipart/form-data" action="" onsubmit="disableSubmit()"> <!-- action=req:path so you can decide what to do with it??  method="post" enctype="multipart/form-data"  action="/admin/save_thing" action="%(req:path)s" -->
+<form name="mediauploadform" method="post" enctype="multipart/form-data" action="" onsubmit="disableSubmit()"> <!-- action=req:path so you can decide what to do with it??  method="post" enctype="multipart/form-data"  action="/admin/save_thing" action="%(req:path)s" -->
 	
 	<!-- meta data for form submit content -->
 	<input type="hidden" name="uploader" size="16" value="%(user)s" />
