@@ -42,6 +42,7 @@ March 2013		Added minify with YUI Compressor
 
 Modified by Nitkalya Wiriyanuparb
 05/09/2013 - Added 'start' and 'stop' to start and stop UpStage daemon
+15/09/2013 - Removed 'stop' target, modified 'kill', renamed 'start' to 'clean-start' and made a new 'start' target
 
 -->
 <project name="UpStage" default="help" basedir=".">
@@ -648,15 +649,8 @@ Modified by Nitkalya Wiriyanuparb
 		
 	</target>
 
-	<!-- run the application as a daemon-->
-	<target name="start" depends="clean,build" description="run the application as a backgroup process">
-		
-		<!-- determine executable depending on os -->
-
-		<!-- DEBUG: check properties -->
-		<!--
-		<echo message="isWindows: ${isWindows} - isMacOSX: ${isMacOsX} - isLinux: ${isLinux}" />
-		-->
+	<!-- start an already built instance of UpStage as a daemon -->
+	<target name="start" depends="set-variables">
 		
 		<condition property="exec.command" value="cmd">
 			<isset property="isWindows" />
@@ -691,7 +685,13 @@ Modified by Nitkalya Wiriyanuparb
 		<exec executable="${exec.command}" dir="${upstage.dir.build}">
 			<arg line="${exec.argline-server}" />
 		</exec>
-		
+
+	</target>
+
+	<!-- clean, build, and run the application as a daemon-->
+	<target name="clean-start" depends="clean,build" description="build and run the application as a backgroup process">
+		<antcall target="start">
+		</antcall>
 	</target>
 	
 	<!-- kill all running server/policyd instances -->
