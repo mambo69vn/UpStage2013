@@ -100,6 +100,7 @@ Modified by: Lisa Helm 04/09/2013       - called a correct method when clearing 
 Modified by: Lisa Helm 05/09/2013       - added Sign Up page edit mode 
 Modified by: Nitkalya Wiriyanuparb  14/09/2013  - Fixed player/audience stat info bug in workshop. AdminBase needs data.stages collection (from web.py) to calculate the stat
 Modified by: Nitkalya Wiriyanuparb  15/09/2013  - Made success redirection target more flexible
+Modified by: Nitkalya Wiriyanuparb  16/09/2013  - Removed unused AudioThing class
 """
 
 #standard lib
@@ -2553,82 +2554,3 @@ class StageLog(Resource):
         s += "</pre></html>"
         request.setHeader('Content-length', len(s))
         return s
-
-
-#------------------------------------------------
-""" PQ & EB - 12/10/07 - Adds audio from the workshop """
-class AudioThing(Template):
-    filename = "audio.xhtml"
-    def __init__(self, mediatypes, player):
-        self.mediatypes = mediatypes
-        self.player = player
-
-    def render(self, request):
-        #XXX not checking rights.
-        args = request.args
-        # Natasha - get assigned stages
-        self.assignedstages = request.args.get('assigned')
-        name = args.pop('name',[''])[0]
-        audio = args.pop('audio', [''])[0]
-        type = args.pop('audio_type', [''])[0]
-        mediatype = args.pop('type',['audio'])[0]
-        self.message = 'Audio file uploaded & registered as %s, called %s. ' % (type, name)
-        # PQ & EB Added 13.10.07
-        # Chooses a thumbnail image depending on type (adds to audios.xml file)
-        if type == 'sfx':
-            thumbnail = config.SFX_ICON_IMAGE_URL
-        else:
-            thumbnail = config.MUSIC_ICON_IMAGE_URL
-
-        media_dict = self.mediatypes[mediatype]
-        log.msg('about to add audio')
-        
-        mp3name = new_filename(suffix=".mp3")
-        the_url = config.AUDIO_DIR +"/"+ mp3name
-        log.msg('Adding audio file here: %s' %(the_url))
-        
-        file = open(the_url, 'wb')
-        file.write(audio)
-        file.close()
-        
-        filenames = [the_url]
-        
-        # Alan (09/05/08) ==> Gets the size of audio files using the previously created temp filenames.
-        fileSizes = getFileSizes(filenames)
-        
-        if not (fileSizes is None):
-            if (validSizes(fileSizes, self.player.can_su()) or self.player.can_unlimited()):
-                now = datetime.datetime.now() # AC () - Unformated datetime value
-                media_dict.add(url='%s/%s' % (config.AUDIO_SUBURL, mp3name), #XXX dodgy? (windows safe?)
-                               file=mp3name,
-                               name=name,
-                               voice="",
-                               thumbnail=thumbnail, # PQ: 13.10.07 was ""
-                               medium="%s" %(type),
-                               # AC (14.08.08) - Passed values to be added to media XML files.
-                               uploader=self.player.name,
-                               dateTime=(now.strftime("%d/%m/%y @ %I:%M %p")))
-                
-                if self.assignedstages is not None:
-                    log.msg('Audio: Assigned stages is not none')
-                    for x in self.assignedstages:
-                        log.msg("Audio file with stage: %s" % x)
-                        self.media_dict.set_media_stage(x, mp3name)
-            else:
-                try:
-                    ''' Send new audio page back containing error message '''
-                    self.player.set_setError(True)
-                    os.remove(the_url)
-                    request.redirect('/admin/new/%s' %(mediatype))
-                    request.finish()
-                except OSError, e:
-                    log.err("Error removing temp file %s (already gone?):\n %s" % (tfn, e))
-        return Template.render(self, request)
-    
-    def getChildWithDefault(self, path, request):
-        return self.getChild(path, request)
-    
-    def getChild(self, path, request):
-        return self
-
-#Lisa 21/08/2013 - removed video avatar code

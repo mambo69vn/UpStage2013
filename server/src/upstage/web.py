@@ -40,6 +40,7 @@ Modified by: Lisa Helm 05/09/2013       - added Edit/Signup
 Modified by: Nitkalya Wiriyanuparb  10/09/2013  - Added swfdump calls to get swf file's width and height for resizing media on stage in success_upload()
 Modified by: Nitkalya Wiriyanuparb  14/09/2013  - Fixed player/audience stat info bug in workshop by passing the whole data collection
 Modified by: Nitkalya Wiriyanuparb  14/09/2013  - Added media replacing functionality
+Modified by: Nitkalya Wiriyanuparb  16/09/2013  - Rename AudioThing to AudioFileProcessor
 """
 
 
@@ -65,7 +66,7 @@ from upstage.pages import  AdminLoginPage, AdminBase, errorpage, Workshop, HomeP
                            MediaUploadPage, MediaEditPage, CreateDir, \
                            NewPlayer, EditPlayer, NewAvatar, NewProp, NewBackdrop, NewAudio,     \
                            ThingsList, StagePage, UserPage, NonAdminPage, PageEditPage, HomeEditPage, WorkshopEditPage, SessionCheckPage, successpage,\
-                           NonAdminEditPage, StagesEditPage, SignupEditPage, AdminError #VideoThing, AudioThing, 
+                           NonAdminEditPage, StagesEditPage, SignupEditPage, AdminError
 
 #twisted
 from twisted.python import log
@@ -255,7 +256,7 @@ class AdminRealm:
 			tree.putChild('save_thing', SwfConversionWrapper(self.data.mediatypes, player, self.data.stages))
 			#Lisa 21/08/2013 - removed video avatar code
 			# PQ & EB Added 12.10.07
-			tree.putChild('save_audio', AudioThing(self.data.mediatypes, player, self.data.stages))
+			tree.putChild('save_audio', AudioFileProcessor(self.data.mediatypes, player, self.data.stages))
 			tree.putChild('id', SessionID(player, self.data.clients))
 			# This is the test sound file for testing avatar voices in workshop - NOT for the audio widget
 			tree.putChild('test.mp3', SpeechTest(self.data.stages.speech_server))
@@ -339,7 +340,7 @@ def dumbRedirect(x):
     return Redirect(".")
 
 #  ---------------------------------------------
-class AudioThing(Resource):
+class AudioFileProcessor(Resource):
     
     isLeaf = True
     def __init__(self, mediatypes, player, stages):
