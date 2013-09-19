@@ -20,7 +20,7 @@ import upstage.util.Icon;
 import upstage.Client;
 import upstage.util.LoadTracker;
 //import upstage.util.Construct;
-// import flash.external.ExternalInterface;
+//import flash.external.ExternalInterface;
 
 
 /**
@@ -32,6 +32,8 @@ import upstage.util.LoadTracker;
  * Modified by: David Daniels & Lisa Helm 27/08/2013 - Merged in Martins fork
  * Modified by: Nitkalya Wiriyanuparb  29/08/2013  - Modify avatar streaming code and add setVolumeAccordingToMuteStatus() to mute/unmute
  *                                                 - Support mute/unmute globally and locally
+ * Modified by: Nitkalya Wiriyanuparb  05/09/2013  - Removed video avatar code
+ * Modified by: Nitkalya Wiriyanuparb  10/09/2013  - Added correct Prop resizing in loadImage()
  */
 class upstage.thing.Thing extends MovieClip
 {
@@ -42,16 +44,6 @@ class upstage.thing.Thing extends MovieClip
     var thumbnail         :String;
     var wrap_ID           :String;
     var icon              :Icon;       // Mini icon
-
-    private var videoLayer1   :Number;
-    private var videoLayer2   :Number;
-    private var videoSwitch   :Boolean;
-    private var videoDelay    :Number;
-    private var videoInterval :Number = 0;
-    private var videoTime     :Number;
-    private var videoWait     :Number;
-    private var videoSocketID :String;
-    private var videoFailures :Number;
 
     public var  image        :MovieClip; //points to the currently showing image
     private var baseLayer    :Number;
@@ -119,48 +111,17 @@ class upstage.thing.Thing extends MovieClip
     *
     */
 
-    function loadImage(url : String, layer: Number, listener: Object, is_prop: Boolean)
+    function loadImage(url : String, layer: Number, listener: Object, swfwidth: Number, swfheight: Number)
     {
-        //Heath Behrens / Vibhu Patel 08/08/2011 - Added to check if current thing is a prop and then scale accordingly. 
-        if(is_prop && !listener){
-            var thing: Thing = this;
-            listener = LoadTracker.getLoadListener();
-            listener.onLoadInit = function(mc: MovieClip) {
-                //CF - checks the size of prop and resizes it to the correct size for the stage.
-                var rightHeight :Boolean =false;
-                var rightWidth :Boolean =false;
-                while(rightWidth == false)
-                {
-                    if (mc._width <= Client.PROP_MAX_WIDTH )
-                    {rightWidth = true; } 
-                    else 
-                    {
-                        mc._width = (mc._width - (mc._width * .1)) 
-                        mc._height = (mc._height - (mc._height * .1)) 
-                    }
-                }
-                while(rightHeight == false)
-                {
-                    if (mc._height <= Client.PROP_MAX_HEIGHT)
-                    {rightHeight = true; } 
-                    else 
-                    {
-                        mc._width = (mc._width - (mc._width * .1)) 
-                        mc._height = (mc._height - (mc._height * .1))
-                    }
-                }  
-                //Modified by: Heath / Vibhu 08/08/2011 - Added to scale the prop on stage.
-                //mc._width = Client.PROP_MAX_WIDTH;
-                //mc._height = Client.PROP_MAX_HEIGHT;  
-                thing.image = mc;
-                thing.finalise();
-            };
-        }
-        else if (!listener){
+        // Ing - add correct prop resizing
+        if (!listener){
             var thing: Thing = this;
             listener = LoadTracker.getLoadListener();
             listener.onLoadInit = function(mc: MovieClip){
-                
+                if (swfwidth && swfheight) {
+                    mc._width = swfwidth / Client.SCREEN_SIZE_DIVISOR;
+                    mc._height = swfheight / Client.SCREEN_SIZE_DIVISOR;
+                }
                 thing.image = mc;
                 thing.finalise();
             };
@@ -188,109 +149,12 @@ class upstage.thing.Thing extends MovieClip
 		this.videodisplay = this.attachMovie("VideoDisplay", "videodisplay", this.baseLayer, {_x:0, _y:0, _width:Client.AVATAR_MAX_WIDTH, _height:(((Client.AVATAR_MAX_WIDTH)/4)*3)});
 	}
 
-    function videoInit(){
-        trace("in Thing.videoInit");
-        this.videoLayer1 = this.baseLayer + 1;
-        this.videoLayer2 = this.baseLayer + 2;
-        this.videoSwitch = false;
-        this.videoTime = 0;
-        this.videoFailures = 0;
-        //XXX it would be nicer to use the server's id for this socket
-        //(as set by Transport.SET)
-        this.videoSocketID = '?s=' + Math.random();
-    }
-
-    static function videoLoaded(thing:Thing, mc: MovieClip){
-        // Test for failure by checking mc properties.
-        // if it lacks width or height, it probably is not a valid jpeg.
-        if (mc._width && mc._height){
-            //it worked so switch visibility between the two frames
-            mc._visible = true;
-            thing.image._visible = false;
-            thing.image = mc;
-            thing.videoSwitch = ! thing.videoSwitch;
-            thing.videoFailures = 0;
-        }
-        else {
-            trace("movie clip " + mc + " failed to load with size(" +
-                  mc._width + ", " + mc.height + ")");
-        }
-
-        //set up the next cycle, if necessary
-        if (thing._visible){
-            var d:Date = new Date();
-            var now:Number = d.getTime();
-            var elapsed:Number = now - thing.videoTime;
-            thing.videoTime = now;
-            var delay: Number = Math.max(Client.VIDEO_INTERVAL_TARGET - elapsed,
-                                         Client.VIDEO_INTERVAL_MIN);
-            trace("doing video for "+ thing + "elapsed:" + elapsed + " delay:" + delay);
-            if (thing.videoInterval == 0)
-                thing.videoInterval = setInterval(Thing.reloadVideo, delay, thing);
-        }
-    }
-
-
-    static function videoFailed(thing: Thing,
-                                mc: MovieClip,
-                                errorCode: String,
-                                httpCode: Number) : Void
-    {
-        thing.videoFailures++;
-        trace("frame failure for " + thing + " (" + thing.url + "). mc:" + mc);
-        trace("error was '" + errorCode + "'; http status was '" + httpCode +
-              "'. Number " + thing.videoFailures);
-        if (thing.videoFailures < Client.VIDEO_MAX_FAILURES &&
-            thing._visible && thing.videoInterval == 0){            
-            thing.videoInterval = setInterval(Thing.reloadVideo, 
-                                              Client.VIDEO_INTERVAL_TARGET, 
-                                              thing);            
-        }
-    }
-
-    static function reloadVideo(thing: Thing) : Void
-    {
-        //XXX neeed to check that nothing is loading. if it is don't restart.
-        //this is because this function gets called by setting visibility, not only
-        //from videoLoaded
-        trace("in reload video with thing " + thing);
-        clearInterval(thing.videoInterval);
-        thing.videoInterval = 0;
-        var listener:Object = { //XXX this object could sit round forever, not be recreated each time
-            onLoadInit: function(mc: MovieClip){
-                Thing.videoLoaded(thing, mc);
-            },
-            onLoadError: function(mc: MovieClip, errorCode:String, httpStatus:Number){
-                Thing.videoFailed(thing, mc, errorCode, httpStatus);
-            }
-        };
-        //XXX could reuse the movieclips too.
-        var layer:Number = thing.videoSwitch ? thing.videoLayer1 : thing.videoLayer2;
-
-        var loadWatcher  :MovieClipLoader = new MovieClipLoader();
-        var layerName:String = "videolayer" + layer;
-        var img:MovieClip = thing.createEmptyMovieClip(layerName, layer);
-		loadWatcher.addListener(listener);
-        //because http doesn't always work as expected,
-        //make a unique suffix for the url, forcing fresh load.
-        var uniquify:String = '&u=' + Math.random();
-        loadWatcher.loadClip(thing.url + thing.videoSocketID + uniquify, img);
-    }
-
-
     /**
      * @brief Show the thing
      */
     function show() :Void
     {
         trace("thing.show with" + this);
-        
-        if (this.medium == 'video') {
-            trace("setting video interval " +  Client.VIDEO_INTERVAL_TARGET);
-            if (this.videoInterval == 0){
-                this.videoInterval = setInterval(Thing.reloadVideo, Client.VIDEO_INTERVAL_TARGET, this);
-            }
-        }
         
         this._alpha = 100;
         this._visible = true;
@@ -404,11 +268,6 @@ class upstage.thing.Thing extends MovieClip
     function hide() :Void
     {
         trace("thing.hide with " + this);
-        if (this.medium == 'video' && this.videoInterval){
-            //turn off the stream (if it is waiting for load there is no interval)
-            clearInterval(this.videoInterval);
-            this.videoInterval = 0;
-        }
         
         if (this.medium == 'stream') {
         	trace("hiding video stream");

@@ -40,6 +40,10 @@ March 2011		Initial Version for Version 2.1
 January 2013 	Adopted for UpStage 2.4.2 video hack
 March 2013		Added minify with YUI Compressor
 
+Modified by Nitkalya Wiriyanuparb
+05/09/2013 - Added 'start' and 'stop' to start and stop UpStage daemon
+15/09/2013 - Removed 'stop' target, modified 'kill', renamed 'start' to 'clean-start' and made a new 'start' target
+
 -->
 <project name="UpStage" default="help" basedir=".">
 	
@@ -423,6 +427,10 @@ March 2013		Added minify with YUI Compressor
 		<echo file="${upstage.dir.tmp}/upstage-server.bat" message="${upstage.script.upstage-server.win}" />
 		<echo file="${upstage.dir.tmp}/upstage-server.command" message="${upstage.script.upstage-server.mac}" />
 		<echo file="${upstage.dir.tmp}/upstage-server.sh" message="${upstage.script.upstage-server.linux}" />
+
+		<echo file="${upstage.dir.tmp}/upstage-server-daemon.bat" message="${upstage.script.upstage-server-daemon.win}" />
+		<echo file="${upstage.dir.tmp}/upstage-server-daemon.command" message="${upstage.script.upstage-server-daemon.mac}" />
+		<echo file="${upstage.dir.tmp}/upstage-server-daemon.sh" message="${upstage.script.upstage-server-daemon.linux}" />
 		
 		<condition property="upstage.python.executable.replace.win" value="${upstage.python.executable.win}">
 			<isset property="upstage.python.executable.win" />
@@ -439,6 +447,10 @@ March 2013		Added minify with YUI Compressor
 		<replaceregexp file="${upstage.dir.tmp}/upstage-server.bat" match="\$\{upstage.python.executable\}" replace="${upstage.python.executable.replace.win}" flags="g" />
 		<replaceregexp file="${upstage.dir.tmp}/upstage-server.command" match="\$\{upstage.python.executable\}" replace="${upstage.python.executable.replace.mac}" flags="g" />
 		<replaceregexp file="${upstage.dir.tmp}/upstage-server.sh" match="\$\{upstage.python.executable\}" replace="${upstage.python.executable.replace.linux}" flags="g" />
+
+		<replaceregexp file="${upstage.dir.tmp}/upstage-server-daemon.bat" match="\$\{upstage.python.executable\}" replace="${upstage.python.executable.replace.win}" flags="g" />
+		<replaceregexp file="${upstage.dir.tmp}/upstage-server-daemon.command" match="\$\{upstage.python.executable\}" replace="${upstage.python.executable.replace.mac}" flags="g" />
+		<replaceregexp file="${upstage.dir.tmp}/upstage-server-daemon.sh" match="\$\{upstage.python.executable\}" replace="${upstage.python.executable.replace.linux}" flags="g" />
 		
 		<loadfile property="upstage.file.bat" srcfile="${upstage.dir.tmp}/upstage-server.bat" />
 		<loadfile property="upstage.file.command" srcfile="${upstage.dir.tmp}/upstage-server.command" />
@@ -636,6 +648,51 @@ March 2013		Added minify with YUI Compressor
 		</exec>
 		
 	</target>
+
+	<!-- start an already built instance of UpStage as a daemon -->
+	<target name="start" depends="set-variables">
+		
+		<condition property="exec.command" value="cmd">
+			<isset property="isWindows" />
+		</condition>
+		<condition property="exec.argline-server" value="/c upstage-server-daemon.bat">
+			<isset property="isWindows" />
+		</condition>
+		
+		<condition property="exec.command" value="/bin/sh">
+			<isset property="isMacOSX" />
+		</condition>
+		<condition property="exec.argline-server" value="upstage-server-daemon.command">
+			<isset property="isMacOSX" />
+		</condition>
+		
+		<condition property="exec.command" value="/bin/sh">
+			<isset property="isLinux" />
+		</condition>
+		<condition property="exec.argline-server" value="upstage-server-daemon.sh">
+			<isset property="isLinux" />
+		</condition>
+		
+		<!-- DEBUG -->
+		<echo message="______________________________________________________" />
+		<echo message="Generated command-line to start services:" />
+		<echo message="execution directory : ${upstage.dir.build}" />
+		<echo message="upstage             : ${exec.command} ${exec.argline-server}" />
+		<echo message="______________________________________________________" />
+		
+		<!-- start server -->
+		<echo message="Starting UpStage as a backgroup process.." />
+		<exec executable="${exec.command}" dir="${upstage.dir.build}">
+			<arg line="${exec.argline-server}" />
+		</exec>
+
+	</target>
+
+	<!-- clean, build, and run the application as a daemon-->
+	<target name="clean-start" depends="clean,build" description="build and run the application as a backgroup process">
+		<antcall target="start">
+		</antcall>
+	</target>
 	
 	<!-- kill all running server/policyd instances -->
 	<target name="kill" depends="set-variables">
@@ -674,6 +731,9 @@ March 2013		Added minify with YUI Compressor
 		<exec executable="${exec.command}" outputproperty="exec.out" resultproperty ="exec.result">
 			<arg line="${exec.argline-python-kill}" />
 		</exec>
+
+		<!-- delete the pid file too -->
+		<delete file="${upstage.dir.build}/upstage.pid" />
 		
 		<!-- TODO: output exec.error property if return code != 128 -->
 		<echo level="debug" message="Return code: ${exec.out} (${exec.result})" />
