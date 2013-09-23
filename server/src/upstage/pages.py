@@ -324,14 +324,28 @@ class AdminError(AdminBase):
     log_message = 'Reporting Error: %s'
     code = 500
     errorMsg = 'Something went wrong'
-    errorRedirect = '<META HTTP-EQUIV="refresh" CONTENT="2;URL=/admin"/>'#(05-05-2013) Craig
+    errorRedirect = ''#(05-05-2013) Craig
     
     def __init__(self, error, code=None):
         log.msg(self.log_message % error)
         #Template.__init__(self)
         self.error = str(error)
         if code is not None:
-            self.code = code
+            self.code = code        
+        if self.code == 100:
+            errorRedirect = '<META HTTP-EQUIV="refresh" CONTENT="2;URL=/admin/workshop/stage"/>'
+            self.code=500
+        elif self.code == 300:
+            errorRedirect = '<META HTTP-EQUIV="refresh" CONTENT="2;URL=/admin/workshop/mediaedit"/>'
+            self.code=500
+        elif self.code == 400:
+            errorRedirect = '<META HTTP-EQUIV="refresh" CONTENT="2;URL=/admin/workshop/mediaupload"/>'
+            self.code=500
+        elif self.code == 500:
+            errorRedirect = '<META HTTP-EQUIV="refresh" CONTENT="2;URL=/admin"/>'
+        elif self.code == 600:
+            errorRedirect = '<META HTTP-EQUIV="refresh" CONTENT="2;URL=/admin/workshop/user"/>'
+            self.code=500
 
     def render(self, request):
         """render from the template, and set the http response code."""
@@ -1038,10 +1052,10 @@ class StageEditPage(Workshop):
                         self.message = '<hr />Stage created! '
                 except FormError, e:
                     log.msg(e)
-                    return errorpage(request, e)
+                    return errorpage(request, e, 100)
         elif 'new_stage' in self.stagename:
             #Modified by: Daniel, Gavin - Made the message to contain a <form> as well so it shows on the popup box.
-            self.message = '<form action="/admin/workshop/stage"> Full name:<input type="text" name="name" id="name" />Short name for url:<input type="text" name="ID" id="urlname" size="12" />(no spaces).<button onclick="javascript:stageChooseSubmit(); return false;">Create Stage</button></form>'  
+            self.message = '<form action="/admin/workshop/stage">Full name:<input type="text" name="name" id="name" />Short name for url:<input type="text" name="ID" id="urlname" size="12" />(no spaces).<button onclick="javascript:stageChooseSubmit(); return false;">Create Stage</button></form>'  
         elif action=='save':
             if self.stage:
                 self.stage.update_from_form(form, self.player);
@@ -2113,7 +2127,7 @@ class MediaUploadPage(Workshop):
                     get_response(self.media, self.type)    
             except UpstageError, e:
                 log.msg(e)
-                return errorpage(request, "That didn't work! %s" % e) 
+                return errorpage(request, "That didn't work! %s" % e, 400) 
         """
             Modified by Heath, Corey, Karena 24/08/2011 - Added media.tags to the response lines
         """
@@ -2145,7 +2159,7 @@ class NewPlayer(AdminBase):
 
     def render(self, request):
         if not self.player.can_su():
-            return errorpage(request, "You can't do that!")
+            return errorpage(request, "You can't do that!", 600)
         form = request.args
         if 'submit' in form:
             try:
@@ -2154,7 +2168,7 @@ class NewPlayer(AdminBase):
                                               
             except UpstageError, e:
                 log.msg(e)
-                return errorpage(request, "That didn't work! %s" % e)
+                return errorpage(request, "That didn't work! %s" % e, 600)
             
         return AdminBase.render(self, request)
     
@@ -2173,7 +2187,7 @@ class EditPlayer(AdminBase):
             return form.get(x, [None])[0]
         
         if not self.player.can_su():
-            return errorpage(request, "You can't do that!")
+            return errorpage(request, "You can't do that!", 600)
         
         submit = _value('submit')
         action = _value('action')        
@@ -2196,21 +2210,21 @@ class EditPlayer(AdminBase):
             
             except UpstageError, e:
                 log.msg(e)
-                return errorpage(request, "That didn't work! %s" % e)
+                return errorpage(request, "That didn't work! %s" % e, 600)
             
         elif submit == 'updateplayer':
             try:
                 self.collection.players.update_player(form, self.player, False)
             except UpstageError, e:
                 log.msg(e)
-                return errorpage(request, "That didn't work! %s" % e)
+                return errorpage(request, "That didn't work! %s" % e, 600)
             
         elif submit == 'deleteplayer':
             try:
                 self.collection.players.delete_player(form)
             except UpstageError, e:
                 log.msg(e)
-                return errorpage(request, "That didn't work! %s" % e)
+                return errorpage(request, "That didn't work! %s" % e, 600)
             
         return AdminBase.render(self, request)
         
@@ -2509,13 +2523,13 @@ class UserPage(AdminBase):
                     #(19/05/11) Mohammed and Heath - True means that only the password is being saved to the XML
                     self.collection.players.update_player(form, self.player, True)
                 except UpstageError, e:
-                    request.redirect(errorpage(request, str(e)))
+                    request.redirect(errorpage(request, str(e), 600))
                 
             elif submit == 'saveemail':
                 try:
                     self.collection.players.update_email(request.args, self.player)
                 except UpstageError, e:
-                    request.redirect(errorpage(request, str(e)))
+                    request.redirect(errorpage(request, str(e), 600))
                     
         return AdminBase.render(self, request)
             

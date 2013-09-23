@@ -48,8 +48,7 @@ window.onresize = resizePage;
 </div>
 <div id="stageselection">
 	<h1>Make a new stage, or select one to edit</h1>
-	<!-- FIXME why is this form named 'shaun'? Better name it like what the purpose of this form is ... -->
-	<form name ="shaun" action="%(req:path)s">
+	<form name ="selectstage" action="%(req:path)s">
 		<select name="shortName" id="listName">
 			%(list_stages)s
 		</select>
@@ -94,7 +93,7 @@ window.onresize = resizePage;
             <br /> <br />
             <h1>Lock stage</h1> <!--#(01/05/2013)Craig-->
 			 %(attr:stage_CB_lock)s 
-			Lock stage: only creater can edit the stage
+			Lock stage: only creator can edit the stage
             <br /> <br />
 			<h1>Background colour</h1>
 			<table style="padding:5px">
