@@ -1019,7 +1019,7 @@ class StageEditPage(Workshop):
             log.msg(' isowner = : %s' %self.isOwner)
             if self.stage.get_LockStage() == 'true':
                 chec = 'checked="true"' 
-            if self.player.name == self.stage.get_tOwner():
+            if self.player.name == self.stage.get_tOwner() or self.player.can_su:
                 self.isOwner = 'true'
                 log.msg('name == stage owner')
                 self.stage_CB_lock = '<input type="checkbox" id="lockStageCB" name="lockStageCB" %s onclick="if (this.checked) {lockStageChecked()}else{lockStageUnchecked()}" />' %(chec)
