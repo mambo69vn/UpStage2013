@@ -58,8 +58,8 @@ from time import time, strftime, mktime
 
 #upstage
 from upstage import config, util
-from upstage.util import save_tempfile, validSizes, getFileSizes
-from upstage.misc import new_filename, no_cache, UpstageError
+from upstage.util import unique_custom_string, save_tempfile, validSizes, getFileSizes
+from upstage.misc import no_cache, UpstageError
 from upstage.stage import reloadStagesInList
 #Lisa 21/08/2013 - removed video avatar code
 from upstage.pages import  AdminLoginPage, AdminBase, errorpage, Workshop, HomePage, SignUpPage, Workshop, StageEditPage,\
