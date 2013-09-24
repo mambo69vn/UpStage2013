@@ -258,7 +258,7 @@ function navHome()
 {
     if(isLoggedIn())
     {
-        window.location = '/admin/home';
+        window.location = '/admin/adminhome';
     }
     else
         window.location = '/home';
@@ -266,9 +266,12 @@ function navHome()
 
 function navHomeUser()
 {
+    if(isLoggedIn())
     {
-        window.location = '/home';
-    }   
+        window.location = '/adminhome';
+    }
+    else
+        window.location = '/home';  
 }
  /*
     Gavin Chan (28/05/2013) - Created a navAdmin function so the website can redirect  
@@ -350,7 +353,7 @@ function logout()
 	deleteCookie('usernameUpStage');
 	window.location='/admin/perspective-destroy';
 	document.getElementById('signup').innerHTML = loginLinks;
-	navHomeUser();
+	window.location = '/home';
 }
 
 /**

@@ -59,7 +59,7 @@ from upstage import config, util
 from upstage.util import save_tempfile, validSizes, getFileSizes
 from upstage.misc import new_filename, no_cache, UpstageError
 #Lisa 21/08/2013 - removed video avatar code
-from upstage.pages import  AdminLoginPage, AdminBase, errorpage, Workshop, HomePage, SignUpPage, Workshop, StageEditPage,\
+from upstage.pages import  AdminLoginPage, AdminBase, errorpage, Workshop, HomePage, AdminHomePage, SignUpPage, Workshop, StageEditPage,\
                            MediaUploadPage, MediaEditPage, CreateDir, \
                            NewPlayer, EditPlayer, NewAvatar, NewProp, NewBackdrop, NewAudio,     \
                            ThingsList, StagePage, UserPage, NonAdminPage, PageEditPage, HomeEditPage, WorkshopEditPage, SessionCheckPage, successpage,\
@@ -191,6 +191,8 @@ def _getWebsiteTree(data):
     docroot.putChild('admin', adminWrapper(data))
     # Shaun Narayan (02/01/10) - Added home and signup pages to docroot.
     docroot.putChild('home', HomePage(data))
+    # Lisa Helm (24/09/13) - added adminhomepage
+    docroot.putChild('adminhome', AdminHomePage(data))
     docroot.putChild('signup', SignUpPage())
  	# Daniel Han (03/07/2012) - Added this session page.
     docroot.putChild('session', SessionCheckPage(data.players))
@@ -249,6 +251,7 @@ class AdminRealm:
 			# password changer.       
 			# Assign the new and edit pages to the website tree         
 			tree.putChild('workshop', CreateDir(player, workshop_pages))
+			tree.putChild('adminhome', AdminHomePage(self.data, player))
 			tree.putChild('save_thing', SwfConversionWrapper(self.data.mediatypes, player))
 			#Lisa 21/08/2013 - removed video avatar code
 			# PQ & EB Added 12.10.07
@@ -412,7 +415,7 @@ class AudioThing(Resource):
                     request.finish()
                     """
                     AdminError.errorMsg = 'File over 1MB' #Change error message to file exceed - Gavin
-                    request.write(errorpage(request, 'Media uploads are limited to files of 1MB or less, to help ensure that unnecessarily large files do not cause long loading times for your stage. Please make your file smaller or, if you really need to upload a larger file, contact the administrator of this server to ask for permission.'))
+                    request.write(errorpage(request, 'Media uploads are limited to files of 1MB or less, to help ensure that unnecessarily large files do not cause long loading times for your stage. Please make your file smaller or, if you really need to upload a larger file, contact the administrator of this server to ask for permission.', 'mediaupload'))
                     request.finish()
                 except OSError, e:
                     log.err("Error removing temp file %s (already gone?):\n %s" % (tfn, e))
@@ -529,7 +532,7 @@ class SwfConversionWrapper(Resource):
                 thumbnail_full = os.path.join(config.THUMBNAILS_DIR, thumbnail)
     
             except UpstageError, e:            
-                return errorpage(request, e, 500)
+                return errorpage(request, e, 'mediaupload')
     
             """ Alan (13/09/07) ==> Check the file sizes of avatar frame """
             # natasha continue conversion
@@ -629,7 +632,7 @@ class SwfConversionWrapper(Resource):
                     self.assign_media_to_stages(self.assignedstages, swf, self.mediatype)
                     
             except UpstageError, e:            
-                return errorpage(request, e, 500)
+                return errorpage(request, e, 'mediaupload')
             
             log.msg("render(): got past media_dict.add, YES")
             
@@ -640,7 +643,7 @@ class SwfConversionWrapper(Resource):
         else:
             # output error, because we do not have a valid imagetype
             log.err('SwfConversionWrapper: render(): Unsupported imagetype: %s' % imagetype)
-            request.write(errorpage(request, "Unsupported image type '%s'." % imagetype))
+            request.write(errorpage(request, "Unsupported image type '%s'." % imagetype, 'mediaupload'))
             request.finish() 
         
         return server.NOT_DONE_YET
@@ -813,7 +816,7 @@ class SwfConversionWrapper(Resource):
     def failure_upload(self, exitcode, swf, thumbnail, form, request):
         """Nothing much to do but spread the word"""
         AdminError.errorMsg = 'Something went wrong' #Change error message back to default - Gavin
-        request.write(errorpage(request, 'SWF creation failed - maybe the image was bad. See img2swf.log for details'))
+        request.write(errorpage(request, 'SWF creation failed - maybe the image was bad. See img2swf.log for details', 'mediaupload'))
         request.finish() 
         
     def cleanup_upload(self, nothing, tfns):
@@ -843,7 +846,7 @@ class SpeechTest(Resource):
         voice = form.get('voice')
         text = form.get('text')
         if not text or not voice:
-            return errorpage(request, "you need a voice and something for it to say")
+            return errorpage(request, "you need a voice and something for it to say", 'mediaupload')
         speech_url = self.speech_server.utter(text, voice=voice)
         request.setHeader('Content-type', 'audio/mpeg')
         request.redirect(speech_url)
