@@ -79,16 +79,8 @@ class _MediaFile(object):
         """@param kwargs argument list 
            (name, voice, type, tags, height, width, medium, description, uploader, dateTime, streamserver, streamname)"""
         self.file = kwargs.pop('file', None)
-        
-        if (self.file[-4:] == '.mp3'):
-            self.url = config.AUDIO_URL + self.file
-        else:
-            library_prefix_length = len(config.LIBRARY_PREFIX)
-            if(self.file[:library_prefix_length] == config.LIBRARY_PREFIX):   # handle library items (included in client.swf)
-                self.url = self.file
-            else:
-                self.url = config.MEDIA_URL + self.file
 
+        self.setUrl(self.file)
         self.setThumbnail(kwargs.pop('thumbnail', None))
 
         self.name = kwargs.pop('name', 'nameless').strip()
@@ -110,6 +102,17 @@ class _MediaFile(object):
         
         if kwargs:
             log.msg('left over arguments in _MediaFile', kwargs)
+
+    def setUrl(self, filename):
+        """set url using the filename"""
+        if (filename[-4:] == '.mp3'):
+            self.url = config.AUDIO_URL + filename
+        else:
+            library_prefix_length = len(config.LIBRARY_PREFIX)
+            if(filename[:library_prefix_length] == config.LIBRARY_PREFIX):   # handle library items (included in client.swf)
+                self.url = filename
+            else:
+                self.url = config.MEDIA_URL + filename
 
     def setThumbnail(self, thumbnail):
         """set thumbnail images"""
