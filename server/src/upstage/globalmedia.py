@@ -36,6 +36,7 @@ Modified by: Heath Behrens 16/08/2011 - added code in update_from_form to extrac
 Modified by: Lisa Helm 21/08/2013       - removed all code relating to old video avatar
 Modified by: Nitkalya Wiriyanuparb  10/09/2013  - Added media width and height in various placess (for avatar and prop resizing issues)
 Modified by: Nitkalya Wiriyanuparb  10/09/2013  - Added new methods (setThumbnail, restoreOldFile, deleteFile) to support media replacing functionality
+Modified by: Nitkalya Wiriyanuparb  24/09/2013  - Added setUrl method and modified the class to use new format of keys instead of file names
 Notes: 
 """
 
@@ -79,6 +80,7 @@ class _MediaFile(object):
         """@param kwargs argument list 
            (name, voice, type, tags, height, width, medium, description, uploader, dateTime, streamserver, streamname)"""
         self.file = kwargs.pop('file', None)
+        self.key = kwargs.pop('key')
 
         self.setUrl(self.file)
         self.setThumbnail(kwargs.pop('thumbnail', None))
@@ -147,22 +149,22 @@ class MediaDict(Xml2Dict):
     
     # Natasha - created set media stage to enable assignment of media to stage from
     # upload media
-    def set_media_stage(self, stagename, medianame):
+    def set_media_stage(self, stagename, mediakey):
         log.msg('In set media stage/global media. Stages are: %s' % self.stages)
         if self.stages is not None:
             for x in self.stages:
                 if x == stagename:
                     stage = self.stages.get(x) # was only a string not object
                     #stage.add_avatar(medianame)
-                    stage.add_mediato_stage(medianame)
+                    stage.add_mediato_stage(mediakey)
                     # add method in stage to accept a new media then save to xml
             
     
     def parse_element(self, node):
         """Add XML values to the dictionary
         @param node node to parse"""
-        f = node.getAttribute('file')
-        av = _MediaFile(file=f,
+        key = node.getAttribute('key')
+        av = _MediaFile(file=node.getAttribute('file'),
                         name=node.getAttribute('name') or 'untitled',
                         voice=node.getAttribute('voice') or '',
                         height=node.getAttribute('height') or '',
@@ -174,8 +176,9 @@ class MediaDict(Xml2Dict):
                         tags=node.getAttribute('tags') or '', # Heath, Corey, Karena 24/08/2011 - added tags to mediafile
                         streamname=node.getAttribute('streamname') or '',
                         streamserver=node.getAttribute('streamserver') or '',
+                        key=key
                         )
-        dict.__setitem__(self, f, av)
+        dict.__setitem__(self, key, av)
 
     def write_element(self, root, av, mf):
         """Add a new element to the XML dictionary
@@ -186,9 +189,19 @@ class MediaDict(Xml2Dict):
         #attr['file']=av
         
         # AC (29.09.07) - Added uploader and datetime fields in XML media item files.
-        node = root.add(self.element, file=mf.file, url=mf.url, name=mf.name,
-                        thumbnail=mf.thumbnail, uploader=mf.uploader, dateTime=mf.dateTime, tags=mf.tags,
-                        streamserver=mf.streamserver, streamname=mf.streamname, width=mf.width, height=mf.height)
+        node = root.add(self.element,
+                        file=mf.file,
+                        url=mf.url,
+                        name=mf.name,
+                        thumbnail=mf.thumbnail,
+                        uploader=mf.uploader,
+                        dateTime=mf.dateTime,
+                        tags=mf.tags,
+                        streamserver=mf.streamserver,
+                        streamname=mf.streamname,
+                        width=mf.width,
+                        height=mf.height,
+                        key=mf.key)
         
         #for attr in ('voice', 'medium'):
         for attr in ('voice', 'medium', 'streamserver', 'streamname'):
@@ -214,22 +227,26 @@ class MediaDict(Xml2Dict):
 
     def add(self, **kwargs):
         """Put a new item in, and save it (implicitly, through __setitem__)"""
-        f = kwargs.get('file', None)
-        log.msg("add(): file = %s" % f)
-        if f is not None:
-            self[f] = _MediaFile(**kwargs)
-            return self[f]
+        key = kwargs.get('key', None)
+        log.msg("add(): key = %s" % key)
+        log.msg("add(): file = %s" % kwargs.get('file', None))
+        if key is not None:
+            self[key] = _MediaFile(**kwargs)
+            return self[key]
+        else:
+            raise AttributeError("key cannot be None")
 
+    # Ing - looks like it's unused?
     # Natasha - attempt to add an item via the form
-    def addItem(self, form): 
-        self.form = form
-        f = form.get('file', None)
-        log.msg("addItem(): file = %s" % f)
-        log.msg("addItem(): form = %s" % form)
-        if f is not None:
-            self[f] = _MediaFile(form)
-            return self[f]
-        log.msg('tried to add file with no file attribute! %s' % form)
+    # def addItem(self, form): 
+    #     self.form = form
+    #     f = form.get('file', None)
+    #     log.msg("addItem(): file = %s" % f)
+    #     log.msg("addItem(): form = %s" % form)
+    #     if f is not None:
+    #         self[f] = _MediaFile(form)
+    #         return self[f]
+    #     log.msg('tried to add file with no file attribute! %s' % form)
 
     def restoreOldFile(self, filename):
         """Restores old file from the old media folder if it has been replaced earlier.
@@ -277,8 +294,8 @@ class MediaDict(Xml2Dict):
 
 
     def _get_stage_collections(self):
-        """make a list of (ThingDict, _Stage) pairs, with the
-        ThingDict being the relevant collection for this type of
+        """make a list of (ThingCollection, _Stage) pairs, with the
+        ThingCollection being the relevant collection for this type of
         media, for the corresponding stage.
         """
         #more direct ways possible -- using a ThingDict 'element'
@@ -288,10 +305,10 @@ class MediaDict(Xml2Dict):
         stages = self.stages.items() 
         stages.sort()
     
-        for k, s in stages: # Alan (28.01.08) - Added k for key as a set is return from items().
-            for c in s.avatars, s.props, s.backdrops, s.audios: # PQ: Added s.audios 13.10.07
-                if c.globalmedia is self:
-                    collections.append((c, s))
+        for key, stageObject in stages: # Alan (28.01.08) - Added k for key as a set is return from items().
+            for aCollection in stageObject.avatars, stageObject.props, stageObject.backdrops, stageObject.audios: # PQ: Added s.audios 13.10.07
+                if aCollection.globalmedia is self:
+                    collections.append((aCollection, stageObject))
         
         return collections
 
@@ -612,7 +629,7 @@ class MediaDict(Xml2Dict):
             if(datakey == 'name'):
                 log.msg("MediaDict: update_data(): prepare data: all_media_names=%s" % pprint.saferepr(all_media_names))
                 reserved_media_names_dict = all_media_names
-                reserved_media_names_dict.pop(media.file)
+                reserved_media_names_dict.pop(media.key)
                 reserved_media_names = [x for x in reserved_media_names_dict.values()]
                 log.msg("MediaDict: update_data(): prepare data: reserved_media_names=%s" % pprint.saferepr(reserved_media_names))
                 if newvalue in reserved_media_names:
@@ -772,9 +789,10 @@ class MediaDict(Xml2Dict):
         
     """Shaun Narayan (02/14/10) - List media, and assign stage names before returning"""
     def get_media_list(self ,prefix=DELETE_PREFIX):
-        things = [(v.name.lower(), {'name': v.name,
+        # a list of tuples
+        things = [(v.key, {'name': v.name,
                             'type':v.medium,
-                            'media': k,
+                            'key': k,
                             'checked': '',
                             'thumb': v.web_thumbnail,
                             'typename': self.element,
@@ -787,6 +805,7 @@ class MediaDict(Xml2Dict):
                             'tags':v.tags, # Vibhu and Heath (01/09/2011) - Added tags attribute to return associated tags for a media.
                             'width':v.width,
                             'height':v.height,
+                            'file': v.file,
 
                             # add stream parameters:
                             'streamname':v.streamname,
@@ -797,11 +816,13 @@ class MediaDict(Xml2Dict):
             things.sort()
             
         collections = self._get_stage_collections() 
-        for n, d in things:
-            hits = [s.ID for c, s in collections if d['media'] in c.media]
+        for name, dataDict in things:
+            hits = [stageObject.ID \
+                    for aCol, stageObject in collections \
+                    if dataDict['key'] in aCol.media]
             if hits:
                 links = ', '.join(['%s' % (ID) for ID in hits])
-                d['stages'] = links
+                dataDict['stages'] = links
                 
         return things
     
@@ -853,7 +874,7 @@ class MediaDict(Xml2Dict):
                     
                     for n, d in things:                        
                         for i in c.things.values():
-                            if d['name'] == i.name and d['media'] in c.media: table.extend(inc % d)
+                            if d['name'] == i.name and d['key'] in c.media: table.extend(inc % d)
                                     
                     table.extend(end_stage_group)
             

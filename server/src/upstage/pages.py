@@ -101,6 +101,7 @@ Modified by: Lisa Helm 05/09/2013       - added Sign Up page edit mode
 Modified by: Nitkalya Wiriyanuparb  14/09/2013  - Fixed player/audience stat info bug in workshop. AdminBase needs data.stages collection (from web.py) to calculate the stat
 Modified by: Nitkalya Wiriyanuparb  15/09/2013  - Made success redirection target more flexible
 Modified by: Nitkalya Wiriyanuparb  16/09/2013  - Removed unused AudioThing class
+Modified by: Nitkalya Wiriyanuparb  24/09/2013  - Modified StageEditPage and MediaEditPage to use new format of keys for media_dict instead of file names
 """
 
 #standard lib
@@ -833,7 +834,7 @@ class StageEditPage(Workshop):
                 avatars.sort()
             if len(avatars) != 0:
                 for a in avatars:
-                    table.extend('<option value="%s">%s</option>' %(a.name, a.name))
+                    table.extend('<option value="%s">%s</option>' %(a.media.key, a.name))
             else:
                 table.extend('<option value="No Avatars">No Avatars</option>')
             return ''.join(table)
@@ -851,7 +852,7 @@ class StageEditPage(Workshop):
                props.sort()
             if len(props) != 0:
                 for p in props:
-                    table.extend('<option value="%s">%s</option>' %(p.name, p.name))
+                    table.extend('<option value="%s">%s</option>' %(p.media.key, p.name))
             else:
                 table.extend('<option value="No Props">No Props</option>')
             return ''.join(table)
@@ -868,7 +869,7 @@ class StageEditPage(Workshop):
                backdrops.sort()
             if len(backdrops) != 0:
                 for b in backdrops:
-                    table.extend('<option value="%s">%s</option>' %(b.name, b.name))
+                    table.extend('<option value="%s">%s</option>' %(b.media.key, b.name))
             else:
                 table.extend('<option value="No Backdrops">No Backdrops</option>')
             return ''.join(table)
@@ -885,7 +886,7 @@ class StageEditPage(Workshop):
                audios.sort()
             if len(audios) != 0:
                 for au in audios:
-                    table.extend('<option value="%s">%s</option>' %(au.name, au.name))
+                    table.extend('<option value="%s">%s</option>' %(au.media.key, au.name))
             else:
                 table.extend('<option value="No Audios">No Audios</option>')
             return ''.join(table)
@@ -956,33 +957,33 @@ class StageEditPage(Workshop):
             return 'true'
 
     def esUnAssignMedia(self,request,iType):#(16/04/2013) Craig
-        mName =''
+        mKey =''
         if iType == 1:
-            mName = ((request.args.get('AvatarList',['']))[0])
+            mKey = ((request.args.get('AvatarList',['']))[0])
         elif iType ==2:
-            mName = ((request.args.get('PropList',['']))[0])
+            mKey = ((request.args.get('PropList',['']))[0])
         elif iType ==3:
-            mName = ((request.args.get('BackdropList',['']))[0])
+            mKey = ((request.args.get('BackdropList',['']))[0])
         elif iType == 4:
-            mName = ((request.args.get('AudioList',['']))[0])
-        mName = ('%s'%(mName))
-        mName = self.stage.get_thing_mediaFile_name(mName,iType)
-        self.stage.remove_media_from_stage(mName)
+            mKey = ((request.args.get('AudioList',['']))[0])
+        mKey = ('%s'%(mKey))
+        key = mKey #self.stage.get_media_file_by_name(mKey,iType,True)
+        self.stage.remove_media_from_stage(key)
 
     def esViewMedia(self,request,iType):#(22/04/2013) Craig
         self.stage_ViewImg = ''
         imgThumbUrl = ''
         if iType == 1:
-            mName = ((request.args.get('AvatarList',['']))[0])
+            mKey = ((request.args.get('AvatarList',['']))[0])
         elif iType == 2:
-            mName = ((request.args.get('PropList',['']))[0])
+            mKey = ((request.args.get('PropList',['']))[0])
         elif iType == 3:
-            mName = ((request.args.get('BackdropList',['']))[0])
-        #mName = ('%s'%(mName))
-        mName = self.stage.get_thing_mediaFile_name(mName,iType)
-        if mName != '':
-            imgThumbUrl = config.MEDIA_URL + mName
-            self.stage_ViewImg = '<object><param id="esMediaPreview" name="esMediaPreview" value="%s"><embed src="%s"></embed></object>' %(mName,imgThumbUrl)
+            mKey = ((request.args.get('BackdropList',['']))[0])
+        #mKey = ('%s'%(mKey))
+        filename = self.stage.get_media_file_by_key(mKey,iType)
+        if filename != '':
+            imgThumbUrl = config.MEDIA_URL + filename
+            self.stage_ViewImg = '<object><param id="esMediaPreview" name="esMediaPreview" value="%s"><embed src="%s"></embed></object>' %(filename,imgThumbUrl)
 
     def setupStageLock(self, request):#(01/05/2013) Craig
         chec = ''
@@ -1303,15 +1304,15 @@ class MediaEditPage(Workshop):
                 
                 # process all list elements
                 for media_item in media:
+                    # media_tiem is tuple (key, dataDict)
                     log.msg("MediaEditPage: render_POST(): key=%s, media_item=%s" % (pprint.saferepr(media_item[0]),pprint.saferepr(media_item)))
                     # check if key exists in media
                     if self.select_key == media_item[0]:
                         log.msg("MediaEditPage: render_POST(): select_key='%s' - found in global media collection" % self.select_key)
                         
                         # TODO check if media_item[1] exists ...
-                        
                         # get the selected_media_key
-                        self.selected_media_key = media_item[1].get('media')
+                        self.selected_media_key = self.select_key # media_item[1].get('key')
                         break
                 
                 log.msg("MediaEditPage: render_POST(): selected_media_key=%s" % self.selected_media_key)            
@@ -1455,7 +1456,7 @@ class MediaEditPage(Workshop):
             # prepare data (like resolve thumbnail and file paths, etc.)
             
             typename=value['typename']
-            file_path = value['media']
+            file_path = value['file']
             if config.LIBRARY_PREFIX in file_path:
                 file_path = convertLibraryItemToImageFilePath(file_path)
             elif (len(file_path) > 0):
@@ -1483,13 +1484,13 @@ class MediaEditPage(Workshop):
             
             # determine file size (in bytes)
             size = 0    # default
-            relative_file_path = self.collection.avatars.path(value['media'])   # TODO better use utility function?
+            relative_file_path = self.collection.avatars.path(value['file'])   # TODO better use utility function?
             log.msg('MediaEditPage: relative_file_path=%s' % relative_file_path)
             if(relative_file_path != ""):
                 size = os.path.getsize(relative_file_path)
                 
             # determine a safe save_filename for downloading the media as file
-            save_filename = value['media']
+            save_filename = value['file']
             if config.LIBRARY_PREFIX in save_filename:
                 save_filename = ''
             else:
@@ -1515,7 +1516,7 @@ class MediaEditPage(Workshop):
                            thumbnail=thumbnail,
                            thumbnail_icon=thumbnail_icon,
                            stages=value['stages'],
-                           file_original=value['media'],
+                           file_original=value['file'],
                            file=file_path,
                            save_filename=save_filename,
                            size=size,
@@ -1660,7 +1661,7 @@ class MediaEditPage(Workshop):
         media.extend(self.collection.audios.get_media_list())
         all_media_names = dict()
         for _key, value in media:
-            mediakey = value['media']
+            mediakey = value['key']
             name = value['name']
             all_media_names[mediakey] = name
                 

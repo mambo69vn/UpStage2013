@@ -641,6 +641,7 @@ function setupDataGrid() {
 					$('#replaceMediaPanel #stages').val(selectedMediaData['stages']);
 					$('#replaceMediaPanel #name').val(selectedMediaData['name']);
 					$('#replaceMediaPanel #oldfile').val(selectedMediaData['file_original']);
+					$('#replaceMediaPanel #key').val(selectedMediaData['key']);
 
 					var type = selectedMediaData['type'];
 					var medium = selectedMediaData['medium'];
