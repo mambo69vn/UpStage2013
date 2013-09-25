@@ -39,6 +39,8 @@ Modified by: Lisa Helm 21/08/2013       - removed all code relating to old video
 Modified by: Lisa Helm 05/09/2013       - added Edit/Signup 
 Modified by: Nitkalya Wiriyanuparb  10/09/2013  - Added swfdump calls to get swf file's width and height for resizing media on stage in success_upload()
 Modified by: Nitkalya Wiriyanuparb  14/09/2013  - Fixed player/audience stat info bug in workshop by passing the whole data collection
+Modified by: Lisa Helm 13/09/2013  - altered errorpage calls to provide source page identifying string
+
 """
 
 
@@ -59,11 +61,11 @@ from upstage import config, util
 from upstage.util import save_tempfile, validSizes, getFileSizes
 from upstage.misc import new_filename, no_cache, UpstageError
 #Lisa 21/08/2013 - removed video avatar code
-from upstage.pages import  AdminLoginPage, AdminBase, errorpage, Workshop, HomePage, AdminHomePage, SignUpPage, Workshop, StageEditPage,\
+from upstage.pages import  AdminLoginPage, AdminBase, errorpage, Workshop, HomePage, SignUpPage, Workshop, StageEditPage,\
                            MediaUploadPage, MediaEditPage, CreateDir, \
                            NewPlayer, EditPlayer, NewAvatar, NewProp, NewBackdrop, NewAudio,     \
                            ThingsList, StagePage, UserPage, NonAdminPage, PageEditPage, HomeEditPage, WorkshopEditPage, SessionCheckPage, successpage,\
-                           NonAdminEditPage, StagesEditPage, SignupEditPage, AdminError #VideoThing, AudioThing, 
+                           NonAdminEditPage, StagesEditPage, SignupEditPage, AdminError #VideoThing, AudioThing 
 
 #twisted
 from twisted.python import log
@@ -191,8 +193,6 @@ def _getWebsiteTree(data):
     docroot.putChild('admin', adminWrapper(data))
     # Shaun Narayan (02/01/10) - Added home and signup pages to docroot.
     docroot.putChild('home', HomePage(data))
-    # Lisa Helm (24/09/13) - added adminhomepage
-    docroot.putChild('adminhome', AdminHomePage(data))
     docroot.putChild('signup', SignUpPage())
  	# Daniel Han (03/07/2012) - Added this session page.
     docroot.putChild('session', SessionCheckPage(data.players))
@@ -251,7 +251,6 @@ class AdminRealm:
 			# password changer.       
 			# Assign the new and edit pages to the website tree         
 			tree.putChild('workshop', CreateDir(player, workshop_pages))
-			tree.putChild('adminhome', AdminHomePage(self.data, player))
 			tree.putChild('save_thing', SwfConversionWrapper(self.data.mediatypes, player))
 			#Lisa 21/08/2013 - removed video avatar code
 			# PQ & EB Added 12.10.07

@@ -99,6 +99,7 @@ Modified by: Lisa Helm 21/08/2013       - removed all code relating to old video
 Modified by: Lisa Helm 04/09/2013       - called a correct method when clearing a stage
 Modified by: Lisa Helm 05/09/2013       - added Sign Up page edit mode 
 Modified by: Nitkalya Wiriyanuparb  14/09/2013  - Fixed player/audience stat info bug in workshop. AdminBase needs data.stages collection (from web.py) to calculate the stat
+Modified by: Lisa Helm 13/09/2013  - altered errorpage calls to provide source page identifying string
 """
 
 #standard lib
@@ -323,7 +324,7 @@ class AdminError(AdminBase):
     log_message = 'Reporting Error: %s'
     code = 500
     errorMsg = 'Something went wrong'
-    errorRedirect = ''#(05-05-2013) Craig
+    errorRedirect = '<META HTTP-EQUIV="refresh" CONTENT="2;URL=/admin"/>'#(05-05-2013) Craig
     
     def __init__(self, error, page='', code=None):
         log.msg(self.log_message % error)
@@ -705,26 +706,6 @@ class HomePage(AdminBase):
         html_list += '</table>'
         return html_list
         
-""" Lisa Helm (24/09/2013) Created AdminHomePage as almsot exact copy of HomePage so that links are available when logged in """
-class AdminHomePage(AdminBase):
-
-    filename="adminhome.xhtml"
-    
-    def __init__(self, collection=None, player=None):
-        self.collection = collection
-        self.player = player
-
-    def render(self, request):
-        return Template.render(self, request)
-    
-    def text_list(self, request):
-        html_list = '<table id="playerAudience" class="stage_list" cellspacing="0"><tr><th>Name (url)</th><th>Players</th><th>Audience</th><th>Your Access</th></tr>'
-        slist = self.collection.stages.load_StageList()#(08/04/2013) Craig
-        html_list += self.collection.stages.html_list(self.text_username(request),slist)
-        html_list += '</table>'
-        return html_list
- 
-"""
 Added by Daniel Han (03/07/2012)	- To set the session of player
 									- it checks both username:password combination to be more safe.
 """
