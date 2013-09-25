@@ -40,6 +40,8 @@
             Modified by Nitkalya (3/9/2013): Fix confusing "save and reload stage" message
             Modified by Nitkalya (4/9/2013): Edit clear stage warning message as clients requested
             Modified by Nitkalya (14/9/2013): Make player/audience stat info clearer, and fix issues when it displays NaN audiences on some pages
+            Modified by Lisa (24/09/2013): Added code to provide different home page for guests and users
+            Modified by Nitkalya (25/09/2013): Added methods to remove and create workshop link dynamically using javascript
  */
 
 //Instance type variables
@@ -161,6 +163,31 @@ function temp_getCookie(c_name)
 		//setCookie("usernameUpStage", value, 0, 1);
 	}
 
+// Ing - Use javascript to dynamically create and remove workshop nav link
+/**
+ * Create workshop link on nav bar for users
+ */
+function createWorkshopLink()
+{
+	var workshopLink = document.getElementById('workshop-link');
+    if (!workshopLink && (document.getElementById('nav') !== null)) {
+    	workshopLink = document.createElement('a');
+    	workshopLink.href = "javascript:navWorkshop()";
+    	workshopLink.text = "WORKSHOP";
+    	workshopLink.parentNode.insertBefore(workshopLink, document.getElementById('stage-link'));
+    }
+}
+
+/**
+ * Remove workshop link after user has logged out
+ */
+function removeWorkshopLink()
+{
+	var workshopLink = document.getElementById('workshop-link');
+    if (workshopLink)
+    	workshopLink.parentNode.removeChild(workshopLink);
+}
+
 /**
  * For dynamic section of master page, check if the server has authenticated,
  * if so welcome the user else keep the form.
@@ -196,6 +223,7 @@ function clearLogin()
 					html_str=loginLinks;
 				}
 				document.getElementById('signup').innerHTML = html_str;
+                removeWorkshopLink();
 			}
 		}
 		else
@@ -205,6 +233,7 @@ function clearLogin()
 			var temp = new Array();
 			temp = serverInfo.split('#');
 			document.getElementById('signup').innerHTML = 'Welcome back, ' +loggedInPlayer +'!<br/><a href="javascript:logout();">logout</a><br /><br /><strong>Currently on Stages</strong><br />Registered Players : ' + temp[0] + '<br />Guest Audiences : ' + temp[1];
+            createWorkshopLink();
 		}
 	}
 	catch(ex)
@@ -259,16 +288,23 @@ function navHome()
     if(isLoggedIn())
     {
         window.location = '/admin/home';
+        createWorkshopLink();
     }
     else
+    {
         window.location = '/home';
+        removeWorkshopLink();
+    }
 }
 
 function navHomeUser()
 {
+    if(isLoggedIn())
     {
         window.location = '/home';
-    }   
+    }
+    else
+        window.location = '/home';
 }
  /*
     Gavin Chan (28/05/2013) - Created a navAdmin function so the website can redirect  
@@ -351,7 +387,7 @@ function logout()
 	};
 	window.location='/admin/perspective-destroy';
 	document.getElementById('signup').innerHTML = loginLinks;
-	navHomeUser();
+	window.location = '/home';
 }
 
 /**

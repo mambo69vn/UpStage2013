@@ -98,6 +98,7 @@ Modified by: Craig Farrell  05/05/2013  - added new redirect to the errorpage
 Modified by: Lisa Helm 21/08/2013       - removed all code relating to old video avatar
 Modified by: Lisa Helm 04/09/2013       - called a correct method when clearing a stage
 Modified by: Lisa Helm 05/09/2013       - added Sign Up page edit mode 
+Modified by: Lisa Helm 13/09/2013  - altered errorpage calls to provide source page identifying string
 Modified by: Nitkalya Wiriyanuparb  14/09/2013  - Fixed player/audience stat info bug in workshop. AdminBase needs data.stages collection (from web.py) to calculate the stat
 Modified by: Nitkalya Wiriyanuparb  15/09/2013  - Made success redirection target more flexible
 Modified by: Nitkalya Wiriyanuparb  16/09/2013  - Removed unused AudioThing class
@@ -323,18 +324,28 @@ class AdminBase(Template):
 class AdminError(AdminBase):
     """error page, in same clothes as AdminBase"""
     filename = 'error.xhtml'
-    errorRedirect = ''
     log_message = 'Reporting Error: %s'
     code = 500
     errorMsg = 'Something went wrong'
     errorRedirect = '<META HTTP-EQUIV="refresh" CONTENT="2;URL=/admin"/>'#(05-05-2013) Craig
     
-    def __init__(self, error, code=None):
+    def __init__(self, error, page='', code=None):
         log.msg(self.log_message % error)
         #Template.__init__(self)
         self.error = str(error)
         if code is not None:
-            self.code = code
+            self.code = code        
+        if page == 'stage':
+            self.errorRedirect = '<META HTTP-EQUIV="refresh" CONTENT="2;URL=/admin/workshop/stage"/>'
+            errorMsg = 'ffuuuuu'
+        elif page == 'mediaedit':
+            self.errorRedirect = '<META HTTP-EQUIV="refresh" CONTENT="2;URL=/admin/workshop/mediaedit"/>'
+        elif page == 'mediaupload':
+            self.errorRedirect = '<META HTTP-EQUIV="refresh" CONTENT="2;URL=/admin/workshop/mediaupload"/>'
+        elif page == 'user':
+            self.errorRedirect = '<META HTTP-EQUIV="refresh" CONTENT="2;URL=/admin/workshop/user"/>'
+        else:
+            self.errorRedirect = '<META HTTP-EQUIV="refresh" CONTENT="2;URL=/admin"/>'
 
     def render(self, request):
         """render from the template, and set the http response code."""
@@ -620,13 +631,13 @@ class AdminWarning(AdminError):
     code = 200
 
 
-def errorpage(request, message='bad posture', code=500):
+def errorpage(request, message='bad posture', page='admin', code=500):
     """Convenience error writer
     Makes an error page, and returns a rendering thereof.
     @param request request that is being handled
     @param message message to send to AdminError"""
     #XXX should set error header code.
-    p = AdminError(message, code)
+    p = AdminError(message, page, code)
     r = p.render(request)
     return r
 
@@ -1041,11 +1052,11 @@ class StageEditPage(Workshop):
                         self.stage = self.collection.stages.get(ID)
                         self.message = '<hr />Stage created! '
                 except FormError, e:
-                    log.msg(e)
-                    return errorpage(request, e)
+                    log.msg(e)                    
+                    return errorpage(request, e, 'stage')
         elif 'new_stage' in self.stagename:
             #Modified by: Daniel, Gavin - Made the message to contain a <form> as well so it shows on the popup box.
-            self.message = '<form action="/admin/workshop/stage"> Full name:<input type="text" name="name" id="name" />Short name for url:<input type="text" name="ID" id="urlname" size="12" />(no spaces).<button onclick="javascript:stageChooseSubmit(); return false;">Create Stage</button></form>'  
+            self.message = '<form action="/admin/workshop/stage">Full name:<input type="text" name="name" id="name" />Short name for url:<input type="text" name="ID" id="urlname" size="12" />(no spaces).<button onclick="javascript:stageChooseSubmit(); return false;">Create Stage</button></form>'  
         elif action=='save':
             if self.stage:
                 self.stage.update_from_form(form, self.player);
@@ -1311,6 +1322,7 @@ class MediaEditPage(Workshop):
                         log.msg("MediaEditPage: render_POST(): select_key='%s' - found in global media collection" % self.select_key)
                         
                         # TODO check if media_item[1] exists ...
+                        
                         # get the selected_media_key
                         self.selected_media_key = self.select_key # media_item[1].get('key')
                         break
@@ -1674,8 +1686,610 @@ class MediaEditPage(Workshop):
             log.msg("MediaEditPage: _update_data: no success! update failed.")
         else:
             log.msg("MediaEditPage: _update_data: successfully updated.")
-        
     
+class MediaUploadPage(Workshop):
+    
+    filename="mediaupload.xhtml"
+
+    def __init__(self, player, collection):
+        AdminBase.__init__(self, player, collection)
+        self.player = player
+        self.collection = collection
+    
+    def text_stage_list(self, request):
+        keys = self.collection.stages.getKeys()
+        table = [] 
+        if keys:
+            for k in keys:
+                stage = self.collection.stages.get(k)   # FIXME this is unused?
+                table.extend('<option value="%s">%s</option>' % (k, k))
+                #return ''.join(table)
+        else:
+            a = ''
+            table.extend('<option value="%s">%s</option>' % (a, a))
+        return ''.join(table)
+            
+    def text_can_su(self, request):
+        if(self.player):
+            return str(self.player.can_su())
+        
+    def text_user(self, request):
+        if (self.player):
+            return self.player.name
+    
+    def text_datetime(self, request):
+        now = datetime.datetime.now()
+        date = now.strftime("%Y-%m-%d %H:%M")
+        return date
+    
+    def text_voice_list(self, request):
+        """dropdown list of available voices"""
+        table = ['<option value=""> -- none -- </option>']
+        vk = VOICES.keys()
+        vk.sort()
+        for v in vk:
+            table.extend('<option value="%s">%s</option>' % (v, v))
+        return ''.join(table)
+    
+    #Lisa 21/08/2013 - removed video avatar code
+        
+    def render(self, request):
+        
+        def _value(x):
+            return form.get(x, [None])[0]
+    
+        form = request.args
+        submit = _value('submit')
+        type = _value('type')
+        savemedia = _value('saveMedia')
+        assigned = ''
+        medianame = ''
+        media = ''
+        
+        if savemedia == 'Save':
+            log.msg('Save media')
+            assigned = _value('assigned')
+            
+        if submit == 'getmedia':
+            log.msg("found getmedia")
+            self.medianame =  _value('name')
+            self.type = _value('type')
+            try:
+                if not self.medianame == '':
+                    # make sure this attribute is in the 
+                    if type == 'avatar':
+                        self.media = self.collection.avatars.get(medianame)
+                    elif type == 'prop':
+                        self.media = self.collection.props.get(medianame)
+                    elif type == 'backdrop':
+                        self.media = self.collection.backdrops.get(medianame)
+                    elif type == 'audio':
+                        self.media = self.collection.audios.get(medianame)
+                   #Lisa 21/08/2013 - removed video avatar code
+                    get_response(self.media, self.type)    
+            except UpstageError, e:
+                log.msg(e)
+                return errorpage(request, "That didn't work! %s" % e, 'mediaupload') 
+        """
+            Modified by Heath, Corey, Karena 24/08/2011 - Added media.tags to the response lines
+        """
+        def get_response(media, type):
+            if type == 'avatar':    
+                response = \
+                "<file>" + media.file + "<file>" + \
+                "<name>" + media.name + "<name>" + \
+                "<type>" + type + "<type>" + \
+                "<voice>" + media.voice + "<voice>" + \
+                "<date>" + media.dateTime + "<date>" + \
+                "<uploader>" + media.uploader + "<uploader>" + \
+                "<tags>" + media.tags + "<tags>"
+            else:
+                "<file>" + media.file + "<file>" + \
+                "<name>" + media.name + "<name>" + \
+                "<type>" + type + "<type>" + \
+                "<date>" + media.date + "<date>" + \
+                "<uploader>" + media.uploader + "<uploader>" + \
+                "<tags>" + media.tags + "<tags>"
+                
+            return response;
+        return AdminBase.render(self, request)
+
+class NewPlayer(AdminBase):
+    """Page for the addition and/or removal of player logins"""
+    filename = "newplayer.xhtml" #XXX unused, because of redirect below.
+    isLeaf = True
+
+    def render(self, request):
+        if not self.player.can_su():
+            return errorpage(request, "You can't do that!", 'user')
+        form = request.args
+        if 'submit' in form:
+            try:
+                self.collection.players.update_from_form(form, self.player)
+                request.redirect("/admin/workshop/user")
+                                              
+            except UpstageError, e:
+                log.msg(e)
+                return errorpage(request, "That didn't work! %s" % e, 'user')
+            
+        return AdminBase.render(self, request)
+    
+class EditPlayer(AdminBase):
+    """Page to edit a player"""
+    filename = "editplayer.xhtml"
+    
+    def __init__(self, player, collection):
+        AdminBase.__init__(self, player, collection)
+        
+    def render(self, request):
+        
+        form = request.args
+        
+        def _value(x):
+            return form.get(x, [None])[0]
+        
+        if not self.player.can_su():
+            return errorpage(request, "You can't do that!", 'user')
+        
+        submit = _value('submit')
+        action = _value('action')        
+
+        if submit == 'getplayer':
+            try:
+                name = _value('name')
+                player = self.collection.players.getPlayer(name)
+                
+                response = \
+                "<name>" + player.name + "<name>" + \
+                "<email>" + player.email + "<email>" + \
+                "<date>" + player.date + "<date>" + \
+                "<act>" + str(player.can_act()) + "<act>" + \
+                "<admin>" + str(player.can_admin()) + "<admin>" + \
+                "<su>" + str(player.can_su()) + "<su>" + \
+                "<unlimited>" + str(player.can_unlimited()) + "<unlimited>"
+                
+                return response;
+            
+            except UpstageError, e:
+                log.msg(e)
+                return errorpage(request, "That didn't work! %s" % e, 'user')
+            
+        elif submit == 'updateplayer':
+            try:
+                self.collection.players.update_player(form, self.player, False)
+            except UpstageError, e:
+                log.msg(e)
+                return errorpage(request, "That didn't work! %s" % e, 'user')
+            
+        elif submit == 'deleteplayer':
+            try:
+                self.collection.players.delete_player(form)
+            except UpstageError, e:
+                log.msg(e)
+                return errorpage(request, "That didn't work! %s" % e, 'user')
+            
+        return AdminBase.render(self, request)
+        
+    #Modified by Daniel (03/07/2012) to make pages.    
+    def text_list_players(self, request):
+
+        # Number of users per page
+        user_per_page = 3
+
+        #current number of shown users
+        current_user = 0
+
+        # Check if argument 'page' is valid. otherwise current page = 0
+        try:
+            current_page = int(request.args['page'][0])
+            if current_page is None:
+                current_page = 0
+        except:
+            current_page = 0
+
+        # Check if there is a search text.
+        try:
+            search = request.args['search'][0]
+            if search is None:
+                search = ''
+        except:
+            search = ''
+        
+        playerlist = self.collection.players.html_list(search)
+
+        # Total Number of pages
+        num_pages = len(playerlist) / user_per_page
+        if len(playerlist) % user_per_page != 0:
+            num_pages += 1
+
+
+        table = []
+        for num in range(user_per_page * current_page, len(playerlist)):
+            p = playerlist[num][1]
+            if current_user == user_per_page:
+                break
+            else:
+                rightslist = [ x for x in ('act', 'admin', 'su', 'unlimited') if p[x]]
+                userdiv = "<div class='user' id='user_%s' onmouseover='this.className=\"user_over\"' onmouseout='this.className=\"user\"' onclick='playerSelect(\"%s\")' selected=''>" %(p['name'],p['name'])
+                userdiv += "<table class='user_table'> <tr> <th class='row_header'> Name </th> <td> %s (%s) </td> </tr> " %(p['name'], p['email'])
+                userdiv += "<tr> <th class='row_header'> Register Date </th> <td> %s </td> </tr> " %(p['reg_date']) 
+                userdiv += "<tr> <th class='row_header'> Last Login Date </th> <td> %s </td> </tr> " %(p['last_login'])
+                userdiv += "<tr> <th class='row_header'> User Rights </th> <td> %s </td> </tr> " %(rightslist)
+                userdiv += "</table> </div>"
+                table.extend(userdiv)
+                current_user += 1
+
+        # Show Page links
+        table.extend('<div id="pageLink">')
+        for i in range(0, num_pages):
+            strLink = ' <a href="?page=%s&search=%s">%s</a> &nbsp; ' %(i, search , i + 1)
+            table.extend(strLink)
+        table.extend('</div>')
+        return ''.join(table)
+
+    # To insert search string in search box
+    # Added by Daniel (03-07-2012)
+    def text_search_string(self, request):
+        try:
+            search = request.args['search'][0]
+            if search is None:
+                search = ''
+        except:
+            search = ''
+        
+        return search
+
+    def allows_player(self, player):
+        """Need to be superuser to use this page"""
+        return  player.can_su()
+
+class NewThing(AdminBase):
+    """Page for the addition and setting up of avatars, props or backgrounds.
+    Probably only used in subclasses
+    """
+    isLeaf = True
+    filename = "newthing.xhtml"
+
+    def text_videoList(self, request):
+        #Lisa 21/08/2013 - removed video avatar code
+        files = []
+        if files:
+            out = ['<option value=""> -- Select -- </option>']
+            for f in files:
+                out.append('<option>%s</option>' %f)                
+        else:
+            out = ['<option value=""> [none available] </option>']            
+
+        return '\n'.join(out)
+
+
+class NewProp(NewThing):
+    """form for creating a new prop"""
+    media_type = 'prop' ##XXX accessed by templates. 
+
+class NewBackdrop(NewThing):
+    """form for creating a new backdrop"""  
+    filename = "new_backdrop.xhtml"  
+    media_type = 'backdrop'
+
+class NewAvatar(NewThing):
+    """form for creating a new avatar"""
+    filename = "new_avatar.xhtml"
+    media_type = 'avatar'
+
+# PQ: Added 12.10.07
+class NewAudio(NewThing):
+    """form for creating a new audios"""
+    filename = "new_audio.xhtml"
+    media_type = 'audio'
+
+# Edit classes
+
+class CreateDir(AdminBase):
+    """Creates a subtree to put under /admin/new."""
+    filename = "actionlist.xhtml" #not really to be seen ("new what?")
+
+    def __init__(self, player, litter):
+        AdminBase.__init__(self, player)
+        self.litter = litter # the name 'children' is bagsed by twisted
+
+    def getChild(self, name, request):
+        """SWF Media dictionaries treated in parallel fashion !?"""
+        Class, collection = self.litter.get(name, (None, None))
+        if Class is not None:
+            x = Class(self.player, collection)
+            log.msg(x)
+            if x.allows_player(self.player):
+                return x
+
+        return self
+    
+class ThingsList(AdminBase):
+    """Page showing list of links (avatars, props, backdrops, stages).
+    The links depend on the childClass passed into the initialiser.
+    The childClass should have a .parent_template attribute  -- a string
+    naming a template to use for this page.
+    
+    .collection is a mapping of  things to be listed, with                                   
+    .update_from_form, .html_list, and .get (as per dict) methods.
+    """
+    message = ''
+    def __init__(self, player, childClass=None, collection=None):
+        AdminBase.__init__(self, player, collection)
+        self.childClass = childClass
+        # set this pages template according to the child class
+        self.filename = childClass.parent_template
+
+    def render(self, request):
+        """if given arguments, refer to the collection"""
+        if request.args:
+            try:
+                self.collection.stages.update_from_form(request.args, self.player)
+                self.message = "Yay, it works."
+            except UpstageError, e:
+                self.message = str(e) #useful message
+        return AdminBase.render(self, request)
+
+
+    def text_list(self, request):
+        #print self.childClass, self.collection
+        """ Modified by Alan (05.02.08) - Added the ability to group media 
+        asset lists by stage. Only media asset lists are grouped using 'media_type'. """
+        html_list = self.collection.stages.html_list
+           
+
+        # --- Group media asset lists by stage ---
+        if hasattr(self.childClass, 'media_type'):
+            html_list = self.collection.stages.html_list_grouped
+            
+            if hasattr(self.childClass, 'list_template'):
+                if hasattr(self.childClass, 'group_header'):
+                    return html_list(self.childClass.list_template, self.childClass.group_header)
+                return html_list(self.childClass.list_template)
+        
+        # --- No grouping by stage required ---
+        if hasattr(self.childClass, 'list_template'):
+            return html_list(self.childClass.list_template)
+
+        html_list_text = '<table id="playerAudience" class="stage_list" cellspacing="0"><tr><th>Name (url)</th><th>Players</th><th>Audience</th><th>Your Access</th></tr>'
+        slist = self.collection.stages.load_StageList()#(08/04/2013) Craig
+        html_list_text += html_list(self.text_username(request),slist)
+        html_list_text += '</table>' 
+        return html_list_text
+
+    def getChild(self, name, request):
+        """look for child in self.collection. if it is there,
+        return a childClass instance."""
+        
+        if name == '':
+            return self
+        #Lisa 21/08/2013 - removed video avatar code
+        if name == 'player':
+            return EditPassword(self.player, self.collection)
+
+        f = self.collection.stages.get(name)
+        if f and self.childClass is not None:
+            x = self.childClass(self.player, self.collection, f)
+            if x.allows_player(self.player):
+                log.msg('returning %s' % x)
+                return x
+            else:
+                return AdminError("You can't do that!")
+        else:
+            return AdminError('Such a thing (%s) does not exist' % name)
+
+#Lisa 21/08/2013 - removed video avatar code
+
+
+class StagePage(Resource):
+    """The html page that contains the stage SWF. Fairly minimal wrapper"""
+    parent_template = 'stagelist.xhtml'
+
+    def __init__(self, player, collection, stage, mode='normal'):
+        # Set up stage html
+        #XXXcollection is unused
+        Resource.__init__(self)
+        
+        """ Use this value below to show log in stage screen - AB MOVED TO STAGE.debugMessages = 'Normal' OR 'DEBUG' - can edit in EDITSTAGE.HTML page """
+        mode = stage.debugMessages
+        
+        html = get_template("stage.xhtml")
+        #Shaun Narayan (02/16/10) - Removed reference to URLEncode to build the URL as it input ampersands without escaping.
+        vars = 'stageID=%s&amp;policyport=%d&amp;mode=%s&amp;swfport=%d' %(stage.ID, config.POLICY_FILE_PORT,  mode, config.SWF_PORT)
+        
+        #Daniel Han (17/09/2012) - Added bgcolor and stage_message for page to display.
+        self.html = html % {'stagename': stage.name, 
+            'vars': vars, 
+            'bgcolor': stage.pageBgColour.replace('0x','#'),
+            'stage_message': stage.splash_message
+            }
+        self.player = player
+        self.stage = stage
+        print "init Stage: %s" % self.player.name
+        
+    def render(self, request):
+        no_cache(request)
+        request.setHeader('Content-length', len(self.html))
+        return self.html
+
+    def getChild(self, path, request):
+        if path == 'log':
+            return StageLog(self.stage)
+        if path == 'debug':
+            return StagePage(self.player, None, self.stage, 'DEBUG')
+        if path == 'auth':
+            return StageAuth(self.player, self.stage)
+        return self
+
+    def allows_player(self, x):
+        return True
+
+class StageAuth(Resource):
+    def __init__(self, player, stage):
+        Resource.__init__(self)
+        isPlayer = (stage.isPlayerAudience(player)) != True
+        self.html = 'canAct=%s' % isPlayer
+        
+    def render(self, request):
+        no_cache(request)
+        request.setHeader('Content-length', len(self.html))
+        return self.html
+        
+        
+"""
+
+Renders a userpage.
+
+"""
+class UserPage(AdminBase):
+    """ The HTML page that contains code for changing the user's password and email. """
+    filename = "user.xhtml"
+    parent_template="user.xhtml"
+    
+    def __init__(self, player, collection):
+        AdminBase.__init__(self, player, collection)
+    
+    def render(self, request):
+        """if given arguments, refer to the collection"""
+        
+        def _value(x):
+            return form.get(x, [None])[0]
+        
+        form = request.args
+        
+        submit = _value('submit')
+
+        if form:
+            if submit == 'savepassword':               
+                try:
+                    #(19/05/11) Mohammed and Heath - True means that only the password is being saved to the XML
+                    self.collection.players.update_player(form, self.player, True)
+                except UpstageError, e:
+                    request.redirect(errorpage(request, str(e), 'user'))
+                
+            elif submit == 'saveemail':
+                try:
+                    self.collection.players.update_email(request.args, self.player)
+                except UpstageError, e:
+                    request.redirect(errorpage(request, str(e), 'user'))
+                    
+        return AdminBase.render(self, request)
+            
+    def text_user(self, request):
+        if (self.player):
+            return self.player.name
+        
+    def text_date(self, request):
+        if (self.player):
+            return self.player.date
+        
+    def text_email(self, request):
+        if(self.player):
+            return self.player.email
+        
+    def text_can_su(self, request):
+        if(self.player):
+            return str(self.player.can_su())
+        
+class StageLog(Resource):
+    """Show a plain text version of a stage's chat log"""
+    def __init__(self, stage):
+        Resource.__init__(self)
+        self.stage = stage
+
+    def render(self, request):
+        log.msg("'<', '&lt;', in pages.StageLog.render")
+        s = "<html><h1>%s Log</h1><pre>"% self.stage.name
+        # 04/06/09 SN JN Modified line below to convert old text when read back in from < > to { } so character name is shown
+        # Vishaal 15/10/09 Changed to ACTUALLY fix < > chatlog problem, Have modified back Above as I have made 
+        # changes from the Source of the problem in transport.as text class
+        s += "\n".join(self.stage.retrieve_chat(2000)).replace('&','&amp;').replace('<', '&lt;').replace('>', '&gt;') 
+        s += "</pre></html>"
+        request.setHeader('Content-length', len(s))
+        return s
+
+#---- OLD CODE ------
+#------------------------------------------------
+""" PQ & EB - 12/10/07 - Adds audio from the workshop """
+"""class AudioThing(Template):
+    filename = "audio.xhtml"
+    def __init__(self, mediatypes, player):
+        self.mediatypes = mediatypes
+        self.player = player
+
+    def render(self, request):
+        #XXX not checking rights.
+        args = request.args
+        # Natasha - get assigned stages
+        self.assignedstages = request.args.get('assigned')
+        name = args.pop('name',[''])[0]
+        audio = args.pop('audio', [''])[0]
+        type = args.pop('audio_type', [''])[0]
+        mediatype = args.pop('type',['audio'])[0]
+        self.message = 'Audio file uploaded & registered as %s, called %s. ' % (type, name)
+        # PQ & EB Added 13.10.07
+        # Chooses a thumbnail image depending on type (adds to audios.xml file)
+        if type == 'sfx':
+            thumbnail = config.SFX_ICON_IMAGE_URL
+        else:
+            thumbnail = config.MUSIC_ICON_IMAGE_URL
+
+        media_dict = self.mediatypes[mediatype]
+        log.msg('about to add audio')
+        
+        mp3name = new_filename(suffix=".mp3")
+        the_url = config.AUDIO_DIR +"/"+ mp3name
+        log.msg('Adding audio file here: %s' %(the_url))
+        
+        file = open(the_url, 'wb')
+        file.write(audio)
+        file.close()
+        
+        filenames = [the_url]
+        
+        # Alan (09/05/08) ==> Gets the size of audio files using the previously created temp filenames.
+        fileSizes = getFileSizes(filenames)
+        
+        if not (fileSizes is None):
+            if (validSizes(fileSizes, self.player.can_su()) or self.player.can_unlimited()):
+                now = datetime.datetime.now() # AC () - Unformated datetime value
+                media_dict.add(url='%s/%s' % (config.AUDIO_SUBURL, mp3name), #XXX dodgy? (windows safe?)
+                               file=mp3name,
+                               name=name,
+                               voice="",
+                               thumbnail=thumbnail, # PQ: 13.10.07 was ""
+                               medium="%s" %(type),
+                               # AC (14.08.08) - Passed values to be added to media XML files.
+                               uploader=self.player.name,
+                               dateTime=(now.strftime("%d/%m/%y @ %I:%M %p")))
+                
+                if self.assignedstages is not None:
+                    log.msg('Audio: Assigned stages is not none')
+                    for x in self.assignedstages:
+                        log.msg("Audio file with stage: %s" % x)
+                        self.media_dict.set_media_stage(x, mp3name)
+            else:
+                try:
+                    ''' Send new audio page back containing error message '''
+                    self.player.set_setError(True)
+                    os.remove(the_url)
+                    request.redirect('/admin/new/%s' %(mediatype))
+                    request.finish()
+                except OSError, e:
+                    log.err("Error removing temp file %s (already gone?):\n %s" % (tfn, e))
+        return Template.render(self, request)
+    
+    def getChildWithDefault(self, path, request):
+        return self.getChild(path, request)
+    
+    def getChild(self, path, request):
+        return self
+"""
+
+#Lisa 21/08/2013 - removed video avatar code
+
+
+
 """ Shaun Narayan (02/16/10) - Handles medrequest.argsia editing.
     Should probably move media list HTML into a template."""
 """class MediaEditPage(Workshop):
@@ -2034,524 +2648,3 @@ class MediaEditPage(Workshop):
                 self.mediatype = ''
                 self.postback = "Media Deleted"
         return AdminBase.render(self, request)"""
-    
-class MediaUploadPage(Workshop):
-    
-    filename="mediaupload.xhtml"
-
-    def __init__(self, player, collection):
-        AdminBase.__init__(self, player, collection)
-        self.player = player
-        self.collection = collection
-    
-    def text_stage_list(self, request):
-        keys = self.collection.stages.getKeys()
-        table = [] 
-        if keys:
-            for k in keys:
-                stage = self.collection.stages.get(k)   # FIXME this is unused?
-                table.extend('<option value="%s">%s</option>' % (k, k))
-                #return ''.join(table)
-        else:
-            a = ''
-            table.extend('<option value="%s">%s</option>' % (a, a))
-        return ''.join(table)
-            
-    def text_can_su(self, request):
-        if(self.player):
-            return str(self.player.can_su())
-        
-    def text_user(self, request):
-        if (self.player):
-            return self.player.name
-    
-    def text_datetime(self, request):
-        now = datetime.datetime.now()
-        date = now.strftime("%Y-%m-%d %H:%M")
-        return date
-    
-    def text_voice_list(self, request):
-        """dropdown list of available voices"""
-        table = ['<option value=""> -- none -- </option>']
-        vk = VOICES.keys()
-        vk.sort()
-        for v in vk:
-            table.extend('<option value="%s">%s</option>' % (v, v))
-        return ''.join(table)
-    
-    #Lisa 21/08/2013 - removed video avatar code
-        
-    def render(self, request):
-        
-        def _value(x):
-            return form.get(x, [None])[0]
-    
-        form = request.args
-        submit = _value('submit')
-        type = _value('type')
-        savemedia = _value('saveMedia')
-        assigned = ''
-        medianame = ''
-        media = ''
-        
-        if savemedia == 'Save':
-            log.msg('Save media')
-            assigned = _value('assigned')
-            
-        if submit == 'getmedia':
-            log.msg("found getmedia")
-            self.medianame =  _value('name')
-            self.type = _value('type')
-            try:
-                if not self.medianame == '':
-                    # make sure this attribute is in the 
-                    if type == 'avatar':
-                        self.media = self.collection.avatars.get(medianame)
-                    elif type == 'prop':
-                        self.media = self.collection.props.get(medianame)
-                    elif type == 'backdrop':
-                        self.media = self.collection.backdrops.get(medianame)
-                    elif type == 'audio':
-                        self.media = self.collection.audios.get(medianame)
-                   #Lisa 21/08/2013 - removed video avatar code
-                    get_response(self.media, self.type)    
-            except UpstageError, e:
-                log.msg(e)
-                return errorpage(request, "That didn't work! %s" % e) 
-        """
-            Modified by Heath, Corey, Karena 24/08/2011 - Added media.tags to the response lines
-        """
-        def get_response(media, type):
-            if type == 'avatar':    
-                response = \
-                "<file>" + media.file + "<file>" + \
-                "<name>" + media.name + "<name>" + \
-                "<type>" + type + "<type>" + \
-                "<voice>" + media.voice + "<voice>" + \
-                "<date>" + media.dateTime + "<date>" + \
-                "<uploader>" + media.uploader + "<uploader>" + \
-                "<tags>" + media.tags + "<tags>"
-            else:
-                "<file>" + media.file + "<file>" + \
-                "<name>" + media.name + "<name>" + \
-                "<type>" + type + "<type>" + \
-                "<date>" + media.date + "<date>" + \
-                "<uploader>" + media.uploader + "<uploader>" + \
-                "<tags>" + media.tags + "<tags>"
-                
-            return response;
-        return AdminBase.render(self, request)
-
-class NewPlayer(AdminBase):
-    """Page for the addition and/or removal of player logins"""
-    filename = "newplayer.xhtml" #XXX unused, because of redirect below.
-    isLeaf = True
-
-    def render(self, request):
-        if not self.player.can_su():
-            return errorpage(request, "You can't do that!")
-        form = request.args
-        if 'submit' in form:
-            try:
-                self.collection.players.update_from_form(form, self.player)
-                request.redirect("/admin/workshop/user")
-                                              
-            except UpstageError, e:
-                log.msg(e)
-                return errorpage(request, "That didn't work! %s" % e)
-            
-        return AdminBase.render(self, request)
-    
-class EditPlayer(AdminBase):
-    """Page to edit a player"""
-    filename = "editplayer.xhtml"
-    
-    def __init__(self, player, collection):
-        AdminBase.__init__(self, player, collection)
-        
-    def render(self, request):
-        
-        form = request.args
-        
-        def _value(x):
-            return form.get(x, [None])[0]
-        
-        if not self.player.can_su():
-            return errorpage(request, "You can't do that!")
-        
-        submit = _value('submit')
-        action = _value('action')        
-
-        if submit == 'getplayer':
-            try:
-                name = _value('name')
-                player = self.collection.players.getPlayer(name)
-                
-                response = \
-                "<name>" + player.name + "<name>" + \
-                "<email>" + player.email + "<email>" + \
-                "<date>" + player.date + "<date>" + \
-                "<act>" + str(player.can_act()) + "<act>" + \
-                "<admin>" + str(player.can_admin()) + "<admin>" + \
-                "<su>" + str(player.can_su()) + "<su>" + \
-                "<unlimited>" + str(player.can_unlimited()) + "<unlimited>"
-                
-                return response;
-            
-            except UpstageError, e:
-                log.msg(e)
-                return errorpage(request, "That didn't work! %s" % e)
-            
-        elif submit == 'updateplayer':
-            try:
-                self.collection.players.update_player(form, self.player, False)
-            except UpstageError, e:
-                log.msg(e)
-                return errorpage(request, "That didn't work! %s" % e)
-            
-        elif submit == 'deleteplayer':
-            try:
-                self.collection.players.delete_player(form)
-            except UpstageError, e:
-                log.msg(e)
-                return errorpage(request, "That didn't work! %s" % e)
-            
-        return AdminBase.render(self, request)
-        
-    #Modified by Daniel (03/07/2012) to make pages.    
-    def text_list_players(self, request):
-
-        # Number of users per page
-        user_per_page = 3
-
-        #current number of shown users
-        current_user = 0
-
-        # Check if argument 'page' is valid. otherwise current page = 0
-        try:
-            current_page = int(request.args['page'][0])
-            if current_page is None:
-                current_page = 0
-        except:
-            current_page = 0
-
-        # Check if there is a search text.
-        try:
-            search = request.args['search'][0]
-            if search is None:
-                search = ''
-        except:
-            search = ''
-        
-        playerlist = self.collection.players.html_list(search)
-
-        # Total Number of pages
-        num_pages = len(playerlist) / user_per_page
-        if len(playerlist) % user_per_page != 0:
-            num_pages += 1
-
-
-        table = []
-        for num in range(user_per_page * current_page, len(playerlist)):
-            p = playerlist[num][1]
-            if current_user == user_per_page:
-                break
-            else:
-                rightslist = [ x for x in ('act', 'admin', 'su', 'unlimited') if p[x]]
-                userdiv = "<div class='user' id='user_%s' onmouseover='this.className=\"user_over\"' onmouseout='this.className=\"user\"' onclick='playerSelect(\"%s\")' selected=''>" %(p['name'],p['name'])
-                userdiv += "<table class='user_table'> <tr> <th class='row_header'> Name </th> <td> %s (%s) </td> </tr> " %(p['name'], p['email'])
-                userdiv += "<tr> <th class='row_header'> Register Date </th> <td> %s </td> </tr> " %(p['reg_date']) 
-                userdiv += "<tr> <th class='row_header'> Last Login Date </th> <td> %s </td> </tr> " %(p['last_login'])
-                userdiv += "<tr> <th class='row_header'> User Rights </th> <td> %s </td> </tr> " %(rightslist)
-                userdiv += "</table> </div>"
-                table.extend(userdiv)
-                current_user += 1
-
-        # Show Page links
-        table.extend('<div id="pageLink">')
-        for i in range(0, num_pages):
-            strLink = ' <a href="?page=%s&search=%s">%s</a> &nbsp; ' %(i, search , i + 1)
-            table.extend(strLink)
-        table.extend('</div>')
-        return ''.join(table)
-
-    # To insert search string in search box
-    # Added by Daniel (03-07-2012)
-    def text_search_string(self, request):
-        try:
-            search = request.args['search'][0]
-            if search is None:
-                search = ''
-        except:
-            search = ''
-        
-        return search
-
-    def allows_player(self, player):
-        """Need to be superuser to use this page"""
-        return  player.can_su()
-
-class NewThing(AdminBase):
-    """Page for the addition and setting up of avatars, props or backgrounds.
-    Probably only used in subclasses
-    """
-    isLeaf = True
-    filename = "newthing.xhtml"
-
-    def text_videoList(self, request):
-        #Lisa 21/08/2013 - removed video avatar code
-        files = []
-        if files:
-            out = ['<option value=""> -- Select -- </option>']
-            for f in files:
-                out.append('<option>%s</option>' %f)                
-        else:
-            out = ['<option value=""> [none available] </option>']            
-
-        return '\n'.join(out)
-
-
-class NewProp(NewThing):
-    """form for creating a new prop"""
-    media_type = 'prop' ##XXX accessed by templates. 
-
-class NewBackdrop(NewThing):
-    """form for creating a new backdrop"""  
-    filename = "new_backdrop.xhtml"  
-    media_type = 'backdrop'
-
-class NewAvatar(NewThing):
-    """form for creating a new avatar"""
-    filename = "new_avatar.xhtml"
-    media_type = 'avatar'
-
-# PQ: Added 12.10.07
-class NewAudio(NewThing):
-    """form for creating a new audios"""
-    filename = "new_audio.xhtml"
-    media_type = 'audio'
-
-# Edit classes
-
-class CreateDir(AdminBase):
-    """Creates a subtree to put under /admin/new."""
-    filename = "actionlist.xhtml" #not really to be seen ("new what?")
-
-    def __init__(self, player, litter):
-        AdminBase.__init__(self, player)
-        self.litter = litter # the name 'children' is bagsed by twisted
-
-    def getChild(self, name, request):
-        """SWF Media dictionaries treated in parallel fashion !?"""
-        Class, collection = self.litter.get(name, (None, None))
-        if Class is not None:
-            x = Class(self.player, collection)
-            log.msg(x)
-            if x.allows_player(self.player):
-                return x
-
-        return self
-    
-class ThingsList(AdminBase):
-    """Page showing list of links (avatars, props, backdrops, stages).
-    The links depend on the childClass passed into the initialiser.
-    The childClass should have a .parent_template attribute  -- a string
-    naming a template to use for this page.
-    
-    .collection is a mapping of  things to be listed, with                                   
-    .update_from_form, .html_list, and .get (as per dict) methods.
-    """
-    message = ''
-    def __init__(self, player, childClass=None, collection=None):
-        AdminBase.__init__(self, player, collection)
-        self.childClass = childClass
-        # set this pages template according to the child class
-        self.filename = childClass.parent_template
-
-    def render(self, request):
-        """if given arguments, refer to the collection"""
-        if request.args:
-            try:
-                self.collection.stages.update_from_form(request.args, self.player)
-                self.message = "Yay, it works."
-            except UpstageError, e:
-                self.message = str(e) #useful message
-        return AdminBase.render(self, request)
-
-
-    def text_list(self, request):
-        #print self.childClass, self.collection
-        """ Modified by Alan (05.02.08) - Added the ability to group media 
-        asset lists by stage. Only media asset lists are grouped using 'media_type'. """
-        html_list = self.collection.stages.html_list
-           
-
-        # --- Group media asset lists by stage ---
-        if hasattr(self.childClass, 'media_type'):
-            html_list = self.collection.stages.html_list_grouped
-            
-            if hasattr(self.childClass, 'list_template'):
-                if hasattr(self.childClass, 'group_header'):
-                    return html_list(self.childClass.list_template, self.childClass.group_header)
-                return html_list(self.childClass.list_template)
-        
-        # --- No grouping by stage required ---
-        if hasattr(self.childClass, 'list_template'):
-            return html_list(self.childClass.list_template)
-
-        html_list_text = '<table id="playerAudience" class="stage_list" cellspacing="0"><tr><th>Name (url)</th><th>Players</th><th>Audience</th><th>Your Access</th></tr>'
-        slist = self.collection.stages.load_StageList()#(08/04/2013) Craig
-        html_list_text += html_list(self.text_username(request),slist)
-        html_list_text += '</table>' 
-        return html_list_text
-
-    def getChild(self, name, request):
-        """look for child in self.collection. if it is there,
-        return a childClass instance."""
-        
-        if name == '':
-            return self
-        #Lisa 21/08/2013 - removed video avatar code
-        if name == 'player':
-            return EditPassword(self.player, self.collection)
-
-        f = self.collection.stages.get(name)
-        if f and self.childClass is not None:
-            x = self.childClass(self.player, self.collection, f)
-            if x.allows_player(self.player):
-                log.msg('returning %s' % x)
-                return x
-            else:
-                return AdminError("You can't do that!")
-        else:
-            return AdminError('Such a thing (%s) does not exist' % name)
-
-#Lisa 21/08/2013 - removed video avatar code
-
-
-class StagePage(Resource):
-    """The html page that contains the stage SWF. Fairly minimal wrapper"""
-    parent_template = 'stagelist.xhtml'
-
-    def __init__(self, player, collection, stage, mode='normal'):
-        # Set up stage html
-        #XXXcollection is unused
-        Resource.__init__(self)
-        
-        """ Use this value below to show log in stage screen - AB MOVED TO STAGE.debugMessages = 'Normal' OR 'DEBUG' - can edit in EDITSTAGE.HTML page """
-        mode = stage.debugMessages
-        
-        html = get_template("stage.xhtml")
-        #Shaun Narayan (02/16/10) - Removed reference to URLEncode to build the URL as it input ampersands without escaping.
-        vars = 'stageID=%s&amp;policyport=%d&amp;mode=%s&amp;swfport=%d' %(stage.ID, config.POLICY_FILE_PORT,  mode, config.SWF_PORT)
-        
-        #Daniel Han (17/09/2012) - Added bgcolor and stage_message for page to display.
-        self.html = html % {'stagename': stage.name, 
-            'vars': vars, 
-            'bgcolor': stage.pageBgColour.replace('0x','#'),
-            'stage_message': stage.splash_message
-            }
-        self.player = player
-        self.stage = stage
-        print "init Stage: %s" % self.player.name
-        
-    def render(self, request):
-        no_cache(request)
-        request.setHeader('Content-length', len(self.html))
-        return self.html
-
-    def getChild(self, path, request):
-        if path == 'log':
-            return StageLog(self.stage)
-        if path == 'debug':
-            return StagePage(self.player, None, self.stage, 'DEBUG')
-        if path == 'auth':
-            return StageAuth(self.player, self.stage)
-        return self
-
-    def allows_player(self, x):
-        return True
-
-class StageAuth(Resource):
-    def __init__(self, player, stage):
-        Resource.__init__(self)
-        isPlayer = (stage.isPlayerAudience(player)) != True
-        self.html = 'canAct=%s' % isPlayer
-        
-    def render(self, request):
-        no_cache(request)
-        request.setHeader('Content-length', len(self.html))
-        return self.html
-        
-        
-"""
-
-Renders a userpage.
-
-"""
-class UserPage(AdminBase):
-    """ The HTML page that contains code for changing the user's password and email. """
-    filename = "user.xhtml"
-    parent_template="user.xhtml"
-    
-    def __init__(self, player, collection):
-        AdminBase.__init__(self, player, collection)
-    
-    def render(self, request):
-        """if given arguments, refer to the collection"""
-        
-        def _value(x):
-            return form.get(x, [None])[0]
-        
-        form = request.args
-        
-        submit = _value('submit')
-
-        if form:
-            if submit == 'savepassword':               
-                try:
-                    #(19/05/11) Mohammed and Heath - True means that only the password is being saved to the XML
-                    self.collection.players.update_player(form, self.player, True)
-                except UpstageError, e:
-                    request.redirect(errorpage(request, str(e)))
-                
-            elif submit == 'saveemail':
-                try:
-                    self.collection.players.update_email(request.args, self.player)
-                except UpstageError, e:
-                    request.redirect(errorpage(request, str(e)))
-                    
-        return AdminBase.render(self, request)
-            
-    def text_user(self, request):
-        if (self.player):
-            return self.player.name
-        
-    def text_date(self, request):
-        if (self.player):
-            return self.player.date
-        
-    def text_email(self, request):
-        if(self.player):
-            return self.player.email
-        
-    def text_can_su(self, request):
-        if(self.player):
-            return str(self.player.can_su())
-        
-class StageLog(Resource):
-    """Show a plain text version of a stage's chat log"""
-    def __init__(self, stage):
-        Resource.__init__(self)
-        self.stage = stage
-
-    def render(self, request):
-        log.msg("'<', '&lt;', in pages.StageLog.render")
-        s = "<html><h1>%s Log</h1><pre>"% self.stage.name
-        # 04/06/09 SN JN Modified line below to convert old text when read back in from < > to { } so character name is shown
-        # Vishaal 15/10/09 Changed to ACTUALLY fix < > chatlog problem, Have modified back Above as I have made 
-        # changes from the Source of the problem in transport.as text class
-        s += "\n".join(self.stage.retrieve_chat(2000)).replace('&','&amp;').replace('<', '&lt;').replace('>', '&gt;') 
-        s += "</pre></html>"
-        request.setHeader('Content-length', len(s))
-        return s
