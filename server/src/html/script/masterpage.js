@@ -40,6 +40,7 @@
             Modified by Nitkalya (3/9/2013): Fix confusing "save and reload stage" message
             Modified by Nitkalya (4/9/2013): Edit clear stage warning message as clients requested
             Modified by Nitkalya (14/9/2013): Make player/audience stat info clearer, and fix issues when it displays NaN audiences on some pages
+            Modified by Lisa (24/09/2013): Added code to provide different home page for guests and users
  */
 
 //Instance type variables
@@ -196,6 +197,7 @@ function clearLogin()
 					html_str=loginLinks;
 				}
 				document.getElementById('signup').innerHTML = html_str;
+                document.getElementById('nav').innerHTML = '<a href="javascript:navHome()">HOME</a>		    	<a href="javascript:navStages()">STAGES</a>';
 			}
 		}
 		else
@@ -205,6 +207,7 @@ function clearLogin()
 			var temp = new Array();
 			temp = serverInfo.split('#');
 			document.getElementById('signup').innerHTML = 'Welcome back, ' +loggedInPlayer +'!<br/><a href="javascript:logout();">logout</a><br /><br /><strong>Currently on Stages</strong><br />Registered Players : ' + temp[0] + '<br />Guest Audiences : ' + temp[1];
+            document.getElementById('nav').innerHTML = '<a href="javascript:navHome()">HOME</a>		    	<a href="javascript:navWorkshop()" type = "hidden">WORKSHOP</a>			    	<a href="javascript:navStages()">STAGES</a>';
 		}
 	}
 	catch(ex)
@@ -259,16 +262,24 @@ function navHome()
     if(isLoggedIn())
     {
         window.location = '/admin/home';
+        document.getElementById('nav').innerHTML = '<a href="javascript:navHome()">HOME</a>		    	<a href="javascript:navWorkshop()" type = "hidden">WORKSHOP</a>			    	<a href="javascript:navStages()">STAGES</a>';
+       
     }
     else
+    {        
         window.location = '/home';
+        document.getElementById('nav').innerHTML = '<a href="javascript:navHome()">HOME</a>		    	<a href="javascript:navStages()">STAGES</a>';
+    }
 }
 
 function navHomeUser()
 {
+    if(isLoggedIn())
     {
         window.location = '/home';
-    }   
+    }
+    else
+        window.location = '/home';
 }
  /*
     Gavin Chan (28/05/2013) - Created a navAdmin function so the website can redirect  
@@ -351,7 +362,7 @@ function logout()
 	};
 	window.location='/admin/perspective-destroy';
 	document.getElementById('signup').innerHTML = loginLinks;
-	navHomeUser();
+	window.location = '/home';
 }
 
 /**

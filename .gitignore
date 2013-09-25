@@ -3,6 +3,7 @@
 #################
 img2swf.log
 upstage.log
+server/src/config/voices/*
 
 # Ant folders
 build/
