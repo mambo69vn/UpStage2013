@@ -52,6 +52,7 @@ import flash.external.ExternalInterface;
  *                                                - Support mute/unmute globally and locally
  * Modified by: Nitkalya Wiriyanuparb  10/09/2013  - Added swf width/height in GET_LOADPROP and GET_LOAD_AV for correct prop and avatar resizing
  * Modified by: Nitkalya Wiriyanuparb  26/09/2013  - Sent rotating direction to clients to fix inconsistent views for audiences
+ *                                                 - Hide rotation options for streaming avatars
  */
 class upstage.model.ModelAvatars implements TransportInterface
 {
@@ -651,9 +652,13 @@ class upstage.model.ModelAvatars implements TransportInterface
             // add it at the top
             rotateAvatarRightMenuItem.separatorBefore = true;
             myMenu.customItems.push(toggleLocalAudioMenuItem, toggleGlobalAudioMenuItem);
+
+        } else {
+            // can only rotate normal avatars
+            myMenu.customItems.push(rotateAvatarRightMenuItem, rotateAvatarLeftMenuItem);
         }
 
-        myMenu.customItems.push(rotateAvatarRightMenuItem,rotateAvatarLeftMenuItem, moveupMenuItem, movedownMenuItem, movefastMenuItem, moveSlowMenuItem, drawAvatarMenuItem, clearDrawingMenuItem, renameMenuItem);
+        myMenu.customItems.push(moveupMenuItem, movedownMenuItem, movefastMenuItem, moveSlowMenuItem, drawAvatarMenuItem, clearDrawingMenuItem, renameMenuItem);
 
         av.menu = myMenu;
     }
