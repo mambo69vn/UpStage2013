@@ -30,7 +30,6 @@ Modified by:    Daniel Han  14/09/2012      on handle_loaded, added self.stage.d
 Modified by:    Nitkalya Wiriyanuparb  29/08/2013  - add handle_TOGGLE_STREAM_AUDIO to mute/unmute streaming avatar 
 Modified by:    Nitkalya Wiriyanuparb  10/09/2013  - Added swfwidth and swfheight when loading avatars and props
 Modified by:    Nitkalya Wiriyanuparb  16/09/2013  - Set up streaming avatar mute state when new user joins a stage
-Modified by:    Nitkalya Wiriyanuparb  26/09/2013  - Received rotating direction to fix inconsistent views for audiences
 Notes: 
 """
 
@@ -460,7 +459,7 @@ class _UpstageSocket(LineOnlyReceiver):
             recipients.remove('*')
             names = [x.player.name for x in self.stage.player_sockets.values()]
             recipients.extend([x for x in names if x not in recipients])
-
+        recipientsRecieved = []
         for stage in self.factory.stages.values():
             if not recipients:
                 break
@@ -468,10 +467,14 @@ class _UpstageSocket(LineOnlyReceiver):
                 p = sock.player.name
                 if p in recipients:
                     sock.send('WHISPER', text=body, senderID=self.player.name)
-                    recipients.remove(p)
-                    sent.append(p)
+                    if not(p in sent):
+                        sent.append(p)
+                    if not(p in recipientsRecieved):
+                        recipientsRecieved.append(p)
                     if not recipients: #done them all
                         break
+        for recp in recipientsRecieved:
+            recipients.remove(recp)
 
         self.send('MSG', message='whispered to %s: "%s"' % (', '.join(sent) or '[nobody]', body))
         if recipients:
@@ -652,8 +655,8 @@ class _UpstageSocket(LineOnlyReceiver):
 
         self.stage.draw_pick_layer(self, layer)
 	
-    def handle_ROTATE_AVATAR(self, clockwise):
-        self.stage.rotate_avatar(clockwise, self.avatar.ID)
+    def handle_ROTATE_AVATAR(self):
+        self.stage.rotate_avatar(self.avatar.ID)
 
     def handle_TOGGLE_STREAM_AUDIO(self, isMuted):
         # log.msg('in server.py, isMuted = ' + isMuted)
