@@ -72,6 +72,7 @@ Modified by: Craig Farrell  01/05/2013  - added new tOwner varible
 Modified by: Nitkalya Wiriyanuparb  29/08/2013  - add toggle_stream_audio to mute/unmute streaming avatar
 Modified by: Nitkalya Wiriyanuparb  04/09/2013  - clear user access list (access_level_one/two/three) before appending items to them to avoid duplicates
 Modified by: Nitkalya Wiriyanuparb  26/09/2013  - Received, saved, and sent rotating direction to fix inconsistent views for audiences
+Modified by: Nitkalya Wiriyanuparb  28/09/2013  - Added getAudioByUrl()
 """
 
 #std lib
@@ -459,8 +460,6 @@ class _Stage(object):
         socket.avatar = av
         self.player_broadcast('AV_CONNECT', client=socket.ID, ID=av.ID)
 
-
-
     def bind_prop(self, av, prop):
         """Puts the prop under the control of an avatar"""
         if prop is None or av is None:
@@ -646,6 +645,12 @@ class _Stage(object):
     def get_audio_list(self):
         """Return a list of all audio entries"""
         return self.audios.things.values()
+
+    def getAudioByUrl(self, url):
+        """Return an audio that has the same url"""
+        for au in self.get_audio_list():
+            if url.endswith(au.media.file):
+                return au
 
     """Shaun Narayan (02/06/10) - Following 11 methods provide an
         interface to manipulate the stages access rules"""

@@ -32,8 +32,10 @@ Modified by: Heath Behrens 16/08/2011 - Added functions remove_media and remove_
                                         to remove media from the stage.
              Karena, Corey, Heath 24/08/2011 - Added tag variable to Thing class to store tags for a given thing.          
 Modified by: Nitkalya Wiriyanuparb  16/09/2013  - Remembered streaming avatar mute state
+Modified by: Nitkalya Wiriyanuparb  27/09/2013  - Modified Audio class to remember play/pause/loop states and elapsed time
 Notes: 
 """
+import time
 
 #siblings
 from upstage.util import id_generator
@@ -174,10 +176,54 @@ class Backdrop(Thing):
 class Audio(Thing):
     """Representation of an audio file"""
     typename= 'audio'
+    playing = False
+    looping = False
+    arrayName = ''
+    startTimestamp = 0
+    elapsedTime = 0 # for pausing
+
     def __init__(self, media, displayName="", position=_nullpos, ID=None):
         Thing.__init__(self, media=media, name=displayName, position=position, ID=ID)
 
+    def startPlaying(self, arrayName, autoLoop):
+        """Set playing status and remember when the audio was started and array name"""
+        self.playing = True
+        self.arrayName = arrayName
+        if (autoLoop or self.elapsedTime == 0):
+            # start fresh
+            self.elapsedTime = 0
+            self.startTimestamp = time.time()
+        else:
+            # resume
+            self.startTimestamp = time.time() - self.elapsedTime # like it's never been paused
 
+    def finishPlaying(self):
+        playing = False
+        looping = False
+        startTimestamp = 0
+        elapsedTime = 0
+
+    def setLooping(self, isLooping):
+        self.looping = isLooping
+
+    def pauseAndRememberPosition(self):
+        self.playing = False
+        self.elapsedTime = time.time() - self.startTimestamp
+
+    def isPlaying(self):
+        return self.playing
+
+    def isLooping(self):
+        return self.looping
+
+    def getElapsedTime(self):
+        if (self.playing):
+            # playing and looping, not the first round (need to mod with audio length)
+            # playing and not finished (not looping)
+            return time.time() - self.startTimestamp
+        else:
+            # pause and not finished
+            return self.elapsedTime
 
 #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~ ThingCollection ~~~~~~~~~~~~~~~~~~
