@@ -42,6 +42,7 @@ import upstage.model.ModelDrawing;
  * Modified by: Nitkalya Wiriyanuparb  10/09/2013  - Added swf width and height in LOAD_AV and LOAD_PROP for resizing
  * Modified by: Nitkalya Wiriyanuparb  26/09/2013  - Receive rotating direction to fix inconsistent views for audiences
  * Modified by: Nitkalya Wiriyanuparb  28/09/2013  - Supported unlooping audio
+ *                                                 - Fixed audio not heard by late audiences
  */
 
 class upstage.Transport extends XMLSocket
@@ -496,6 +497,11 @@ class upstage.Transport extends XMLSocket
 	{
 		this.modelSounds.remotePlayClip(x.array, x.url);
 	}
+
+  private function LATE_PLAY_CLIP(x :Object): Void
+  {
+    this.modelSounds.remoteSetPlayPosition(x.array, x.url, x.pos);
+  }
 	
 	private function PAUSE_CLIP(x :Object): Void
 	{

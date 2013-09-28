@@ -43,6 +43,7 @@ import upstage.util.NewSound;
  * 8-04-2013 Craig Farrell  CF      - made the _play method stop playing audios that are being replaced.
  * 
  * Modified by: Nitkalya Wiriyanuparb  28/09/2013  - Supported unlooping audio
+ *                                                 - Can set audio to play from a position and fixed audio not heard by late audiences
  */
 class upstage.model.ModelSounds implements TransportInterface
 {
@@ -143,7 +144,7 @@ class upstage.model.ModelSounds implements TransportInterface
         var sounds: Array = this[arrayName];
 		var bAlready:Boolean = false;
 		
-		trace("Sounds LENGTH " +sounds.length);
+		trace(arrayName + " sound array LENGTH " +sounds.length);
 		
 		for (var x:Number = 0; x < sounds.length; x++) {
 			if (sounds[x].url == url) {
@@ -283,7 +284,7 @@ class upstage.model.ModelSounds implements TransportInterface
 
 
 
-	public function playClip(array: String, url: String)
+	public function playClip(array: String, url: String, autoLoop: Boolean)
 	{
 		var clip: Object = this.getClip(array, url);
 
@@ -302,7 +303,7 @@ class upstage.model.ModelSounds implements TransportInterface
 	    
 	    // AC (03.06.08) - Changes the state of the audioslot buttons. 
 	    this.audioScrollBar.getAudioSlot(array, url).setPlaying();
-	    this.sender.PLAY_CLIP(array, url);
+	    this.sender.PLAY_CLIP(array, url, autoLoop); // is this triggered automatically by looping?
 	}
 	
 	
@@ -474,13 +475,27 @@ class upstage.model.ModelSounds implements TransportInterface
 		}
 	}
 	
-	
 	/***********************************************************************
 	 * Remote Play - Audio Method
 	 * 
 	 * Description: This method is called remotely by another client
 	 * and starts an already assigned audio file.
-	 **********************************************************************/ 
+	 **********************************************************************/
+
+	public function remoteSetPlayPosition(array:String, url:String, pos:Number)
+	{
+		var clip: Object = this.getClip(array, url);
+
+		if (!clip) {
+    		this._playSound(url, 'sounds', 'nextSound');
+    		clip = this.getClip(array, url);
+		}
+
+		if (!!pos) {
+			trace("LATE PLAY CLIP: " + pos);
+			clip.setStartPosition(pos);
+		}
+	}
 	 
 	public function remotePlayClip(array:String, url:String)
 	{	
@@ -520,9 +535,11 @@ class upstage.model.ModelSounds implements TransportInterface
 		if (clip.isLooping() == false) {
 			trace("REMOTE LOOP AUDIO");
 			clip.setLooping(true);
+			clip.setModel(this);
 		} else {
 			trace("REMOTE UNLOOP AUDIO");
 			clip.setLooping(false);
+			clip.setModel(null);
 		}
 		this.audioScrollBar.getAudioSlot(array, url).updateLoopButton(clip.isLooping());
 	}

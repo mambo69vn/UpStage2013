@@ -26,6 +26,7 @@ import upstage.Transport;
  * Modified by: Nitkalya Wiriyanuparb  29/08/2013  - add TOGGLE_STREAM_AUDIO
  * Modified by: Nitkalya Wiriyanuparb  26/09/2013  - Sent rotating direction to clients to fix inconsistent views for audiences
  * Modified by: Nitkalya Wiriyanuparb  28/09/2013  - Supported unlooping audio
+ *                                                 - Fixed audio not heard by late audiences
  * Notes: 
  */
 
@@ -339,9 +340,10 @@ class upstage.Sender
 		this.send('LOAD_MUSIC', 'file', fileName);
 	}
 	
-	function PLAY_CLIP(array:String, url:String): Void
+	function PLAY_CLIP(array:String, url:String, autoLoop: Boolean): Void
 	{
-		this.send('PLAY_CLIP', 'array', array, 'url', url);
+        var loop: Number = autoLoop ? 1 : 0; // is this play command triggered automatically by looping ?
+		this.send('PLAY_CLIP', 'array', array, 'url', url, 'autoLoop', loop);
 	}
 	
 	// AC (03.06.08) - Spreads the word to pause a sound.

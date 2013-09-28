@@ -32,6 +32,8 @@ Modified by:    Nitkalya Wiriyanuparb  10/09/2013  - Added swfwidth and swfheigh
 Modified by:    Nitkalya Wiriyanuparb  16/09/2013  - Set up streaming avatar mute state when new user joins a stage
 Modified by:    Nitkalya Wiriyanuparb  26/09/2013  - Received rotating direction to fix inconsistent views for audiences
 Modified by:    Nitkalya Wiriyanuparb  28/09/2013  - Supported unlooping audio
+                                                   - Stored details about playing audio (playing, looping, start time, and elapsed time)
+                                                   - Loaded currently playing audio and played from the currently playing position for late audiences
 Notes: 
 """
 
@@ -206,22 +208,6 @@ class _UpstageSocket(LineOnlyReceiver):
                           swfheight = x.media.height
                           )
 
-            for au in audios:
-                #Shaun Narayan (01/29/10) - Get position of track, and if its playing send the position to client.
-                auX,auY,auZ = au.get_pos()
-                audio_position = 0
-                if auX is not None and auX > 0:
-                    audio_position = time.mktime((datetime.datetime.now()).timetuple()) - auX
-                
-                self.send('LOAD_AUDIO',
-                          ID = au.ID,
-                          name = au.name,
-                          url = au.media.file,
-                          type = au.type,
-                          position = audio_position
-                          )
-
-            
             chat = '\n'.join(stage.retrieve_chat())
             chat = chat.replace('<', '&lt;')# Vishaal 15/10/09 Changed to ACTUALLY fix < > chatlog problem
             chat = chat.replace('>', '&gt;')# Vishaal 15/10/09 Changed to ACTUALLY fix < > chatlog problem
@@ -357,14 +343,15 @@ class _UpstageSocket(LineOnlyReceiver):
     def handle_LOAD_EFFECT(self, file):
         self.stage.play_effect(file);
     
-    def handle_PLAY_CLIP(self, array, url):
-        #Shaun Narayan (01/28/10)- Loop through audio and find the started track, timestamp it.
-        for au in self.stage.get_audio_list():
-            if url.endswith(au.media.file):
-                au.move((time.mktime((datetime.datetime.now()).timetuple())),0,0)
+    def handle_PLAY_CLIP(self, array, url, autoLoop):
+        autoLoop = (str(autoLoop) == '1')
+        audio = self.stage.getAudioByUrl(url)
+        audio.startPlaying(array, autoLoop)
         self.stage.broadcast('PLAY_CLIP', array=array, url=url)
     
     def handle_PAUSE_CLIP(self, array, url):
+        audio = self.stage.getAudioByUrl(url)
+        audio.pauseAndRememberPosition()
         self.stage.broadcast('PAUSE_CLIP', array=array, url=url)
         
     def handle_LOOP_CLIP(self, array, url):
@@ -382,9 +369,13 @@ class _UpstageSocket(LineOnlyReceiver):
         
     """ PQ: Added 29.10.07 - Stop ONE audio on all clients """
     def handle_STOP_AUDIO(self, url, type):
+        audio = self.stage.getAudioByUrl(url)
+        audio.finishPlaying()
         self.stage.broadcast('STOPAUDIO', url=url, type=type)
     
     def handle_CLEAR_AUDIOSLOT(self, type, url):
+        audio = self.stage.getAudioByUrl(url)
+        audio.finishPlaying()
         self.stage.broadcast('CLEAR_AUDIOSLOT', type=type, url=url)
     
     """ Endre: Handle message from a client who has moved their avatar up or down a layer
@@ -600,7 +591,25 @@ class _UpstageSocket(LineOnlyReceiver):
                         self.send('BINDPROP', ID=prop.holder.ID, prop=prop.ID)
                     else:
                         prop.holder.drop_prop()
-                        
+
+            for au in self.stage.get_audio_list():
+                self.send('LOAD_AUDIO',
+                          ID = au.ID,
+                          name = au.name,
+                          url = au.media.file,
+                          type = au.type
+                          )
+
+                if au.getElapsedTime() > 0:
+                    self.send('LATE_PLAY_CLIP', array=au.arrayName, url=au.media.url, pos=au.getElapsedTime())
+
+                if au.isLooping():
+                    self.send('LOOP_CLIP', array=au.arrayName, url=au.media.url)
+
+                if au.isPlaying():
+                    self.send('PLAY_CLIP', array=au.arrayName, url=au.media.url)
+
+
             # Tell the client we got the LOADED message
             self.send('CONFIRM_LOADED')
         else:
