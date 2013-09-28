@@ -759,6 +759,8 @@ class SwfConversionWrapper(Resource):
                                 streamserver=streamserver,
                                 streamname=streamname,
                                 medium=medium,
+                                width=size_x,
+                                height=size_y,
                                 )
         
         log.msg("success_upload(): got past media_dict.add, YES")
