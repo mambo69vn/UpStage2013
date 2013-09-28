@@ -486,7 +486,7 @@ function checkAllFields()
 		
 		// check file extensions for upload images
 		if(imageType == 'upload') {
-			if ( checkExtensions(type) ) { postcheck = true; }
+			if(checkExtensions(type)) { postcheck = true; }
 		} else {
 			postcheck = true;
 		}

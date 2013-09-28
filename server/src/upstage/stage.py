@@ -73,6 +73,8 @@ Modified by: Nitkalya Wiriyanuparb  29/08/2013  - add toggle_stream_audio to mut
 Modified by: Nitkalya Wiriyanuparb  04/09/2013  - clear user access list (access_level_one/two/three) before appending items to them to avoid duplicates
 Modified by: Nitkalya Wiriyanuparb  15/09/2013  - added reloadStagesInList
 Modified by: Nitkalya Wiriyanuparb  24/09/2013  - Used new format of keys for media_dict instead of file names
+Modified by: Nitkalya Wiriyanuparb  26/09/2013  - Received, saved, and sent rotating direction to fix inconsistent views for audiences
+Modified by: Nitkalya Wiriyanuparb  28/09/2013  - Added getAudioByUrl()
 """
 
 #std lib
@@ -467,8 +469,6 @@ class _Stage(object):
         socket.avatar = av
         self.player_broadcast('AV_CONNECT', client=socket.ID, ID=av.ID)
 
-
-
     def bind_prop(self, av, prop):
         """Puts the prop under the control of an avatar"""
         if prop is None or av is None:
@@ -654,6 +654,12 @@ class _Stage(object):
     def get_audio_list(self):
         """Return a list of all audio entries"""
         return self.audios.things.values()
+
+    def getAudioByUrl(self, url):
+        """Return an audio that has the same url"""
+        for au in self.get_audio_list():
+            if url.endswith(au.media.file):
+                return au
 
     """Shaun Narayan (02/06/10) - Following 11 methods provide an
         interface to manipulate the stages access rules"""
@@ -977,16 +983,16 @@ class _Stage(object):
         self.log_chat(log_msg) # save up done chat)
 
     #----------------------------- Drawing Functions. ---------------------
-    def rotate_avatar(self, avid=None):
+    def rotate_avatar(self, clockwise, avid=None):
         if avid is None:
             log.msg('Avatar ID cannot be None type')
         else:
             if avid in self.draw_avatar_stacks:
-                self.draw_avatar_stacks[avid].append(('ROTATE_AVATAR', avid)) 
+                self.draw_avatar_stacks[avid].append(('ROTATE_AVATAR', clockwise, avid)) 
             else:
-                self.draw_avatar_stacks[avid] = [('ROTATE_AVATAR', avid)]
+                self.draw_avatar_stacks[avid] = [('ROTATE_AVATAR', clockwise, avid)]
                 
-            self.broadcast('ROTATE_AVATAR', AV=avid);
+            self.broadcast('ROTATE_AVATAR', clockwise=clockwise, AV=avid);
 		
 	
     def draw_clear_layer(self, layer, avid=None):
@@ -1114,7 +1120,7 @@ class _Stage(object):
                     socket.send('DRAW_STYLE', colour=x[1],
                             thickness=x[2], alpha=x[3], layer=4, AV=k)
                 elif x[0] == 'ROTATE_AVATAR':
-                    socket.send('ROTATE_AVATAR', AV=x[1])
+                    socket.send('ROTATE_AVATAR', clockwise=x[1], AV=x[2])
 
     # Toggle streaming avatar audio
     def toggle_stream_audio(self, isMuted, avid=None):

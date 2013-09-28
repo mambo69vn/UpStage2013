@@ -320,7 +320,7 @@ class upstage.Client
                                                            
     public static var AUDIOSLOT_UI_BUTTON_TEXT_WIDTH       :Number = 19;//18.8;
     public static var AUDIOSLOT_UI_BUTTON_TEXT_HEIGHT      :Number = 8;
-    public static var AUDIOSLOT_UI_BUTTON_TEXT_SCALE  	   :Number = 0.9;
+    public static var AUDIOSLOT_UI_BUTTON_TEXT_SCALE  	   :Number = 0.8;
                                                       
                                                       
                                                       
