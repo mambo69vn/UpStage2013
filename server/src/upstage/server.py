@@ -31,6 +31,7 @@ Modified by:    Nitkalya Wiriyanuparb  29/08/2013  - add handle_TOGGLE_STREAM_AU
 Modified by:    Nitkalya Wiriyanuparb  10/09/2013  - Added swfwidth and swfheight when loading avatars and props
 Modified by:    Nitkalya Wiriyanuparb  16/09/2013  - Set up streaming avatar mute state when new user joins a stage
 Modified by:    Nitkalya Wiriyanuparb  26/09/2013  - Received rotating direction to fix inconsistent views for audiences
+Modified by:    Nitkalya Wiriyanuparb  28/09/2013  - Supported unlooping audio
 Notes: 
 """
 
@@ -367,7 +368,14 @@ class _UpstageSocket(LineOnlyReceiver):
         self.stage.broadcast('PAUSE_CLIP', array=array, url=url)
         
     def handle_LOOP_CLIP(self, array, url):
+        audio = self.stage.getAudioByUrl(url)
+        audio.setLooping(True)
         self.stage.broadcast('LOOP_CLIP', array=array, url=url)
+
+    def handle_UNLOOP_CLIP(self, array, url):
+        audio = self.stage.getAudioByUrl(url)
+        audio.setLooping(False)
+        self.stage.broadcast('UNLOOP_CLIP', array=array, url=url)
         
     def handle_ADJUST_VOLUME(self, url, type, volume):
         self.stage.broadcast('VOLUME', url=url, type=type, volume=volume)

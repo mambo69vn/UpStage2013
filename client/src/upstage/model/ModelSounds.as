@@ -42,6 +42,7 @@ import upstage.util.NewSound;
  * ------------------------------------------------------
  * 8-04-2013 Craig Farrell  CF      - made the _play method stop playing audios that are being replaced.
  * 
+ * Modified by: Nitkalya Wiriyanuparb  28/09/2013  - Supported unlooping audio
  */
 class upstage.model.ModelSounds implements TransportInterface
 {
@@ -315,20 +316,23 @@ class upstage.model.ModelSounds implements TransportInterface
 			this.sender.PAUSE_CLIP(array, url);
 		}
 	}
-	
-	
+
 	// AC (02.06.08) - Sets the selected sound to loop.
-	public function loopClip(array:String, url:String)
+	// Ing (27/9/13) - Supports unloop
+	public function toggleLoopClip(array:String, url:String) :Boolean
 	{
 		var clip: Object = this.getClip(array, url);
 		trace("LOOPING IS : " +clip.isLooping());
 		if (clip.isLooping() == false) {
-			trace("LOOPING AUDIO");
-			clip.setLooping(true);
+			trace("WILL SET -> LOOPING AUDIO");
 			this.sender.LOOP_CLIP(array, url);
+		} else {
+			trace("WILL SET -> UNLOOPING AUDIO");
+			this.sender.UNLOOP_CLIP(array, url);
 		}
+
+		return !clip.isLooping(); // return desired state (after the message bounces back from server)
 	}
-			
 
 	public function updateVolume(array:String, url:String, volume:Number)
 	{
@@ -510,12 +514,16 @@ class upstage.model.ModelSounds implements TransportInterface
 	}
 	
 	// AC (03.06.08) - Remotely sets an audio file to loop
-	public function remoteLoopClip(array:String, url:String)
+	public function remoteToggleLoopClip(array:String, url:String)
 	{
 		var clip: Object = this.getClip(array, url);
 		if (clip.isLooping() == false) {
 			trace("REMOTE LOOP AUDIO");
 			clip.setLooping(true);
+		} else {
+			trace("REMOTE UNLOOP AUDIO");
+			clip.setLooping(false);
 		}
+		this.audioScrollBar.getAudioSlot(array, url).updateLoopButton(clip.isLooping());
 	}
 }

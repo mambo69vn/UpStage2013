@@ -25,6 +25,7 @@ import upstage.Transport;
  * Modified by: Wendy, Candy and Aaron 30/10/2008
  * Modified by: Nitkalya Wiriyanuparb  29/08/2013  - add TOGGLE_STREAM_AUDIO
  * Modified by: Nitkalya Wiriyanuparb  26/09/2013  - Sent rotating direction to clients to fix inconsistent views for audiences
+ * Modified by: Nitkalya Wiriyanuparb  28/09/2013  - Supported unlooping audio
  * Notes: 
  */
 
@@ -354,6 +355,12 @@ class upstage.Sender
 	{
 		this.send('LOOP_CLIP', 'array', array, 'url', url);
 	}
+
+    // Ing (27/9/13) - Unloop clip
+    function UNLOOP_CLIP(array:String, url:String): Void
+    {
+        this.send('UNLOOP_CLIP', 'array', array, 'url', url);
+    }
 
 	// EB 22/10/07: For broadcasting volume changes
 	function ADJUST_VOLUME(url:String, type:String, volume:Number):Void
