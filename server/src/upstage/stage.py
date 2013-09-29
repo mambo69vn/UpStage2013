@@ -75,6 +75,7 @@ Modified by: Nitkalya Wiriyanuparb  15/09/2013  - added reloadStagesInList
 Modified by: Nitkalya Wiriyanuparb  24/09/2013  - Used new format of keys for media_dict instead of file names
 Modified by: Nitkalya Wiriyanuparb  26/09/2013  - Received, saved, and sent rotating direction to fix inconsistent views for audiences
 Modified by: Nitkalya Wiriyanuparb  28/09/2013  - Added getAudioByUrl()
+Modified by: Nitkalya Wiriyanuparb  29/09/2013  - reloadStagesInList resets audio timer as well
 """
 
 #std lib
@@ -101,11 +102,15 @@ from twisted.web import  microdom
 
 NUL = chr(0)
 
-def reloadStagesInList(stages, stageList):
-    """Reload stages according to the names in stages list"""
-    log.msg('resetting stages: ', stageList)
+def reloadStagesInList(stages, stageList, audioUrl=None):
+    """Reload stages according to the names in stages list
+    and optionally reset Audio timer using its url"""
+    log.msg('reloading stages: ', stageList)
     for s in stageList:
         stage = stages.getStage(s)
+        if audioUrl:
+            log.msg('reset audio timer: ', audioUrl)
+            stage.getAudioByUrl(audioUrl).resetTime(2)
         stage.soft_reset()
 
 class _Stage(object):

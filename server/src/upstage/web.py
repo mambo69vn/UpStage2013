@@ -43,7 +43,7 @@ Modified by: Nitkalya Wiriyanuparb  14/09/2013  - Fixed player/audience stat inf
 Modified by: Nitkalya Wiriyanuparb  14/09/2013  - Added media replacing functionality
 Modified by: Nitkalya Wiriyanuparb  16/09/2013  - Rename AudioThing to AudioFileProcessor
 Modified by: Nitkalya Wiriyanuparb  24/09/2013  - Generated new format of keys for media_dict instead of file names to support replacing media with cache enabled
-Modified by: Nitkalya Wiriyanuparb  29/09/2013  - Added try-catch when replacing file
+Modified by: Nitkalya Wiriyanuparb  29/09/2013  - Added try-catch when replacing file, and reset audio timer after an audio is replaced
 """
 
 
@@ -420,7 +420,7 @@ class AudioFileProcessor(Resource):
                     stages = args.pop('stages', [''])[0]
                     if stages:
                         success_message += 'The following stage(s) has been reloaded:<strong> ' + stages +'</strong>.<br />'
-                        reloadStagesInList(self.stages, stages.split(', '))
+                        reloadStagesInList(self.stages, stages.split(', '), media.url)
                     
                     success_message += 'Redirecting back to <a href="admin/workshop/mediaedit">Media Management...</a>'
                     redirectTo = 'mediaedit'
