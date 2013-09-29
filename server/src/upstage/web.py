@@ -43,6 +43,7 @@ Modified by: Nitkalya Wiriyanuparb  14/09/2013  - Fixed player/audience stat inf
 Modified by: Nitkalya Wiriyanuparb  14/09/2013  - Added media replacing functionality
 Modified by: Nitkalya Wiriyanuparb  16/09/2013  - Rename AudioThing to AudioFileProcessor
 Modified by: Nitkalya Wiriyanuparb  24/09/2013  - Generated new format of keys for media_dict instead of file names to support replacing media with cache enabled
+Modified by: Nitkalya Wiriyanuparb  29/09/2013  - Added try-catch when replacing file
 """
 
 
@@ -381,7 +382,12 @@ class AudioFileProcessor(Resource):
         oldfile = args.pop('oldfile', [''])[0]
         if mode == 'replace':
             key = args.pop('key')[0]
-            self.media_dict.deleteFile(oldfile)
+            try:
+                self.media_dict.deleteFile(oldfile)
+            except KeyError:
+                log.msg('the file does not exist. nothing was deleted.')
+                request.write(errorpage(request, 'The file you want to replace does not exist. Accidentally pressed the back button? Tut, tut..', 'mediaedit'))
+                request.finish()
         
         the_url = config.AUDIO_DIR +"/"+ mp3name
         
@@ -577,8 +583,12 @@ class SwfConversionWrapper(Resource):
                 swf = unique_custom_string(suffix='.swf')
                 if form.get('mode', '') == 'replace':
                     oldfile = form.get('oldfile')
-                    self.media_dict.deleteFile(oldfile)
-                    
+                    try:
+                        self.media_dict.deleteFile(oldfile)
+                    except KeyError:
+                        log.msg('the file does not exist. nothing was deleted.')
+                        request.write(errorpage(request, 'The file you want to replace does not exist. Accidentally pressed the back button? Tut, tut..', 'mediaedit'))
+                        request.finish()
 
                 thumbnail = swf.replace('.swf', '.jpg')         # FIXME: see #20 (Uploaded media is not converted to JPEG)
                 swf_full = os.path.join(config.MEDIA_DIR, swf)
