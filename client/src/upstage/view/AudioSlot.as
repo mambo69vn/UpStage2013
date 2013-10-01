@@ -39,12 +39,14 @@ import upstage.model.ModelSounds;
  * Modified by: Vibhu 31/08/2011 - Changed create function to take one more parameter for the color value.
  *
  * Modified by: Nitkalya Wiriyanuparb  28/09/2013  - Supported unlooping audio and updated looping button text
+ * Modified by: Nitkalya Wiriyanuparb  01/10/2013  - Added another empty slider for selecting audio time
  */
 class upstage.view.AudioSlot extends MovieClip
 {
 
 	public var modelSounds   :ModelSounds;
-	public var slider        :Slider;
+  public var volumeSlider  :Slider;
+	public var timeSlider    :Slider;
 	private var assignedType :String;
 	public var nametf        :TextField;
 	private var assignedURL  :String;
@@ -83,9 +85,12 @@ class upstage.view.AudioSlot extends MovieClip
                                      Client.AU_NAME_WIDTH, Client.AU_NAME_HEIGHT,
                                      0.8, true, tfAttrs
                                      );
-		out.slider = Slider.factory(out, 100,
-                                    Client.AU_SLIDER_X, Client.AU_SLIDER_Y,
-                                    Client.AU_SLIDER_W, Client.AU_SLIDER_H, true);
+    out.volumeSlider = Slider.factory(out, 100,
+                                    Client.AU_SLIDER_X, Client.AU_SLIDER_Y - 0.5,
+                                    17.5, Client.AU_SLIDER_H, true);
+		out.timeSlider = Slider.factory(out, 100,
+                                    Client.AU_SLIDER_X, Client.AU_SLIDER_Y - 6,
+                                    Client.AU_SLIDER_W + 0.5, Client.AU_SLIDER_H, true);
 
 		// PQ: Added 29.10.07 - To test audio playing function
         out.stopBtn = UiButton.AudioSlotfactory(out, Client.BTN_LINE_STOP, Client.BTN_FILL_STOP,
@@ -124,17 +129,17 @@ class upstage.view.AudioSlot extends MovieClip
         };
         
         out.loopBtn = UiButton.AudioSlotfactory(out, Client.BTN_LINE_AUDIO, Client.BTN_FILL_AUDIO,
-                                       			'loop', 0.8, Client.AU_SLIDER_W + 2.5, Client.AU_CONTROL_HEIGHT - 1 * Client.UI_BUTTON_SPACE_H - 4.3);
+                                       			'loop', 0.8, Client.AU_SLIDER_W + 2.5, Client.AU_CONTROL_HEIGHT - 1 * Client.UI_BUTTON_SPACE_H + 1.4);
  
         out.loopBtn.onPress = function() {
           var looping:Boolean = out.modelSounds.toggleLoopClip(out.assignedType, out.assignedURL);
         };
     
-		// Default volume is 50, this sets the slider to match
+		// Default volume is 50, this sets the volumeSlider to match
 		// PQ: Edited 30.10.07 - Now takes default vol value from a constant
-		out.slider.setFromValue(Client.AUDIO_VOL_DEFAULT_VAL);
-		out.slider.listener = function(value:Number) {
-			trace("AudioSlot slider.listener - value is: " + value);
+		out.volumeSlider.setFromValue(Client.AUDIO_VOL_DEFAULT_VAL);
+		out.volumeSlider.listener = function(value:Number) {
+			trace("AudioSlot volumeSlider.listener - value is: " + value);
 			//Construct.deepTrace (out);
 			trace (out.modelSounds);
 			out.modelSounds.updateVolume(out.assignedType, out.assignedURL, value);
@@ -150,7 +155,7 @@ class upstage.view.AudioSlot extends MovieClip
 		//trace("assignAudio with type = " + type + " and url = " + url);
 		// PQ: Now when you assign a new audio to one of the slots/controls,
 		//  It sets the volume to 0 (Default value)
-		this.slider.setFromValue(Client.AUDIO_VOL_DEFAULT_VAL);
+		this.volumeSlider.setFromValue(Client.AUDIO_VOL_DEFAULT_VAL);
 		this.assignedType = type;
 		this.assignedURL = url;
 		this.playBtn.ungrey();
@@ -160,7 +165,7 @@ class upstage.view.AudioSlot extends MovieClip
 
 	public function clear()
 	{
-		this.slider.setFromValue(Client.AUDIO_VOL_DEFAULT_VAL);
+		this.volumeSlider.setFromValue(Client.AUDIO_VOL_DEFAULT_VAL);
 		this.nametf.text = "";
 		this.assignedURL = "";
 		this.assignedType = "";
