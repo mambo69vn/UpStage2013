@@ -75,6 +75,14 @@
 				<option value="sfx">Sound-Effect</option>
 			</select>
 		</div>
+        
+        <div class="filterBlock">
+			<label for="filterTags">Tags:</label>
+			<select id="filterTags" name="filterTags" style="width:150px;">
+				<option value=""></option>
+				%(list_tags_as_html_option_tag)s
+			</select>
+		</div>
 	
 		<div class="filterBlock">
 		    <input id="buttonUpdateView" type="button" class="button-standard" value="Apply Filter" />

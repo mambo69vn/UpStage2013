@@ -76,6 +76,8 @@ Modified by: Nitkalya Wiriyanuparb  24/09/2013  - Used new format of keys for me
 Modified by: Nitkalya Wiriyanuparb  26/09/2013  - Received, saved, and sent rotating direction to fix inconsistent views for audiences
 Modified by: Nitkalya Wiriyanuparb  28/09/2013  - Added getAudioByUrl()
 Modified by: Nitkalya Wiriyanuparb  29/09/2013  - reloadStagesInList resets audio timer as well
+Modified by: David Daniels          2/10/2013   - Added get_tags_list() to get all the tags attached to all media types
+                                                - modified get_uploader_list to get all uploaders for all media types instead of just avatars
 """
 
 #std lib
@@ -642,7 +644,36 @@ class _Stage(object):
         self.tOwner = nOwner
 
     def get_uploader_list(self):
-        return self.avatars.get_uploader_list()
+        uploaders = self.avatars.get_uploader_list()
+        tempUpload = self.props.get_uploader_list()
+        for uploader in tempUpload:
+            if uploader not in uploaders:
+                uploaders.append(uploader)
+        tempUpload = self.backdrops.get_uploader_list()
+        for uploader in tempUpload:
+            if uploader not in uploaders:
+                uploaders.append(uploader)
+        tempUpload = self.audios.get_uploader_list()
+        for uploader in tempUpload:
+            if uploader not in uploaders:
+                uploaders.append(uploader)
+        return uploaders
+        
+    def get_tag_list(self):
+        tags = self.avatars.get_tags()
+        tempTags = self.props.get_tags()
+        for tag in tempTags:
+            if tag not in tags:
+                tags.append(tag)
+        tempTags = self.backdrops.get_tags()
+        for tag in tempTags:
+            if tag not in tags:
+                tags.append(tag)
+        tempTags = self.audios.get_tags()
+        for tag in tempTags:
+            if tag not in tags:
+                tags.append(tag)
+        return tags
 
     def get_avatar_list(self):
         """Return a list of avatars on a stage"""

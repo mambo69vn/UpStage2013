@@ -37,6 +37,7 @@ Modified by: Lisa Helm 21/08/2013       - removed all code relating to old video
 Modified by: Nitkalya Wiriyanuparb  10/09/2013  - Added media width and height in various placess (for avatar and prop resizing issues)
 Modified by: Nitkalya Wiriyanuparb  10/09/2013  - Added new methods (setThumbnail, restoreOldFile, deleteFile) to support media replacing functionality
 Modified by: Nitkalya Wiriyanuparb  24/09/2013  - Added setUrl method and modified the class to use new format of keys instead of file names
+Modified by: David Daniels          2/10/2013   - Added get_tags() to get all the tags attached to a media type
 Notes: 
 """
 
@@ -838,6 +839,18 @@ class MediaDict(Xml2Dict):
                 uploaderList.append(uploader)
         return uploaderList
 
+    def get_tags(self):
+        mediaList = self.get_media_list()
+        tagList = []
+        for entry in mediaList:
+            tags = entry[1]['tags']
+            splitTags = tags.split(',')
+            for tag in splitTags:
+                if tag != '':
+                    if tag not in tagList:
+                        tagList.append(tag)
+        return tagList
+        
     def html_list_grouped(self, include='thing_item_set.inc', header='thing_group_heading.inc', selected=(), prefix=DELETE_PREFIX):
         """ Alan - 08/01/08 - Used for lists that require grouping on assets by stage. 
         (e.g. avatars, props and backdrops edit selection lists) """

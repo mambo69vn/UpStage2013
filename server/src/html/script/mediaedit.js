@@ -150,6 +150,7 @@ function callAjaxGetData() {
         	'filter_stage': $("#filterStage").val(),
         	'filter_type': $("#filterType").val(),
         	'filter_medium': $("#filterMedium").val(),
+        	'filter_tags': $("#filterTags").val(),
         },
         success: function(response) {
         	

@@ -104,6 +104,7 @@ Modified by: Nitkalya Wiriyanuparb  15/09/2013  - Made success redirection targe
 Modified by: Nitkalya Wiriyanuparb  16/09/2013  - Removed unused AudioThing class
 Modified by: Nitkalya Wiriyanuparb  24/09/2013  - Modified StageEditPage and MediaEditPage to use new format of keys for media_dict instead of file names
 Modified by: Nitkalya & Lisa        30/09/2013  - Fixed redirection on error pages
+Modified by: David Daniels          2/10/2013   - added code for filter by tags
 """
 
 #standard lib
@@ -1184,6 +1185,7 @@ class MediaEditPage(Workshop):
         self.filter_stage = ''
         self.filter_type = ''
         self.filter_medium = ''
+        self.filter_tags = ''
         
         # delete data / assign stages
         self.select_key = ''
@@ -1256,6 +1258,16 @@ class MediaEditPage(Workshop):
                    
         return createHTMLOptionTags(sorted(set(data_list)))
         
+    def text_list_tags_as_html_option_tag(self, request):
+        keys = self.collection.stages.getKeys()
+        data_list = []
+        for key in keys:
+            stage = self.collection.stages.get(key)
+            for tag in stage.get_tag_list():
+                data_list.append(tag)
+        return createHTMLOptionTags(sorted(set(data_list)))
+        
+        
     # we want to be able to respond to ajax calls on POST requests:        
     def render_POST(self,request):
         
@@ -1288,9 +1300,11 @@ class MediaEditPage(Workshop):
                 self.filter_type = args['filter_type'][0]
             if 'filter_medium' in args:
                 self.filter_medium = args['filter_medium'][0]
+            if 'filter_tags' in args:
+                self.filter_tags = args['filter_tags'][0]
             
             # are filters set?
-            if ((self.filter_user == '') & (self.filter_type == '') & (self.filter_stage == '') & (self.filter_medium == '')):
+            if ((self.filter_user == '') & (self.filter_type == '') & (self.filter_stage == '') & (self.filter_medium == '') & (self.filter_tags == '')):
                 self.apply_filter = False
             else:
                 self.apply_filter = True
@@ -1548,6 +1562,7 @@ class MediaEditPage(Workshop):
                 match_stage = False
                 match_type = False
                 match_medium = False
+                match_tags = False
                 
                 # check if user matches
                 if self.filter_user != '':
@@ -1557,6 +1572,21 @@ class MediaEditPage(Workshop):
                     match_user = True
                 
                 log.msg("MediaEditPage: _get_data(): filter_user matched: %s" % match_user);
+                
+                #check if tags match David Daniels and Nikos Philips
+                if self.filter_tags != '':
+                    tags = dataset['tags'].split(', ')
+                    try:
+                        tags.remove('')
+                    except ValueError:
+                        pass
+                    for tag in tags:
+                        if tag == self.filter_tags:
+                            match_tags = True
+                else:
+                    match_tags = True
+                    
+                log.msg("MediaEditPage: _get_data(): filter_tags matched: %s" % match_tags);
                 
                 # check if type matches    
                 if self.filter_type != '':
@@ -1608,7 +1638,7 @@ class MediaEditPage(Workshop):
                 log.msg("MediaEditPage: _get_data(): filter_medium matched: %s" % match_medium);
                     
                 # add record if all matches
-                add_dataset = match_user & match_type & match_stage & match_medium
+                add_dataset = match_user & match_type & match_stage & match_medium & match_tags
                 
             else:
                 add_dataset = True
