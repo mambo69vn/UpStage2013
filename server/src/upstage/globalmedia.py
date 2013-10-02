@@ -285,13 +285,13 @@ class MediaDict(Xml2Dict):
                 raise KeyError("%s: %s" %(self.path(f), e))
 
 
-    def __delitem__(self, f):
+    def __delitem__(self, key):
         """Deletes an item from XML dictionary and from the file system
         Won't work if f is a directory name not a file
         @param f file name"""
-        self.deleteFile(f)
+        self.deleteFile(self[key].file)
 
-        return Xml2Dict.__delitem__(self, f)
+        return Xml2Dict.__delitem__(self, key)
 
 
     def _get_stage_collections(self):
