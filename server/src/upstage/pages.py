@@ -1186,6 +1186,7 @@ class MediaEditPage(Workshop):
         self.filter_type = ''
         self.filter_medium = ''
         self.filter_tags = ''
+        self.search_text = ''
         
         # delete data / assign stages
         self.select_key = ''
@@ -1247,6 +1248,9 @@ class MediaEditPage(Workshop):
             data_list.append(key)
         return createHTMLOptionTags(sorted(set(data_list)))
     
+    def searchByString(self, request):
+        log.msg('I WAS RIGHT');
+    
     def text_list_users_as_html_option_tag(self, request):
         keys = self.collection.stages.getKeys()
         data_list = []
@@ -1302,9 +1306,13 @@ class MediaEditPage(Workshop):
                 self.filter_medium = args['filter_medium'][0]
             if 'filter_tags' in args:
                 self.filter_tags = args['filter_tags'][0]
-            
+            if 'search_text' in args:
+                self.search_text = args['search_text'][0]
+            if self.search_text == 'Search':
+                self.search_text = ''
+                
             # are filters set?
-            if ((self.filter_user == '') & (self.filter_type == '') & (self.filter_stage == '') & (self.filter_medium == '') & (self.filter_tags == '')):
+            if ((self.filter_user == '') & (self.filter_type == '') & (self.filter_stage == '') & (self.filter_medium == '') & (self.filter_tags == '') & (self.search_text == '')):
                 self.apply_filter = False
             else:
                 self.apply_filter = True
@@ -1563,6 +1571,7 @@ class MediaEditPage(Workshop):
                 match_type = False
                 match_medium = False
                 match_tags = False
+                match_search = False
                 
                 # check if user matches
                 if self.filter_user != '':
@@ -1570,23 +1579,7 @@ class MediaEditPage(Workshop):
                         match_user = True
                 else:
                     match_user = True
-                
                 log.msg("MediaEditPage: _get_data(): filter_user matched: %s" % match_user);
-                
-                #check if tags match David Daniels and Nikos Philips
-                if self.filter_tags != '':
-                    tags = dataset['tags'].split(', ')
-                    try:
-                        tags.remove('')
-                    except ValueError:
-                        pass
-                    for tag in tags:
-                        if tag == self.filter_tags:
-                            match_tags = True
-                else:
-                    match_tags = True
-                    
-                log.msg("MediaEditPage: _get_data(): filter_tags matched: %s" % match_tags);
                 
                 # check if type matches    
                 if self.filter_type != '':
@@ -1594,7 +1587,6 @@ class MediaEditPage(Workshop):
                         match_type = True
                 else:
                     match_type = True
-                
                 log.msg("MediaEditPage: _get_data(): filter_type matched: %s" % match_type);
                     
                 # check if stage matches
@@ -1625,7 +1617,6 @@ class MediaEditPage(Workshop):
                                 match_stage = True
                 else:
                     match_stage = True
-                    
                 log.msg("MediaEditPage: _get_data(): filter_stage matched: %s" % match_stage);
                     
                 # check if medium matches
@@ -1634,11 +1625,39 @@ class MediaEditPage(Workshop):
                         match_medium = True
                 else:
                     match_medium = True
-                    
                 log.msg("MediaEditPage: _get_data(): filter_medium matched: %s" % match_medium);
+                
+                #check if tags match    - David Daniels and Nikos Philips
+                if self.filter_tags != '':
+                    tags = dataset['tags'].split(', ')
+                    try:
+                        tags.remove('')
+                    except ValueError:
+                        pass
+                    for tag in tags:
+                        if tag == self.filter_tags:
+                            match_tags = True
+                else:
+                    match_tags = True
+                log.msg("MediaEditPage: _get_data(): filter_tags matched: %s" % match_tags);
+                
+                #check if search string matches
+                if self.search_text != '':
+                    log.msg('I GET TO HERE');
+                    names = dataset['name'].split(',')
+                    try:
+                        names.remove('')
+                    except ValueError:
+                        pass
+                    for name in names:
+                        if self.search_text in name:
+                            match_search = True
+                else:
+                    match_search = True;
+                log.msg("MediaEditPage: _get_Data(): search_text matched: %s" % match_search);
                     
                 # add record if all matches
-                add_dataset = match_user & match_type & match_stage & match_medium & match_tags
+                add_dataset = match_user & match_type & match_stage & match_medium & match_tags & match_search
                 
             else:
                 add_dataset = True
