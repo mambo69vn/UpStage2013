@@ -103,6 +103,13 @@ function setupMediaEdit(url_path,current_user,current_stages,set_filter_to_curre
 		setCurrentUserInFilter();	// set default user
 		callAjaxGetData();
 	});
+    
+    $("#buttonSearch").click(function(e)
+    {
+        log.debug("click: #buttonSearch");
+        $("#searchText").val();
+        callAjaxGetData();
+    });
 	
 	if(set_filter_to_current_user) {
 		setCurrentUserInFilter();	// set default user
@@ -150,6 +157,8 @@ function callAjaxGetData() {
         	'filter_stage': $("#filterStage").val(),
         	'filter_type': $("#filterType").val(),
         	'filter_medium': $("#filterMedium").val(),
+        	'filter_tags': $("#filterTags").val(),
+            'search_text': $("#searchText").val(),
         },
         success: function(response) {
         	
@@ -1865,4 +1874,21 @@ function getBytesWithUnit(bytes) {
 		bytes = bytes.toFixed(1);
 	}
 	return bytes + units[i];
+}
+
+/**
+*   Added by David Daniels / Nikos Philips
+*       - Method to search the uploaded media by a string
+*/
+function searchByString()
+{
+    var searchText = document.getElementById('searchString').value;
+    if(searchText == 'Search' || searchText == '')
+    {
+        //search string is still default
+        alert("Please enter a search string");
+    } else
+    {
+        //search media names for matches
+    }
 }

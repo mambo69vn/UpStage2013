@@ -34,6 +34,7 @@ Modified by: Heath Behrens 16/08/2011 - Added functions remove_media and remove_
 Modified by: Nitkalya Wiriyanuparb  16/09/2013  - Remembered streaming avatar mute state
 Modified by: Nitkalya Wiriyanuparb  24/09/2013  - Modified ThingCollection to use new format of keys for media_dict instead of file names
 Modified by: Nitkalya Wiriyanuparb  27/09/2013  - Modified Audio class to remember play/pause/loop states and elapsed time
+Modified by: David Daniels          2/10/2013   - Added get_tags() to get all the tags attached to a media type
 Notes: 
 """
 import time
@@ -365,6 +366,9 @@ class ThingCollection:
         uploaders = self.globalmedia.get_formatted_list() 
         return uploaders
     
+    
+    def get_tags(self):
+        return self.globalmedia.get_tags()
 
     def __contains__(self, ID):
         return ID in self.things

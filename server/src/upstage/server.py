@@ -469,7 +469,6 @@ class _UpstageSocket(LineOnlyReceiver):
             recipients.remove('*')
             names = [x.player.name for x in self.stage.player_sockets.values()]
             recipients.extend([x for x in names if x not in recipients])
-        recipientsRecieved = []
         for stage in self.factory.stages.values():
             if not recipients:
                 break
@@ -479,11 +478,9 @@ class _UpstageSocket(LineOnlyReceiver):
                     sock.send('WHISPER', text=body, senderID=self.player.name)
                     if not(p in sent):
                         sent.append(p)
-                    if not(p in recipientsRecieved):
-                        recipientsRecieved.append(p)
                     if not recipients: #done them all
                         break
-        for recp in recipientsRecieved:
+        for recp in sent:
             recipients.remove(recp)
 
         self.send('MSG', message='whispered to %s: "%s"' % (', '.join(sent) or '[nobody]', body))

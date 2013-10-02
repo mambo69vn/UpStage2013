@@ -75,6 +75,14 @@
 				<option value="sfx">Sound-Effect</option>
 			</select>
 		</div>
+        
+        <div class="filterBlock">
+			<label for="filterTags">Tags:</label>
+			<select id="filterTags" name="filterTags" style="width:150px;">
+				<option value=""></option>
+				%(list_tags_as_html_option_tag)s
+			</select>
+		</div>
 	
 		<div class="filterBlock">
 		    <input id="buttonUpdateView" type="button" class="button-standard" value="Apply Filter" />
@@ -83,7 +91,17 @@
 	 
 	</div>
     
+    <div id = "searchDiv">
+    <div class = "searchBlock">
+            <input id="searchText" name="searchText" type="text" onblur="if(this.value=='') this.value=defaultValue" onclick="if(this.defaultValue==this.value) this.value=''" value="Search">
+            <input id="buttonSearch" type="button" style="width:60px;" onclick="javascript:searchByString()" value="Search" />
+    </div>
 </div>
+</div>
+
+</div>
+
+
 
 <hr />
 
