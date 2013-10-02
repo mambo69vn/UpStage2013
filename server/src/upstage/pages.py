@@ -1643,14 +1643,21 @@ class MediaEditPage(Workshop):
                 
                 #check if search string matches
                 if self.search_text != '':
-                    log.msg('I GET TO HERE');
                     names = dataset['name'].split(',')
                     try:
                         names.remove('')
                     except ValueError:
                         pass
                     for name in names:
-                        if self.search_text in name:
+                        if str(self.search_text).lower() in str(name).lower():
+                            match_search = True
+                    names = dataset['streamname'].split(',')
+                    try:
+                        names.remove('')
+                    except ValueError:
+                        pass
+                    for name in names:
+                        if str(self.search_text).lower() in str(name).lower():
                             match_search = True
                 else:
                     match_search = True;
