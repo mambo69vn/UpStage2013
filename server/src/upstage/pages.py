@@ -1271,7 +1271,6 @@ class MediaEditPage(Workshop):
                 data_list.append(tag)
         return createHTMLOptionTags(sorted(set(data_list)))
         
-        
     # we want to be able to respond to ajax calls on POST requests:        
     def render_POST(self,request):
         
