@@ -648,8 +648,9 @@ class upstage.Transport extends XMLSocket
     	var name : String = x.name;
     	var url :String = x.url;
     	var type : String = x.type;
+      var duration :Number = Number(x.duration);
     	
-    	this.modelSounds.GET_LOAD_AUDIO(ID, name, url, type);
+    	this.modelSounds.GET_LOAD_AUDIO(ID, name, url, type, duration);
     	 
     }
 
