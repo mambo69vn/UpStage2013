@@ -1103,7 +1103,8 @@ class StageEditPage(Workshop):
             for i in range(0, len(keys)):
                 m = self.stage.get_media_by_key(keys[i])
                 if self.stagename and m:
-                    self.stage.unassigned.remove(m)
+                    if self.stage.unassigned.count(m) == 0:
+                        self.stage.unassigned.remove(m)
             
             #Lisa - puts selected media into the 'unassigned' list
         elif action=='unassign_media':
@@ -1112,9 +1113,9 @@ class StageEditPage(Workshop):
             for i in range(0, len(keys)):
                 m = self.stage.get_media_by_key(keys[i])
                 if self.stagename and m:
-					if self.stage.unassigned.count(m) == 0:
-						self.stage.unassigned.append(m)
-						log.msg(self.stage.unassigned)
+                    if self.stage.unassigned.count(m) == 0:
+                        self.stage.unassigned.append(m)
+                        log.msg(self.stage.unassigned)
 
         elif action=='view_media':#(25/04/2013) Craig
             log.msg('es - view media method start')
