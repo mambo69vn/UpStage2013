@@ -137,7 +137,7 @@ VOICE_KIT = {
           #'randy': (_festival, ('(voice_us3_mbrola)', 8)),
           # ------
           'default': (_festival, ('(voice_us1_mbrola)', 16)),
-          'roger': (_festival, ('(voice_en1_mbrola)', 16)),
+          #'roger': (_festival, ('(voice_en1_mbrola)', 16)),
           'bud': (_festival, ('(voice_us2_mbrola)', 16)),
           'randy': (_festival, ('(voice_us3_mbrola)', 16)),
 
@@ -149,9 +149,12 @@ VOICE_KIT = {
           # ------
           'kal': (_festival, ('(voice_kal_diphone)', 16)),
           'ked': (_festival, ('(voice_ked_diphone)', 16)),
-          'rab': (_festival, ('(voice_rab_diphone)', 16)),
-          'don': (_festival, ('(voice_don_diphone)', 16)),
+          #'rab': (_festival, ('(voice_rab_diphone)', 16)),
+          #'don': (_festival, ('(voice_don_diphone)', 16)),
 
+		  ###################################################################
+		  #					REMOVED BECAUSE THEY DON'T WORK					#
+		  ###################################################################
           #compiled festival
           #'slt_cmu': (_festival2, ('(voice_cmu_us_slt_arctic_clunits)', 8)),
           #'slt_nitech': (_festival2, ('(voice_nitech_us_slt_arctic_hts)', 8)),
@@ -165,16 +168,16 @@ VOICE_KIT = {
           #'rms_nitech': (_festival2, ('(voice_nitech_us_rms_arctic_hts)', 8)),
           #'rms_faster': (_festival2, ('(voice_nitech_us_rms_arctic_hts)', 8, " -F 11025")),
           # -----
-          'slt_cmu': (_festival3, ('(voice_cmu_us_slt_arctic_hts)', 16)),
-          'slt_nitech': (_festival3, ('(voice_nitech_us_slt_arctic_hts)', 16)),
-          'awb_cmu': (_festival3, ('(voice_cmu_us_awb_arctic_hts)', 16)),
-          'awb_nitech': (_festival3, ('(voice_nitech_us_awb_arctic_hts)', 16)),
-          'clb_nitech': (_festival3, ('(voice_nitech_us_clb_arctic_hts)', 16)),
-          'bdl_cmu': (_festival3, ('(voice_cmu_us_bdl_arctic_hts)', 16)),
-          'bdl_nitech': (_festival3, ('(voice_nitech_us_bdl_arctic_hts)', 16)),
-          'jmk_cmu': (_festival3, ('(voice_cmu_us_jmk_arctic_hts)', 16)),
-          'jmk_nitech': (_festival3, ('(voice_nitech_us_jmk_arctic_hts)', 16)),
-          'rms_nitech': (_festival3, ('(voice_nitech_us_rms_arctic_hts)', 16)),
+          #'slt_cmu': (_festival3, ('(voice_cmu_us_slt_arctic_hts)', 16)),
+          #'slt_nitech': (_festival3, ('(voice_nitech_us_slt_arctic_hts)', 16)),
+          #'awb_cmu': (_festival3, ('(voice_cmu_us_awb_arctic_hts)', 16)),
+          #'awb_nitech': (_festival3, ('(voice_nitech_us_awb_arctic_hts)', 16)),
+          #'clb_nitech': (_festival3, ('(voice_nitech_us_clb_arctic_hts)', 16)),
+          #'bdl_cmu': (_festival3, ('(voice_cmu_us_bdl_arctic_hts)', 16)),
+          #'bdl_nitech': (_festival3, ('(voice_nitech_us_bdl_arctic_hts)', 16)),
+          #'jmk_cmu': (_festival3, ('(voice_cmu_us_jmk_arctic_hts)', 16)),
+          #'jmk_nitech': (_festival3, ('(voice_nitech_us_jmk_arctic_hts)', 16)),
+          #'rms_nitech': (_festival3, ('(voice_nitech_us_rms_arctic_hts)', 16)),
           # rms does not work "faster"
           #'rms_faster': (_festival3, ('(voice_nitech_us_rms_arctic_hts)', 8, " -F 11.025")),
           ###Shaun Narayan (02/22/10) - New voices
@@ -230,7 +233,7 @@ VOICE_KIT = {
           #'e_en-croak': (_espeak,  ("en/en-croak ",)),
           'e_en-n': (_espeak, ("en/en-n ",)),
           #'e_en-r': (_espeak, ("en/en-r ",)),
-          'e_en-r': (_espeak, ("en/en-us1 ",)),
+          #'e_en-r': (_espeak, ("en/en-us1 ",)),
           'e_en-rp': (_espeak, ("en/en-rp ",)),
           'e_en-sc': (_espeak, ("en/en-sc ",)),
           'e_en-wm': (_espeak, ("en/en-wm ",)),
@@ -305,7 +308,7 @@ VOICE_KIT = {
           'emb_pl1-en': (_espeak_mbrola, ("mb/mb-pl1-en", "pl1",)),
           'emb_ro1-en': (_espeak_mbrola, ("mb/mb-ro1-en", "ro1",)),
           'emb_sw1-en': (_espeak_mbrola, ("mb/mb-sw1-en", "sw1",)),
-          'emb_sw2-en': (_espeak_mbrola, ("mb/mb-sw2-en", "sw2",)),
+          #'emb_sw2-en': (_espeak_mbrola, ("mb/mb-sw2-en", "sw2",)),
 	  'emb_br3': (_espeak_mbrola, ("mb/mb-br3", "br3",)),
           'emb_de7': (_espeak_mbrola, ("mb/mb-de7", "de7",)),
 	  'emb_de6': (_espeak_mbrola, ("mb/mb-de6", "de6",)),
@@ -320,7 +323,7 @@ VOICE_KIT = {
 	  'emb_gr2': (_espeak_mbrola, ("mb/mb-gr2", "gr2",)),
           'emb_ro1': (_espeak_mbrola, ("mb/mb-ro1", "ro1",)),
           'emb_sw1': (_espeak_mbrola, ("mb/mb-sw1", "sw1",)),
-          'emb_sw2': (_espeak_mbrola, ("mb/mb-sw2", "sw2",)),
+          #'emb_sw2': (_espeak_mbrola, ("mb/mb-sw2", "sw2",)),
           'emb_af1': (_espeak_mbrola, ("mb/mb-af1", "af1",)),
           'emb_cr1': (_espeak_mbrola, ("mb/mb-cr1", "cr1",)),
           'emb_cz2': (_espeak_mbrola, ("mb/mb-cz2", "cz2",)),
@@ -340,7 +343,7 @@ VOICE_KIT = {
           'emb_de4-en-low-slow': (_espeak_mbrola, ("mb/mb-de4-en", "de4", '', ' -t1.4 -f0.6 ' )),
           'emb_sw1-en-low-slow': (_espeak_mbrola, ("mb/mb-sw1-en", "sw1", '', ' -t1.4 -f0.6 ' )),
           'emb_de5-en-high-slow': (_espeak_mbrola, ("mb/mb-de5-en", "de5", '', ' -t1.4 -f1.3 ' )),
-          'emb_sw2-en-high-slow': (_espeak_mbrola, ("mb/mb-sw2-en", "sw2", '', ' -t1.4 -f1.3 ' )),
+          #'emb_sw2-en-high-slow': (_espeak_mbrola, ("mb/mb-sw2-en", "sw2", '', ' -t1.4 -f1.3 ' )),
            #'emb_us3': (_espeak_mbrola, ("mb/mb-us3", "us3",)),
          }
 
