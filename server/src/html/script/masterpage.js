@@ -42,7 +42,7 @@
             Modified by Nitkalya (14/9/2013): Make player/audience stat info clearer, and fix issues when it displays NaN audiences on some pages
             Modified by Lisa (24/09/2013): Added code to provide different home page for guests and users
             Modified by Nitkalya (25/09/2013): Added methods to remove and create workshop link dynamically using javascript
-            Modified by Nitkalya (09/10/2013): Fixed login issues, login links on admin page
+            Modified by Nitkalya (09/10/2013): Fixed login issues, login links on admin page, and added autofocus on username text box
  */
 
 //Instance type variables
@@ -365,6 +365,7 @@ function login()
 		loginForm += signup_html;
 	}
 	document.getElementById('signup').innerHTML = loginForm;
+	document.getElementById('username').focus();
 }
 
 function navStageWorkshop()
