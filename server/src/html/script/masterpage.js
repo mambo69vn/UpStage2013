@@ -42,6 +42,7 @@
             Modified by Nitkalya (14/9/2013): Make player/audience stat info clearer, and fix issues when it displays NaN audiences on some pages
             Modified by Lisa (24/09/2013): Added code to provide different home page for guests and users
             Modified by Nitkalya (25/09/2013): Added methods to remove and create workshop link dynamically using javascript
+            Modified by Nitkalya (09/10/2013): Fixed login issues
  */
 
 //Instance type variables
@@ -353,6 +354,12 @@ function openStage(id)
 
 function login()
 {
+	// first time that the user tries to login (never reaches woven's guard realm before) - then init session
+	// requesting the perspective-init page without a session cookie will init the session
+	if (document.cookie.indexOf("woven_guard") === -1) {
+		requestPage("GET", '/admin/perspective-init', null);
+	}
+
 	if(document.hidden_form.can_signup.value=='true')
 	{
 		loginForm += signup_html;
@@ -385,11 +392,9 @@ function navUserPage()
  */
 function logout()
 {
-	var cookies = document.cookie.split(";");
-	for (var i = 0; i < cookies.length; i++) {
-		deleteCookie(cookies[i].split("=")[0]);
-	};
-	window.location='/admin/perspective-destroy';
+	// not deleting woven session cookie anymore, the guard realm needs it
+	// the cookie does not contain anything about users' credentials
+	requestPage("GET", '/admin/perspective-destroy', null);
 	document.getElementById('signup').innerHTML = loginLinks;
 	window.location = '/home';
 }
