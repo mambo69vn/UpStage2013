@@ -644,48 +644,50 @@ function checkMediaType(filename, type)
 
 //-------------------------------- VOICE TESTING -----------------------------//
 
-function checkVoiceTest() {
-	log.debug("checkVoiceTest()");
+function checkUploadVoiceTest() {
+	log.debug("checkUploadVoiceTest()");
+    
 	var selection = _getElementById('voice').selectedIndex;
-	log.debug("checkVoiceTest(): selectedIndex = " + selection);
-	if(selection == 0) {
-		hideVoiceTest();	// hide voice test if 'none' is selected
+	log.debug("checkUploadVoiceTest(): selectedIndex = " + selection);
+	if(selection.value == "no_voice") {
+		hideUploadVoiceTest();	// hide voice test if 'none' is selected
 	} else {
-		showVoiceTest();
+		showUploadVoiceTest();
 	}
 }
 
-function showVoiceTest() {
-	log.debug("showVoiceTest()");
-	_getElementById('voiceTestPanel').style.display = 'inline';
+function showUploadVoiceTest() {
+	log.debug("showUploadVoiceTest())");
+    _getElementById('uploadVoicetest').style.visibility = 'visible';
+    
 }
 
-function hideVoiceTest() {
-	log.debug("hideVoiceTest()");
-	_getElementById('voiceTestPanel').style.display = 'none';
+function hideUploadVoiceTest() {
+	log.debug("hideUploadVoiceTest()");
+    _getElementById('uploadVoicetest').style.visibility = 'hidden';
+    
+
 }
 
-function voiceTest()
+function uploadVoiceTest()
 {
-	log.debug("voiceTest()");
+	log.debug("uploadVoiceTest()");
+    
 	
 	var action = "/admin/test.mp3";
-    var voicefile = action + '?voice='+ _getElementById("voice").value + '&text=' + _getElementById("text").value;
+    var voicefile = action + '?voice='+ _getElementById("voice").value + '&text=' + _getElementById("uploadVoiceText").value;
     
-    var voiceDiv = _getElementById("voicediv");
-    var voiceError = _getElementById("voiceerror");
+    var voiceDiv = _getElementById("uploadVoicediv");
+    var voiceError = _getElementById("uploadVoiceerror");
     
-    voiceDiv.style.height = '30px';
-    voiceDiv.style.width = '80%';
-    voiceDiv.style.display = 'block';
-    voiceDiv.style.margin = '10px';
+    voiceDiv.style.height = '0px';
     
     voiceError.style.display = 'none';
     voiceError.style.margin = '10px';
     
-    var cancelVoiceTest = _getElementById("cancelVoiceTest");
+    var cancelVoiceTest = _getElementById("uploadCancelVoiceTest");
     
-    flowplayer("voicediv", "/script/flowplayer/flowplayer-3.2.16.swf", {
+    flowplayer("uploadVoicediv", "/script/flowplayer/flowplayer-3.2.16.swf", {
     	
     	/*
     	debug: true,
@@ -701,7 +703,7 @@ function voiceTest()
         },
         
         onFinish: function() {
-        	voiceDiv.style.display = 'none';	// hide player
+        	//voiceDiv.style.display = 'none';	// hide player
         	cancelVoiceTest.style.display = 'none';	// hide cancel button
         	this.unload();
         },
@@ -775,16 +777,16 @@ function voiceTest()
 
 }
 
-function resetVoiceTest() {
+function resetUploadVoiceTest() {
 	
-	log.debug("resetVoiceTest()");
+	log.debug("resetUploadVoiceTest()");
 	
 	// hide cancel button
-	var cancelVoiceTest = _getElementById("cancelVoiceTest");
+	var cancelVoiceTest = _getElementById("uploadCancelVoiceTest");
 	cancelVoiceTest.style.display = 'none';	
 	
-	var voiceDiv = _getElementById("voicediv");
-	var voiceError = _getElementById("voiceerror");
+	var voiceDiv = _getElementById("uploadVoicediv");
+	var voiceError = _getElementById("uploadVoiceerror");
 	
 	// reset flowplayer
 	var player = flowplayer(voiceDiv);
@@ -798,60 +800,13 @@ function resetVoiceTest() {
 	
 	// remove player
 	voiceDiv.innerHTML = '';
-	voiceDiv.style.display = 'none';
+	voiceDiv.style.visibility = 'hidden';
 	
 	// reset error display
 	voiceError.innerHTML = '';
 	voiceError.style.display = 'none';
 }
 
-
-// FIXME obviously unused
-/*
-function voiceTesting()
-{
-	log.debug("voiceTesting()");
-	
-	var voiceForm = document.createElement("form");
-	var action = "/admin/test.mp3";
-	voiceForm.action = action;
-	window.open(voiceForm.submit(), 'name','height=100,width=200');
-	//document.mediauploadform.action = action;
-}
-*/
-
-/*
-function redirect_submit(form, action){
-
-    var a = form.action;
-    form.action = action || real_action;
-    form.submit();
-    form.action = a;
-}
-*/
-
-// FIXME obviously unused?
-/*
-function submitVoice(form, action)//(form, action)
-{
-	log.debug("submitVoice(): form="+form+", action="+action);
-	
-	voiceform = document.createElement("form");
-	voiceform = form;
-	voiceform.action = action;
-	testVoice(voiceform);
-}
-*/
-
-// FIXME obviously unused?
-/*
-function testVoice(form)
-{
-	log.debug("testVoice(): form="+form);
-	
-	window.open(form.submit(),'name','height=100,width=200');
-}
-*/
 
 // ------------------------------ AJAX STUFF ---------------------------------//
 
@@ -1202,10 +1157,10 @@ function resetAvatarForm() {
 	
 	// set voice selection to 'none'
 	_getElementById('voice').selectedIndex = 0;
-	hideVoiceTest();
+	hideUploadVoiceTest();
 	
 	// voicediv reset
-	resetVoiceTest();
+	resetUploadVoiceTest();
 	
 	// streamdiv reset
 	resetTestStream();
@@ -1360,7 +1315,7 @@ function hideAvatarImageUpload() {
 }
 
 function resetAvatarErrorMessages() {
-	_getElementById("voiceerror").innerHTML = '';
+	_getElementById("uploadVoiceerror").innerHTML = '';
 }
 
 /* --- test stream functions */

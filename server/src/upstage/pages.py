@@ -1103,7 +1103,7 @@ class StageEditPage(Workshop):
             for i in range(0, len(keys)):
                 m = self.stage.get_media_by_key(keys[i])
                 if self.stagename and m:
-                    if self.stage.unassigned.count(m) == 0:
+                    if self.stage.unassigned.count(m) == 1:
                         self.stage.unassigned.remove(m)
             
             #Lisa - puts selected media into the 'unassigned' list
@@ -1778,7 +1778,7 @@ class MediaUploadPage(Workshop):
     
     def text_voice_list(self, request):
         """dropdown list of available voices"""
-        table = ['<option value=""> -- none -- </option>']
+        table = ['<option value="no_voice"> -- none -- </option>']
         vk = VOICES.keys()
         vk.sort()
         for v in vk:
