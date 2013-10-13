@@ -287,7 +287,8 @@ function stageChooseSubmit()
 	document.getElementById("status").innerHTML = 'Sending to server, please wait...';
 	document.getElementById("status").style.display = "inline";
 	requestPage("POST", buildRequest(1), fillPage);//'/admin/workshop/stage?shortName='+document.selectstage.shortName.value, fillPage);
-);}
+}
+
 
 /**
  * Saves the stage edited by the user 

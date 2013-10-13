@@ -253,6 +253,8 @@ function displayFields(selectbox, prefix, numInputs)
 	}
 }
 
+
+
 /*
  * Author: Natasha Pullan
  * Reveals the list of available stages when called
@@ -537,6 +539,7 @@ function shallContinue()
 	return navigate;
 }
 
+
 /*
  * Author: Natasha Pullan
  * Method to check each file field for the correct file extensions
@@ -592,7 +595,7 @@ function checkAllMedia(type, prefix, frameNo)
 	{
 		fileID = prefix + "contents" + count;
 		filename = document.getElementById(fileID).value;
-		shallcontinue = checkMediaType(filename, type);
+		shallcontinue = checkMediaType(filename, type, count);
 	}
 
 	return shallcontinue;
@@ -602,7 +605,7 @@ function checkAllMedia(type, prefix, frameNo)
  * Author: Natasha Pullan
  * Checks the extensions of files in the file field
  */
-function checkMediaType(filename, type)
+function checkMediaType(filename, type, frameNum)
 {
 	log.debug("checkMediaType(): filename="+filename+", type="+type);
 	
@@ -629,11 +632,21 @@ function checkMediaType(filename, type)
 			|| fileExt.toUpperCase() == "PNG" || fileExt.toUpperCase() == "GIF" 
 			||fileExt.toUpperCase() == 'JPEG')
 		{
-			shallcontinue = true;
+            shallcontinue = true;
+            if( fileExt.toUpperCase() == "SWF" || fileExt.toUpperCase() == "GIF")
+            {
+                if(frameNum > 0)
+                {
+                    alert("You cannot upload multi-framed gif or swf files.");
+                    shallContinue=false;
+                }
+            }
+			
+            
 		}
 		else
 		{
-			alert("You need to pick either a jpg, swf, gif or png file");
+			alert("You need to pick either a jpg, swf, gif or png file.");
 			shallcontinue = false;
 		}
 	}
