@@ -53,6 +53,7 @@ import flash.external.ExternalInterface;
  * Modified by: Nitkalya Wiriyanuparb  10/09/2013  - Added swf width/height in GET_LOADPROP and GET_LOAD_AV for correct prop and avatar resizing
  * Modified by: Nitkalya Wiriyanuparb  26/09/2013  - Sent rotating direction to clients to fix inconsistent views for audiences
  *                                                 - Hide rotation options for streaming avatars
+ * Modified by: Nitkalya Wiriyanuparb  14/09/2013  - Sent new name to other audiences when renaming an avatar using context menu
  */
 class upstage.model.ModelAvatars implements TransportInterface
 {
@@ -598,8 +599,7 @@ class upstage.model.ModelAvatars implements TransportInterface
                 modelAv.renaming = true;
             }
             av.tf.onKillFocus = function(newFocus:Object) {
-                av.rename(av.tf.text);
-                modelAv.avScrollBar.rename(av.icon, av.tf.text);
+                modelAv.sender.RENAME(av.tf.text); // Ing - send it to other audiences instead
                 av.tf.type = "dynamic";
                 modelAv.renaming = false;
             } 
