@@ -54,6 +54,7 @@ import flash.external.ExternalInterface;
  * Modified by: Nitkalya Wiriyanuparb  26/09/2013  - Sent rotating direction to clients to fix inconsistent views for audiences
  *                                                 - Hide rotation options for streaming avatars
  * Modified by: Nitkalya Wiriyanuparb  14/09/2013  - Sent new name to other audiences when renaming an avatar using context menu
+ *                                                 - Showed sound status (mute?) for straming avatar in front of its name
  */
 class upstage.model.ModelAvatars implements TransportInterface
 {
@@ -439,6 +440,7 @@ class upstage.model.ModelAvatars implements TransportInterface
         avatars[avID].isMutedGlobally = muteStatus;
         // ExternalInterface.call("alert", "afterSet: isMuted = " + avatars[avID].isMutedGlobally);
         avatars[avID].setVolumeAccordingToLocalMuteStatus();
+        this.GET_AV_RENAME(avID, avatars[avID].name); // just so it refresh the status symbol
     }
 
 
@@ -812,13 +814,19 @@ class upstage.model.ModelAvatars implements TransportInterface
     function GET_AV_RENAME(avID :Number, name :String)
     {
         var av :Avatar = this.avatars[avID];
-        av.rename(name);
+
+        var muteStatus: String = "";
+        if (av.isStream) {
+            muteStatus = av.isMutedGlobally ? Client.MUTE_SYMBOL + " " : Client.NOT_MUTE_SYMBOL + " ";
+        }
+
+        av.rename(name, muteStatus);
 
         // Tell AvScrollBar about renames
         if (av == this.avatar)
-            {
-                this.avScrollBar.rename(av.icon, name);
-            }
+        {
+            this.avScrollBar.rename(av.icon, name, muteStatus);
+        }
     }
 
     /**
