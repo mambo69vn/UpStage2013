@@ -650,7 +650,7 @@ class upstage.Client
     // AC: 10.06.08
     public static var AUDIO_SOUNDS			:Number = 3;
     // PQ & LK: 31.10.07
-    public static var APPLAUSE_SOUNDS       :Number = 10;  // Max concurrent applauses
+    public static var MAX_APPLAUSE_SOUNDS   :Number = 10;  // Max concurrent applauses
 
     //how many things get loaded for each media type (icons, etc count as a separate load)
     public static var LOADS_PER_AVATAR      :Number = 3;
