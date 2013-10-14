@@ -80,7 +80,7 @@ class upstage.Client
     //base size of thought bubble polyps
     public static var THOUGHT_POLYP_W  :Number = 9;  
 
-    public static var TF_WIDTH         :Number = 40;
+    public static var TF_WIDTH         :Number = 60;
     public static var TF_HEIGHT        :Number = 12;
 
     public static var INFO_WIDTH       :Number = 30;
