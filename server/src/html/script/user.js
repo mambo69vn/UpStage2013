@@ -12,6 +12,7 @@
  * Gavin                13/09/2012 - Added alert for players when they update their password with different inputs 
  * Nitkalya             24/09/2013 - Added email format validation and make sure username and password are not blank when creating new users
  * Nitkalya             02/10/2013 - Added validation to make sure username are alphanumerics only, and changed that weird confirmation message
+ * Nitkalya             15/10/2013 - Did not use JS date anymore when creating a new player
  */
 
 /**
@@ -183,7 +184,6 @@ function validateInfoBeforeSave(username, password, password2, email)
 */
 function savePlayer()
 {
-	var date = new Date();
 	var username = document.getElementById('name').value.trim();
 	var password = document.getElementById('password').value.trim();
 	var password2 = document.getElementById('password2').value.trim();
@@ -206,7 +206,7 @@ function savePlayer()
 	}
 	
 	requestPage("POST", '/admin/workshop/newplayer?username='+unescape(username) +
-			'&password='+hex1+'&password2='+hex2+'&date='+date+'&email='+email+
+			'&password='+hex1+'&password2='+hex2+'&email='+email+
 			'&act='+act+'&admin='+admin+'&su='+su+'&unlimited='+unlimited+
 			'&submit=saveplayer', toUser);
 }
