@@ -845,7 +845,7 @@ class MediaDict(Xml2Dict):
         tagList = []
         for entry in mediaList:
             tags = entry[1]['tags']
-            splitTags = tags.split(',')
+            splitTags = tags.split(', ')
             for tag in splitTags:
                 if tag != '':
                     if tag not in tagList:
