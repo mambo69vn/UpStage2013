@@ -28,12 +28,13 @@ Modified by: Daniel Han (03-07-2012) - Enabled Searching for Players
 
 Modified by: Daniel Han (24/08/2012) - Check if username is available and if not, throws exception
 Modified by: Nitkalya Wiriyanuparb  02/10/2013  - Throw an error when username is blank or not alphanumeric (creating new users)
+Modified by: Nitkalya Wiriyanuparb  15/10/2013  - Changed player date format to be more consistent
 Modified by: Lisa Helm and Vanessa Henderson (17/10/2013) changed user permissions to fit with new scheme - redefined permissions levels to creator, admin, unlimitedmaker, maker and player
 """
 
 import md5, os
 import random
-from datetime import datetime
+import time
 
 from upstage import config
 from upstage.misc import Xml2Dict, UpstageError
@@ -317,7 +318,7 @@ class PlayerDict(Xml2Dict):
         
         # Nic k R 01/02/10: Added if'else to seperate between password changing and player creation.
         if 'date' and 'email' in form:
-            newdate = _value('date')
+            newdate = time.strftime("%A, %d %B %Y %I:%M%p %Z")
             newemail = _value('email')
             if newemail == None:
                 newemail = 'unset'
@@ -361,7 +362,7 @@ class PlayerDict(Xml2Dict):
                 self[user] = newplayer
         
         # Admin self password change
-        elif player.is_admin() or player.is_creator():
+        elif player.is_superuser():
             
             if 'saveemail' in form:
                 self[user].set_email(newemail)
@@ -388,7 +389,7 @@ class PlayerDict(Xml2Dict):
         if newpass != newpass2:
             raise UpstageError('Password did not match!')
         
-        if player.is_admin() or player.is_creator():
+        if player.is_superuser():
             self[user].set_password(newpass)
             
         self.save()      
@@ -417,7 +418,7 @@ class PlayerDict(Xml2Dict):
     def update_last_login(self, player):
         
         try:
-            new_date = datetime.today().strftime("%A, %d. %B %Y %I:%M%p")
+            new_date = time.strftime("%A, %d %B %Y %I:%M%p %Z")
             log.msg("Name: " + player.name)
             self[player.name].set_lastlogin(new_date)
             self.save()  
