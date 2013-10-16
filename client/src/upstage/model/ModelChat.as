@@ -90,17 +90,17 @@ class upstage.model.ModelChat implements TransportInterface
             				that.sender.NO_APPLAUSE();
         				}],
             volunteer:  [ // Lauren: testing volunteer av 24/9/07
-            			"control a volunteer avatar",
+            			undefined,
             			function(){
             				that.sender.VOLUNTEER();
             			}],
             novolunteer:  [ // Lauren testing volunteer av 17/10/07
-            			"let go of volunteer avatar",
+            			undefined,
             			function(){
             				that.sender.NO_VOLUNTEER();
             			}],
             info:      [
-                        "more words",
+                        "UpStage version info",
                         function(msg: String){
                             that.sender.INFO();
                         }],
@@ -115,28 +115,28 @@ class upstage.model.ModelChat implements TransportInterface
                            that.sender.RENAME(msg);
                        }],
             asize:    [
-                       undefined, //will not show up
+                       "change the font size for audience in the chat [/asize number]",
                        function(msg: String){
                            that.chatField.changeAnonFormat(msg);
                        }],
             psize:    [
-                       undefined,
+                       "change the font size for players in the chat [/psize number]",
                        function(msg: String){
                            that.chatField.changePlFormat(msg);
                        }],
             colour:   [
-                       undefined,
+                       "change the colour of the chat text [/colour Colourhexcode]",
                        function(msg: String){
                            that.chatField.changeColour(parseInt(msg, 16));
                        }],
 
             whisper:  [
-                       "send messages to other players",
+                       "send messages to other players [/wh playername = message]",
                        function(msg: String){
                            that.sender.WHISPER(msg);
                        }],
             help:     [
-                       "this text",
+                       undefined,
                        function(msg: String){
                            var x: String;
                            for (x in that.commands){
