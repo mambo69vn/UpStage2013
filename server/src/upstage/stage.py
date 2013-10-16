@@ -82,6 +82,7 @@ Modified by: Lisa Helm  02/10/2013      - added the unassigned media list + func
                                         - removed all unused code relating to access_level_three
                                         - added temp_access_level_one/two to allow for changes to be obviously discarded
 Modified by: Nitkalya Wiriyanuparb  14/10/2013  - Remember applause and volunteer buttons visibility state
+Modified by: Lisa Helm and Vanessa Henderson (17/10/2013) changed user permissions to fit with new scheme
 """
 
 #std lib
@@ -526,8 +527,8 @@ class _Stage(object):
     def update_from_form(self, form, player, uploaders={}, refresh_stage = True):
         """Put ticked thingies into stage, remove unticked"""
         log.msg("Stage update from form called.")
-        if not player.can_admin():
-            raise UpstageError("you are not allowed to do this. sorry.")
+        if player.is_player():
+            raise UpstageError("You are not allowed to do this. Sorry.")
         self.name = form.get('longName',[''])[0] or self.name
         #short name not required
         #nid = form.get('shortName',[''])[0]
@@ -636,7 +637,7 @@ class _Stage(object):
     def get_media_file_by_key(self,key):
         media = self.get_media_by_key(key)
         if media is not None:
-            return media.media.file
+            return media.media.file #returns the file name
         else:
             return ''
             
@@ -649,7 +650,7 @@ class _Stage(object):
             if len(mlist)>0:
                 for a in mlist:
                     if a.media.key == key:
-                        return a #returns the file name
+                        return a #returns the media item
             else:
                 return None
         else:
@@ -870,9 +871,9 @@ class _Stage(object):
 
         self.sockets[client.ID] = client
         
-        if client.player.can_act():
+        if client.player.is_player() or client.player.is_maker() or client.player.is_unlimited_maker():
             self.player_sockets[client.ID] = client
-        if client.player.can_su():
+        if client.player.is_superuser():
             self.admin_sockets[client.ID] = client
 
         # Added checking if user is player access or admin access
@@ -1250,7 +1251,7 @@ class StageDict(Xml2Dict):
     def update_from_form(self, form, player):
         """Delete selected stages"""
         log.msg("Dict (Delete) update from form called")
-        if not player.can_admin():
+        if player.is_player():
             raise UpstageError("not allowed")
         delete = form.get('delete',[None])[0]
         if delete == 'remove selected stages':
@@ -1271,7 +1272,7 @@ class StageDict(Xml2Dict):
 
     #Shaun Narayan (02/06/10) - Added method to delete a single specified stage.
     def delete_stage(self, name, player):
-        if not player.can_admin():
+        if player.is_player():
             raise UpstageError("not allowed")
         xp = self.pop(name)
         dir_name = os.path.join(config.STAGE_DIR, name)

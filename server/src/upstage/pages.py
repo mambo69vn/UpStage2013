@@ -107,6 +107,7 @@ Modified by: Nitkalya & Lisa        30/09/2013  - Fixed redirection on error pag
 Modified by: David Daniels          2/10/2013   - added code for filter by tags
 Modified by: Lisa Helm 02/10/2013  - added funtionality to stageeditpage to allow changes to assigned media to be discarded. removed obsolete code to this effect.
                                    - as above, but for player access
+Modified by: Lisa Helm and Vanessa Henderson (17/10/2013) changed user permissions to fit with new scheme
 """
 
 #standard lib
@@ -237,7 +238,7 @@ class AdminBase(Template):
         self.message = ''
         
         """ Alan (17/08/09) Refreshes the upload message when entering the page"""
-        if ((self.player.can_admin()) and (self.filename != None) and 
+        if ((not self.player.is_player()) and (self.filename != None) and 
             (self.filename in ["newthing.xhtml", "new_avatar.xhtml", "new_audio.xhtml"])):
             if (self.player.get_setError()):
                 self.player.set_sizeValid(False)
@@ -246,9 +247,9 @@ class AdminBase(Template):
 
     def allows_player(self, player):
         """Can the named player use this page?  default is
-        admin level -- create and alter stages, props etc.
+        maker level -- create and alter stages, props etc.
         (not delete users, which is checked separately)"""
-        return  player.can_admin()
+        return not player.is_player()
 
     """ Alan (18/09/07) ==> Used for upload limiting feature. """    
     def text_uploadMessage(self, request):
@@ -256,11 +257,17 @@ class AdminBase(Template):
         limit = 0
         message = ''
         
-        if (self.player.can_su()):
-            status = 'Super Admin'
+        if (self.player.is_creator()):
+            status = 'Creator'
+            limit = str(config.SUPER_ADMIN_SIZE_LIMIT / 1000000)
+        elif (self.player.is_admin()):
+            status = 'Admin'
+            limit = str(config.SUPER_ADMIN_SIZE_LIMIT / 1000000)
+        elif (self.player.is_unlimited_maker()):
+            status = 'Unlimited Maker'
             limit = str(config.SUPER_ADMIN_SIZE_LIMIT / 1000000)
         else:
-            status = 'Admin'
+            status = 'Maker'
             limit = str(config.ADMIN_SIZE_LIMIT / 1000000)
 
         if (self.player.get_sizeValid()):
@@ -269,10 +276,6 @@ class AdminBase(Template):
         else:
             message = "One or more of your selected files exceeds the file size limit for your user status. "\
                       "Please keep your files under %s MB in size." %(limit)
-
-        if (self.player.can_unlimited()): 
-            limit = 'unlimited'
-            message = "Your user status is: <b>%s</b>. Your file upload limit is %s." %(status, limit)
             
         return message
 
@@ -315,7 +318,7 @@ class AdminBase(Template):
     #Daniel Han (29/06/2012) - get additional button for SU user
     def text_nav(self, request):
         try:
-            if self.player.can_su():
+            if self.player.is_superuser():
                html_list = '<li> <a href="/admin/edit/"> [Edit Page Mode]</a> </li>'
                return html_list
             else:
@@ -923,7 +926,7 @@ class StageEditPage(Workshop):
             if k == self.stagename:
                 table.extend('<option value="%s" selected="selected">%s</option>' %(k, k))
             else:
-                if self.player.can_su() or current_stage.contains_al_one(self.player.name) or current_stage.contains_al_two(self.player.name):
+                if self.player.is_creator() or current_stage.contains_al_one(self.player.name) or current_stage.contains_al_two(self.player.name):
                     table.extend('<option value="%s">%s</option>' %(k, k))
         return ''.join(table)
     
@@ -965,7 +968,7 @@ class StageEditPage(Workshop):
         
     def text_display_access(self, request):
         if self.stage:
-            if self.player.can_su() or self.stage.contains_al_one(self.player.name):
+            if self.player.is_creator() or self.stage.contains_al_one(self.player.name):
                 return 'true'
             else:
                 return 'false'
@@ -996,7 +999,8 @@ class StageEditPage(Workshop):
                     self.stage_ViewImg = '<object><param id="esMediaPreview" name="esMediaPreview" value="%s"><embed src="%s" width="150px" height="150px"></embed></object>' %(aName,imgThumbUrl)
                     log.msg('show selected media from assigned column')
                 else:
-                    self.stage_ViewImg = '<p>That media item cannot be previewed.</p>'
+                    self.stage_ViewImg = '<div id="streaming"><div id="streamtest" class="fieldrow"><table><tr><td><div id="sestreamdiv" style="color:#0000FF" style="display:block" style="height:100px" style="width:150px" style="visibility:visible"></div></td></tr><tr><td><input type="button" id="seStartStreamPreview" onclick="javascript:seTestStream();" value="Play" /><input type="button" id="seStartStreamPreview" onclick="javascript:seResetTestStream();" value="Cancel" /></td><tr></table></div></div>'      
+                    #self.stage_ViewImg = '<p>That media item cannot be previewed.</p>'
             elif aName is '' and unName is not '':
                 if unName.count('.swf') > 0:
                     imgThumbUrl = config.MEDIA_URL + unName
@@ -1024,16 +1028,16 @@ class StageEditPage(Workshop):
             log.msg(' isowner = : %s' %self.isOwner)
             if self.stage.get_LockStage() == 'true':
                 chec = 'checked="true"' 
-            if self.player.name == self.stage.get_tOwner() or self.player.can_su:
+            if self.player.name == self.stage.get_tOwner() or self.player.is_creator():
                 self.isOwner = 'true'
                 log.msg('name == stage owner')
                 self.stage_CB_lock = '<input type="checkbox" id="lockStageCB" name="lockStageCB" %s onclick="if (this.checked) {lockStageChecked()}else{lockStageUnchecked()}" />' %(chec)
                 log.msg(self.stage_CB_lock)
             else:
-                if self.player.can_unlimited() == True:#(02/05/2013) Craig
-                     self.isOwner = 'true'
-                else:
-                     self.isOwner = 'false'
+                #if self.player.can_unlimited() == True:#(02/05/2013) Craig
+                #     self.isOwner = 'true'
+                #else:
+                self.isOwner = 'false'
                 log.msg('name !!== stage owner')
                 self.stage_CB_lock = '<input type="checkbox" id="lockStageCB" %s disabled="true" name="lockStageCB" />' %(chec)
                 log.msg(self.stage_CB_lock)
@@ -1778,9 +1782,9 @@ class MediaUploadPage(Workshop):
             table.extend('<option value="%s">%s</option>' % (a, a))
         return ''.join(table)
             
-    def text_can_su(self, request):
+    def text_is_superuser(self, request):
         if(self.player):
-            return str(self.player.can_su())
+            return str(self.player.is_superuser())
         
     def text_user(self, request):
         if (self.player):
@@ -1869,7 +1873,7 @@ class NewPlayer(AdminBase):
     isLeaf = True
 
     def render(self, request):
-        if not self.player.can_su():
+        if not self.player.is_superuser():
             return errorpage(request, "You can't do that!", 'user')
         form = request.args
         if 'submit' in form:
@@ -1897,7 +1901,7 @@ class EditPlayer(AdminBase):
         def _value(x):
             return form.get(x, [None])[0]
         
-        if not self.player.can_su():
+        if not self.player.is_superuser():
             return errorpage(request, "You can't do that!", 'user')
         
         submit = _value('submit')
@@ -1912,10 +1916,11 @@ class EditPlayer(AdminBase):
                 "<name>" + player.name + "<name>" + \
                 "<email>" + player.email + "<email>" + \
                 "<date>" + player.date + "<date>" + \
-                "<act>" + str(player.can_act()) + "<act>" + \
-                "<admin>" + str(player.can_admin()) + "<admin>" + \
-                "<su>" + str(player.can_su()) + "<su>" + \
-                "<unlimited>" + str(player.can_unlimited()) + "<unlimited>"
+                "<player>" + str(player.is_player()) + "<player>" + \
+                "<maker>" + str(player.is_maker()) + "<maker>" + \
+                "<unlimitedmaker>" + str(player.is_unlimited_maker()) + "<unlimitedmaker>" + \
+                "<admin>" + str(player.is_admin()) + "<admin>" + \
+                "<creator>" + str(player.is_creator()) + "<creator>"
                 
                 return response;
             
@@ -1979,7 +1984,7 @@ class EditPlayer(AdminBase):
                 if current_user == user_per_page:
                     break
                 else:
-                    rightslist = [ x for x in ('act', 'admin', 'su', 'unlimited') if p[x]]
+                    rightslist = [ x for x in ('player', 'maker', 'unlimitedmaker', 'admin', 'creator') if p[x]]
                     userdiv = "<div class='user' id='user_%s' onmouseover='this.className=\"user_over\"' onmouseout='this.className=\"user\"' onclick='playerSelect(\"%s\")' selected=''>" %(p['name'],p['name'])
                     userdiv += "<table class='user_table'> <tr> <th class='row_header'> Name </th> <td> %s (%s) </td> </tr> " %(p['name'], p['email'])
                     userdiv += "<tr> <th class='row_header'> Register Date </th> <td> %s </td> </tr> " %(p['reg_date']) 
@@ -2013,7 +2018,7 @@ class EditPlayer(AdminBase):
 
     def allows_player(self, player):
         """Need to be superuser to use this page"""
-        return  player.can_su()
+        return  player.is_superuser()
 
 class NewThing(AdminBase):
     """Page for the addition and setting up of avatars, props or backgrounds.
@@ -2259,9 +2264,9 @@ class UserPage(AdminBase):
         if(self.player):
             return self.player.email
         
-    def text_can_su(self, request):
+    def text_is_superuser(self, request):
         if(self.player):
-            return str(self.player.can_su())
+            return str(self.player.is_superuser())
         
 class StageLog(Resource):
     """Show a plain text version of a stage's chat log"""
@@ -2323,7 +2328,7 @@ class StageLog(Resource):
         fileSizes = getFileSizes(filenames)
         
         if not (fileSizes is None):
-            if (validSizes(fileSizes, self.player.can_su()) or self.player.can_unlimited()):
+            if (validSizes(fileSizes, is_superuser()) or self.player.is_unlimited_maker()):
                 now = datetime.datetime.now() # AC () - Unformated datetime value
                 media_dict.add(url='%s/%s' % (config.AUDIO_SUBURL, mp3name), #XXX dodgy? (windows safe?)
                                file=mp3name,

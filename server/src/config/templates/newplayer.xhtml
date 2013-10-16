@@ -46,19 +46,27 @@
 <h1>Player permissions</h1>
 <table>
 <tr><th colspan="2">
-This player can:
+This player is a:
 </th></tr>
 <tr>
-<td><input type="checkbox" name="admin" id="admin" checked="checked" /></td>
-<td><b>User</b> - Change stages, avatars etc </td>
+<td><input type="radio" name="player" id="player" checked="checked" /></td>
+<td><b>Player</b> - can act on stages.</td>
 </tr>
 <tr>
-<td><input type="checkbox" name="su" id="su" /></td> 
-<td><b>Administer</b></td>
+<td><input type="radio" name="maker" id="maker" /></td> 
+<td><b>Maker</b> - can create/edit stages, upload/edit media and has all Player permissions.</td>
 </tr>
 <tr>
-<td><input type="checkbox" name="unlimited" id="unlimited" /></td>
-<td><b>Unlimited</b> - No restriction</td>
+<td><input type="radio" name="unlimitedmaker" id="unlimitedmaker" /></td> 
+<td><b>Unlimited Maker</b> - can create/edit stages, upload/edit media and has all Player permissions. Has no upload limit.</td>
+</tr>
+<tr>
+<td><input type="radio" name="admin" id="admin" /></td> 
+<td><b>Admin</b> - can create/edit players, edit pages, and has all Maker permissions.</td>
+</tr>
+<tr>
+<td><input type="radio" name="creator" id="creator" /></td> 
+<td><b>Creator</b> - can do everything.</td>
 </tr>
 </table><br />
 

@@ -17,6 +17,8 @@ upstage-admin list
 upstage-admin rm [server-name]
 upstage-admin remove [server-name]
   delete a server's configuration
+  
+  Modified by: Lisa Helm and Vanessa Henderson (17/10/2013) changed user permissions to fit with new scheme
 
 """
 
@@ -219,7 +221,7 @@ class Conf(SafeConfigParser):
         user = word("what is the admin's username?")
         pw = password("enter the admin password", "the same password again")
         #XXX should be using upstage libraries for this
-        xml = '<players><player password="%s" name="%s" rights="act,admin,su" date="forever" email="notset" /></players>'
+        xml = '<players><player password="%s" name="%s" rights="creator" date="forever" email="notset" /></players>'
         xmlpath = os.path.join(self.get(name, 'basedir'), PLAYERS_XML)
         f = open(xmlpath, 'w')
         f.write(xml %(md5(pw).hexdigest(), user))

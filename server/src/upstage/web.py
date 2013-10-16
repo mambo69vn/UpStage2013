@@ -45,6 +45,7 @@ Modified by: Nitkalya Wiriyanuparb  16/09/2013  - Rename AudioThing to AudioFile
 Modified by: Nitkalya Wiriyanuparb  24/09/2013  - Generated new format of keys for media_dict instead of file names to support replacing media with cache enabled
 Modified by: Nitkalya Wiriyanuparb  29/09/2013  - Added try-catch when replacing file, and reset audio timer after an audio is replaced
 Modified by: Nitkalya Wiriyanuparb  04/10/2013  - Used pymad to get audio duration when uploading a new file (clients stream from server; don't know duration right away)
+Modified by: Lisa Helm and Vanessa Henderson (17/10/2013) changed user permissions to fit with new scheme
 """
 
 
@@ -237,7 +238,7 @@ class AdminRealm:
 
 		self.data.players.update_last_login(player)		
 
-		if player.can_admin(): 
+		if not player.is_player(): 
 			tree = Workshop(player, self.data)
 			#Shaun Narayan (02/16/10) - Removed all previous new/edit pages and inserted workshop pages.
 			workshop_pages = {'stage' : (StageEditPage, self.data),
@@ -264,7 +265,7 @@ class AdminRealm:
 			# This is the test sound file for testing avatar voices in workshop - NOT for the audio widget
 			tree.putChild('test.mp3', SpeechTest(self.data.stages.speech_server))
 
-			if player.can_su():
+			if player.is_superuser():
 				edit_pages = {'home' : (HomeEditPage, self.data),
 							  'workshop' : (WorkshopEditPage, self.data),
                               'nonadmin' : (NonAdminEditPage, self.data),
@@ -274,7 +275,7 @@ class AdminRealm:
                 
 
 		# player, but not admin.
-		elif player.can_act():
+		elif player.is_player():
 		# Daniel modified 27/06/2012
 			tree = NonAdminPage(player, self.data)	    
 			tree.putChild('id', SessionID(player, self.data.clients))
@@ -330,9 +331,11 @@ class SessionID(Resource):
               ID = urlencode({
                    'player':   player.name,
                    'key':      k,
-                   'canAct':   player.can_act(),
-                   'canAdmin': player.can_admin(),
-                   'canSu':    player.can_su(),
+                   'isPlayer': player.is_player(),
+                   'isMaker': player.is_maker(),
+                   'isUnlimitedMaker': player.is_unlimited_maker(),
+                   'isAdmin':    player.is_admin(),
+                   'isCreator':  player.is_creator(),
                    })
 
         request.setHeader('Content-length', len(ID))
@@ -405,7 +408,7 @@ class AudioFileProcessor(Resource):
         duration = MadFile(the_url).total_time()
         
         if not (fileSizes is None and duration > 0):
-            if (validSizes(fileSizes, self.player.can_su()) or self.player.can_unlimited()):
+            if (validSizes(fileSizes, self.player.is_superuser()) or self.player.is_unlimited_maker()):
                 now = datetime.datetime.now() # AC () - Unformated datetime value
                 duration = str(duration/float(1000))
 
@@ -607,7 +610,7 @@ class SwfConversionWrapper(Resource):
             """ Alan (13/09/07) ==> Check the file sizes of avatar frame """
             # natasha continue conversion
             if not (fileSizes is None):
-                if (validSizes(fileSizes, self.player.can_su()) or self.player.can_unlimited()):
+                if (validSizes(fileSizes, self.player.is_superuser()) or self.player.is_unlimited_maker()):
                     # call the process with swf filename and temp image filenames 
                     d = getProcessValue(config.IMG2SWF_SCRIPT, args=[swf_full, thumbnail_full] + tfns)
                     args = (swf, thumbnail, form, request)
@@ -799,9 +802,9 @@ class SwfConversionWrapper(Resource):
         size_x = ''
         size_y = ''
         # get actual swf width and height from the file
-        if swf.endswith('.swf'):
-            size_x = commands.getoutput("swfdump -X html/media/" + swf).split()[1];
-            size_y = commands.getoutput("swfdump -Y html/media/" + swf).split()[1];
+        #if swf.endswith('.swf'):
+            #size_x = commands.getoutput("swfdump -X html/media/" + swf).split()[1];
+            #size_y = commands.getoutput("swfdump -Y html/media/" + swf).split()[1];
 
         success_message = ''
 

@@ -12,6 +12,7 @@
  * Gavin                13/09/2012 - Added alert for players when they update their password with different inputs 
  * Nitkalya             24/09/2013 - Added email format validation and make sure username and password are not blank when creating new users
  * Nitkalya             02/10/2013 - Added validation to make sure username are alphanumerics only, and changed that weird confirmation message
+ * Lisa Helm and Vanessa Henderson (17/10/2013) changed user permissions to fit with new scheme
  */
 
 /**
@@ -104,7 +105,7 @@ function toUser()
 
 function setAdminLinks()
 {
-	if(document.nick.is_su.value == "True")
+	if(document.nick.is_superuser.value == "True")
 	{
 		window.onLoad = document.getElementById('adminstuff').innerHTML = '<h1>Administration Links</h1><a href="javascript:navNewPlayer()">Create New Player</a><br /><br /><a href="javascript:navEditPlayers()">Edit Existing Player Details</a><br />';
 	}
