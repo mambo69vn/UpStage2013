@@ -396,10 +396,10 @@ input, select, button {
 #muLeftContent {
 	position: relative;
 	float: left;
-	width: 60%;
+	width: 57%;
 	height: auto;
 	padding: 10px;
-	margin: 10px;
+	margin: 10px 0;
 	overflow: auto;
 	border: 2px solid #669900;
 }
@@ -407,24 +407,33 @@ input, select, button {
 #muRightContent {
 	position: relative;
 	float: left;
-	width: 30%;
-	height: 280px;
+	width: 35%;
+	/*height: 290px;*/
 	padding:10px;
-	margin: 10px;
+	margin: 10px 0;
+	margin-left: 2%;
 	border: 2px solid #669900;
 }
 
-#muLeftContent-audio {
-	float: left;
-	width: 40%;
-	height: 300px;
-	padding: 5%; /* 10px*/
-	margin: 10px;
-	overflow: auto;
-	border: 3px solid green;
-	
+#stageTable {
+	width: 100%;
 }
 
+#stageTable td {
+	width: 45%;
+}
+
+#stageTable td#buttonArea{
+	width: 10%;
+}
+
+#stageTable td#buttonArea td button{
+	margin: auto;
+}
+
+#stageTable td select{
+	width: 99%;
+}
 
 #mediaPreview {
 	float: top;
