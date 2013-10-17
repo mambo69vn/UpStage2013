@@ -35,6 +35,7 @@
 2.2			11/09/13	Nitkalya Wiriyanuparb	- Prefectly centered stage loading box and removed green background
 2.2			16/09/13	Nitkalya Wiriyanuparb	- Fixed preview panel appear at the bottom on small screens
 2.2			15/10/13	Nitkalya Wiriyanuparb	- Redesigned edit player page
+2.2			17/10/13	Nitkalya Wiriyanuparb	- Centered the message popup box
 */
 
 
@@ -895,23 +896,26 @@ a.IconButton
     z-index: 9999;
 }
 
+#popup
+{
+	position: fixed;
+	width: 100%;
+	text-align: center;
+	top: 45%;
+	z-index: 9999;
+}
+
 
 #divPopup
 {
-    margin: 10px;
+    margin: auto;
     padding: 15px;
     box-shadow: #AAA 1px 1px 10px;
     border-radius: 5px;
     border: #888 2px solid;
     background-color: #EEE;
-    position: fixed;
-    left: 35%;
-    right: auto;
-    top: 45%;
-    bottom: auto;
     text-align: center;
     display: none;
-    z-index: 9999;
 }
 
 #divShade
@@ -923,9 +927,7 @@ a.IconButton
     height: 100%;
     width: 100%;
     background-color: #000;
-    
     opacity: 0.7;
-    
     top: 0px;
     left: 0px;
     z-index: 9998;

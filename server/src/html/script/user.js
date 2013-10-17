@@ -14,6 +14,7 @@
  * Nitkalya             02/10/2013 - Added validation to make sure username are alphanumerics only, and changed that weird confirmation message
  * Nitkalya             15/10/2013 - Did not use JS date anymore when creating a new player
  * Nitkalya             15/10/2013 - Redesigned edit player page
+ * Nitkalya             17/10/2013 - Popup message box, and redirect to appropriate page
  */
 
 /**
@@ -75,33 +76,24 @@ function toUser()
 {
 	if(xmlhttp.readyState==4)
 	{
+		// redirect to editplayers page if user has done something on that page
+		// else (edit own info / create new player) go back to user page
+		var redirect = (document.URL.indexOf('edit') === -1) ? navUserPage : navEditPlayers;
+
         if(xmlhttp.status == 200)
         {
-            divMsg = document.getElementById("divPopup");
-            divShad = document.getElementById("divShade");
-            divMsg.innerHTML = "The action was successful!" + "<input type='button' onclick=\"hideDiv('divPopup'); hideDiv('divShade'); navUserPage()\" value='Close' />";;
-            
-            divMsg.style.display = 'block';
-            divShad.style.display = 'block';
-        }
+	        showAlertBox("The action was successful!", redirect);
+	    }
         else
         {
             var html = xmlhttp.responseText;
-            
             var a = html.split('<!-- content_start -->');
             var b = a[1].split('<!-- content_end -->');
             html = b[0];
-            
-            divMsg = document.getElementById("divPopup");
-            divShad = document.getElementById("divShade");
-            divMsg.innerHTML = html + "<input type='button' onclick=\"hideDiv('divPopup'); hideDiv('divShade');\" value='Close' />";;
-            
-            divMsg.style.display = 'block';
-            divShad.style.display = 'block';
+
+            showAlertBox(html, redirect);
         }
-        
 	}
-    
 }
 
 function setAdminLinks()

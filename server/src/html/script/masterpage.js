@@ -43,6 +43,7 @@
             Modified by Lisa (24/09/2013): Added code to provide different home page for guests and users
             Modified by Nitkalya (25/09/2013): Added methods to remove and create workshop link dynamically using javascript
             Modified by Nitkalya (09/10/2013): Fixed login issues, login links on admin page, and added autofocus on username text box
+            Modified by Nitkalya (17/10/2013): Added showAlertBox(), hidePopup() and modified popup message box, so it's centered, and dismissible using the Enter key
  */
 
 //Instance type variables
@@ -544,22 +545,27 @@ function requestPage(method,page,onReady)
 	xmlhttp.onreadystatechange=onReady;
 	xmlhttp.send(formStr);
  }
- 
- function popupAlert()
- {
-    if (xmlhttp.readyState==4)
-  	{
-		var html = xmlhttp.responseText;
-		divMsg = document.getElementById("divPopup");
-        divShad = document.getElementById("divShade");
-        divMsg.innerHTML = html;
-        divMsg.style.display = 'block';
-        divShad.style.display = 'block';
-        
-  	}
- }
- 
- 
+
+/**
+ * Show a popup message box with a custom message
+ * and a function to execute after the button is dismissed
+ * Ing - 17/10/2013
+ */
+function showAlertBox(message, buttonAction)
+{
+	document.getElementById("divPopup").style.display = 'inline-block';
+    document.getElementById("divShade").style.display = 'block';
+    if (message && message !== '') {
+	    document.getElementById("alertMsg").innerHTML = message;
+	}
+
+    var button = document.getElementById("alertBtn");
+    if (buttonAction && typeof buttonAction == "function") {
+	    button.onclick = function(event) { hidePopup(); buttonAction(); };
+	}
+    button.focus(); // just press enter to dismiss the popup
+}
+
 function checkLogin()
 {
 	if (xmlhttp.readyState==4)
@@ -636,7 +642,7 @@ function fillPage()
 		document.getElementById("status").style.display = "none";
 		document.getElementById("status").innerHTML = "";
         
-		if(document.title != 'Workshop - Media')
+		if(document.title != 'Workshop - Media') // probably the stage edit page
 		{
             try
             {
@@ -645,11 +651,22 @@ function fillPage()
                 document.getElementById("page").innerHTML = temp[1];
                 stageEdit();
                 restoreState();
+
+                var reply = trim(document.getElementById('successMsg').innerHTML);
+
+                if (reply != '') {//} && reply.indexOf('form action') === -1) {
+	                showAlertBox(document.getElementById('successMsg').innerHTML);
+
+					if (document.getElementById('successMsg').innerHTML.indexOf('form') !== -1) {
+						// hide the form behind the popup
+						document.getElementById('successMsg').style.display = "none";
+					}
+	            } else {
+	            	hidePopup();
+	            }
                 
-                showMessageDiv("divMessage");
                 
-                
-                if(document.getElementById("divMessage").innerHTML.indexOf("deleted") > 0)
+                if(reply.indexOf("deleted") > 0)
                 {
                     navStageWorkshop();
                 }
@@ -670,7 +687,7 @@ function fillPage()
 		
         if(xmlhttp.status == 500)
         {
-            hideDiv("divShade");
+            hideElementById("divShade");
         }
         
 		//-------------------------------------------------------
@@ -678,35 +695,15 @@ function fillPage()
 	}
 }
 
-function hideDiv(div)
+function hideElementById(div)
 {
     document.getElementById(div).style.display = 'none';
 }
 
-function showMessage(div, message)
+function hidePopup()
 {
-    div.innerHTML = message;
-    showMessageDiv(div);
-}
-
-function showMessageDiv(div)
-{
-    // 22/08/2012 - Daniel, Gavin
-    /*
-        Added to make the postback message more visible. 
-    */
-    var divMessage = document.getElementById(div);
-    if(trim(divMessage.innerHTML) == "")
-    {
-        hideDiv(div);
-        hideDiv("divShade");
-    }
-    else
-    {
-        divMessage.style.display = 'block';
-        divMessage.innerHTML += "<input type='button' onclick=\"hideDiv('"+div+"'); hideDiv('divShade');\" value='Close' />";
-        document.getElementById("divShade").style.display = 'block';
-    }
+	hideElementById('divPopup');
+	hideElementById('divShade');
 }
 
 function GetXmlHttpObject()
