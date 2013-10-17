@@ -44,6 +44,7 @@
             Modified by Nitkalya (25/09/2013): Added methods to remove and create workshop link dynamically using javascript
             Modified by Nitkalya (09/10/2013): Fixed login issues, login links on admin page, and added autofocus on username text box
             Modified by Nitkalya (17/10/2013): Added showAlertBox(), hidePopup() and modified popup message box, so it's centered, and dismissible using the Enter key
+            Modified by Nitkalya (17/10/2013): Refactored buildRequest methods to move away from using form number, and added enterPressed and shiftEnterPressed
  */
 
 //Instance type variables
@@ -117,6 +118,38 @@ function countPlayerAndAudience()
 function trim(value) {
 	//return value.replace(/^\s+|\s+$/g, '');
 	return value.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+}
+
+/**
+ * Adds onkeydown event handler
+ * if the enter key is pressed
+ * invoke the passed function
+ * Ing - 17/10/2013
+ */
+function enterPressed(el, fn)
+{
+	el.onkeydown = function (event) { 
+		if (event.keyCode == 13){//} && this == document.activeElement) {
+			// pass on the 3rd (or more) ... parameters to the fn function
+			fn(Array.prototype.slice.call(arguments, 2));
+		}
+	}
+}
+
+/**
+ * Adds onkeydown event handler
+ * if the enter key is pressed while holding the shift key
+ * invoke the passed function
+ * Ing - 17/10/2013
+ */
+function shiftEnterPressed(el, fn)
+{
+	el.onkeydown = function (event) { 
+		if (event.keyCode == 13 && event.shiftKey){//} && this == document.activeElement) {
+			// pass on the 3rd (or more) ... parameters to the fn function
+			fn(Array.prototype.slice.call(arguments, 2));
+		}
+	}
 }
 
 //--------------------------------------

@@ -15,6 +15,7 @@
  * Nitkalya             15/10/2013 - Did not use JS date anymore when creating a new player
  * Nitkalya             15/10/2013 - Redesigned edit player page
  * Nitkalya             17/10/2013 - Popup message box, and redirect to appropriate page
+ * Nitkalya             17/10/2013 - Pressing enter when editing own details or creating a new player will submit
  */
 
 /**
@@ -31,45 +32,63 @@ function validateEmailFormat(email)
 
 /**
  * Generate HTML for allowing the user to update their email.
- * @param addy - new email address for the user.
- * @param username - the username of the current user.
- * @return none
  */
-
-function updateEmail(email, username)
+function updateEmail()
 {
+	var email = document.getElementById('email').value,
+		username = document.getElementById('username').value;
 	if (validateEmailFormat(email)) {
 		requestPage("POST", '/admin/workshop/user?username='+unescape(username)+'&email='+email+'&submit=saveemail', toUser);
     	//alert("Email changed successfully.");
 	} else {
-		alert('Please enter a valid email address');
+		alert("Please enter a valid email address");
 	}
 }
 
 /**
 * Generate HTML for allowing the user to update their password.
-* @param addy - new email address for the user.
-* @param username - the username of the current user.
-* @return none
 */
-
-function updatePass(pass1, pass2, username)
+function updatePass()
 {
+	var pass1 = document.getElementById('password').value,
+		pass2 = document.getElementById('password2').value,
+		username = document.getElementById('username').value;
 	//(19/05/11) Mohammed and Heath - Added a check to ensure password is not left empty
 	if(pass1.length < 1 || pass2.length < 1){
 		alert("Password cannot be empty.");
-	} 
+	}
     else if(pass1 != pass2){
 		alert("Both password are different. please re-enter");
         document.getElementById("password").value = "";
         document.getElementById("password2").value = "";
-	} 
+	}
     else {
 		var hex1 = hex_md5(pass1);
 		var hex2 = hex_md5(pass2);
 		requestPage("POST", '/admin/workshop/user?username='+unescape(username)+'&password='+hex1+'&password2='+hex2+'&submit=savepassword', toUser);
 		//alert("Password changed successfully.");
 	}
+}
+
+/**
+ * Set up onkeydown events for updating pass/email input boxes
+ * on user details page
+ */
+function initEventsEditUser()
+{
+	enterPressed(document.getElementById('password2'), updatePass);
+	enterPressed(document.getElementById('email'), updateEmail);
+}
+
+
+/**
+ * Set up onkeydown events for pass/email input boxes
+ * on new user page
+ */
+function initEventsNewUser()
+{
+	enterPressed(document.getElementById('password2'), savePlayer);
+	enterPressed(document.getElementById('email'), savePlayer);
 }
 
 function toUser()
@@ -342,3 +361,4 @@ function compareBool(s)
 		return false;
 	}
 }
+
