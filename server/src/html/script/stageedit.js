@@ -224,7 +224,7 @@ function setAccess(action)
 	document.getElementById("status").innerHTML = 'Sending to server, please wait...';
 	document.getElementById("status").style.display = "inline";
 	document.rupert.action.value = action;
-	requestPage("POST", buildRequest(2),fillPage);
+	requestPage("POST", buildRequestByFormName('rupert'),fillPage);
 }
 
 /**
@@ -237,7 +237,7 @@ function setMediaUnassigned()
     document.getElementById("status").innerHTML = 'Sending to server, please wait...';
     document.getElementById("status").style.display = "inline";
     document.rupert.action.value = 'unassign_media';
-    requestPage("POST", buildRequest(2),fillPage);
+    requestPage("POST", buildRequestByFormName('rupert'),fillPage);
 }
 
 /**
@@ -250,7 +250,7 @@ function setMediaAssigned()
     document.getElementById("status").innerHTML = 'Sending to server, please wait...';
     document.getElementById("status").style.display = "inline";
     document.rupert.action.value = 'assign_media';
-    requestPage("POST", buildRequest(2),fillPage);
+    requestPage("POST", buildRequestByFormName('rupert'),fillPage);
 }
 
 /**
@@ -263,7 +263,7 @@ function viewMediaImage()//24/04/2013 -CF-
 {
 
     document.rupert.action.value = 'view_media';
-    requestPage("POST", buildRequest(2),fillPage);
+    requestPage("POST", buildRequestByFormName('rupert'),fillPage);
 }
 
 /**

@@ -264,7 +264,7 @@ p.error
 }
 #edit
 {
-	height:550px;
+	height:100%;
 }
 
 /*Mohammed Al-Timimi (08/06/11) - Syntax was completely wrong for the following */
@@ -589,8 +589,8 @@ a.IconButton
 
 #divForm
 {
-	margin: 10px;
-	padding: 10px;
+	margin: auto 0;
+	padding: auto 0;
 }
 
 #editStageGeneral
@@ -606,10 +606,10 @@ a.IconButton
 	padding-left: 10px;
     padding-bottom: 10px;
 	height:130px;
-	width: 316px;
+	width: 300px;
     display: block;
-    position: absolute;
-    right:200px;    
+    position: relative;
+    right: 0;
 }
 
 
@@ -657,7 +657,7 @@ a.IconButton
 
 #splash_message
 { 
-	width:880px;
+	width: 98%;
 	height:8em;
 }
 
@@ -912,6 +912,11 @@ a.IconButton
 	text-align: center;
 	top: 45%;
 	z-index: 9999;
+}
+
+#popup.preview
+{
+	top: 20%;
 }
 
 

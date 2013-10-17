@@ -45,6 +45,7 @@
             Modified by Nitkalya (09/10/2013): Fixed login issues, login links on admin page, and added autofocus on username text box
             Modified by Nitkalya (17/10/2013): Added showAlertBox(), hidePopup() and modified popup message box, so it's centered, and dismissible using the Enter key
             Modified by Nitkalya (17/10/2013): Refactored buildRequest methods to move away from using form number, and added enterPressed and shiftEnterPressed
+            Modified by Nitkalya (17/10/2013): Used the alert box with shaded background to preview media on stage edit page
  */
 
 //Instance type variables
@@ -679,8 +680,11 @@ function fillPage()
 		{
             try
             {
+            	// reset alert box if it was used to preview media
+        		document.getElementById('popup').className = "";
+
                 var temp = (xmlhttp.responseText).split('<!--remove-->');
-                
+
                 document.getElementById("page").innerHTML = temp[1];
                 stageEdit();
                 restoreState();
@@ -688,19 +692,35 @@ function fillPage()
                 var reply = trim(document.getElementById('successMsg').innerHTML);
 
                 if (reply != '') {
-	                showAlertBox(document.getElementById('successMsg').innerHTML);
+	                showAlertBox(reply);
 
-					if (document.getElementById('successMsg').innerHTML.indexOf('form') !== -1) {
+					if (reply.indexOf('form') !== -1) {
 						// hide the form behind the popup
 						document.getElementById('successMsg').style.display = "none";
 						document.getElementById('name').focus();
 						enterPressed(document.getElementById('urlname'), stageChooseSubmit, true);
+					} else {
+						// auto clear the message at the top after 5 seconds
+						setTimeout(function () {
+							document.getElementById('successMsg').innerHTML = "";
+						}, 5000);
 					}
 	            } else {
 	            	hidePopup();
+
+	            	// if previewing media
+	            	var preBox = document.getElementById('editStageMediaPreview'),
+	            		preview = trim(preBox.innerHTML);
+
+	            	if (preview != '') {
+	            		showAlertBox(preview);
+	            		preBox.style.display = "none";
+	            		document.getElementById('popup').className = "preview";
+	            	} else {
+	            		preBox.style.display = "inherit"; // reset
+	            	}
 	            }
-                
-                
+
                 if(reply.indexOf("deleted") > 0)
                 {
                     navStageWorkshop();
