@@ -654,12 +654,14 @@ function fillPage()
 
                 var reply = trim(document.getElementById('successMsg').innerHTML);
 
-                if (reply != '') {//} && reply.indexOf('form action') === -1) {
+                if (reply != '') {
 	                showAlertBox(document.getElementById('successMsg').innerHTML);
 
 					if (document.getElementById('successMsg').innerHTML.indexOf('form') !== -1) {
 						// hide the form behind the popup
 						document.getElementById('successMsg').style.display = "none";
+						document.getElementById('name').focus();
+						enterPressed(document.getElementById('urlname'), stageChooseSubmit, true);
 					}
 	            } else {
 	            	hidePopup();
@@ -720,6 +722,18 @@ function GetXmlHttpObject()
  	}
 	return null;
 }
+
+
+/**
+ * Eventually will replace buildRequest (using form number)
+ * Might switch to using ID, but use the form name for now
+ * Ing - 17/10/2013
+ */
+function buildRequestByFormName(formName)
+{
+	return buildRequestFromForm(document[formName]);
+}
+
 /**
  * Build a query string using the inputs from the specified form.
  *
@@ -734,14 +748,19 @@ function buildRequest(formNum)
 	// FIXME selection of values by their element id or name seems rather insecure, any change on the element names will break things!
 	// FIXME better break down to separate functions: reading values and creating the request string? 
 	// FIXME values are not checked for validity ('undefined') - results are vague and can not be determined ...
-	
+
 	log.debug("buildRequest() start: formNum=" + formNum);
-	
+
+	return buildRequestFromForm(document.forms[formNum]);
+}
+
+function buildRequestFromForm(formElement)
+{
 	var search = ['input','select','textarea'];
 	var str = '?';
 	for(i in search)
 	{
-		var elements = document.forms[formNum].getElementsByTagName(search[i]);
+		var elements = formElement.getElementsByTagName(search[i]);
 		for(e in elements)
 		{
 			if(elements[e].name == 'assigned' || elements[e].name == 'unassigned')

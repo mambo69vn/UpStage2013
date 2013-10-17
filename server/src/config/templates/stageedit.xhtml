@@ -48,10 +48,10 @@ window.onresize = resizePage;
 <div id="stageselection">
 	<h1>Make a new stage, or select one to edit</h1>
 	<form name ="selectstage" action="%(req:path)s">
-		<select name="shortName" id="listName">
+		<select name="shortName" id="listName" onchange="stageChooseSubmit(false);">
 			%(list_stages)s
 		</select>
-		<input type="button" onclick="stageChooseSubmit();" value="Select" />
+		<input type="button" onclick="stageChooseSubmit(false);" value="Select" />
 	</form>
 </div>
 
