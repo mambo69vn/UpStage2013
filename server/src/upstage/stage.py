@@ -83,6 +83,7 @@ Modified by: Lisa Helm  02/10/2013      - added the unassigned media list + func
                                         - added temp_access_level_one/two to allow for changes to be obviously discarded
 Modified by: Nitkalya Wiriyanuparb  14/10/2013  - Remember applause and volunteer buttons visibility state
 Modified by: Lisa Helm and Vanessa Henderson (17/10/2013) changed user permissions to fit with new scheme
+Modified by: Lisa Helm and Vanessa Henderson (18/10/2013) changed tOwner to owner, changed owner to media_items
 """
 
 #std lib
