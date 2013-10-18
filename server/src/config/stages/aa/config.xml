@@ -14,5 +14,5 @@
 <pagebgcolour>0xFFFFFF</pagebgcolour>
 <onstagelist>on</onstagelist>
 <lockstage>true</lockstage>
-<towner>cf</towner>
+<owner>cf</owner>
 </stage>

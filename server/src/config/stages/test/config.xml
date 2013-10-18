@@ -1,15 +1,14 @@
-<stage onstagelist="on" name="test" created="2013-08-30 12:01:32.998378" lockstage="false" active="active" id="test">
+<stage onstagelist="on" name="test" created="2013-08-30 12:01:32.998378" lockstage="true" active="active" id="test">
+<lockstage>true</lockstage>
 <avatar media="avatar_mrYzhHEo" voice="ked" name="TestStreamSeach" showname="show">
 </avatar>
 <access_one>admin</access_one>
 <access_two>
 </access_two>
-<access_three>
-</access_three>
 <chatbgcolour>0xFFFFFF</chatbgcolour>
 <toolsbgcolour>0xFFFFFF</toolsbgcolour>
 <pagebgcolour>0xFFFFFF</pagebgcolour>
 <onstagelist>on</onstagelist>
-<lockstage>false</lockstage>
-<towner>admin</towner>
+<lockstage>true</lockstage>
+<owner>admin</owner>
 </stage>

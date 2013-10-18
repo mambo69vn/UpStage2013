@@ -16,6 +16,8 @@
  * Nitkalya             15/10/2013 - Redesigned edit player page
  * Nitkalya             17/10/2013 - Popup message box, and redirect to appropriate page
  * Nitkalya             17/10/2013 - Pressing enter when editing own details or creating a new player will submit
+ * Lisa Helm and Vanessa Henderson (17/10/2013) changed user permissions to fit with new scheme
+ Modified by: Lisa Helm and Vanessa Henderson (18/10/2013) stopped 'admin' level players from creating or editing 'creator' level players
  */
 
 /**
@@ -105,19 +107,19 @@ function toUser()
 	    }
         else
         {
-            var html = xmlhttp.responseText;
+            var html = xmlhttp.responseText;            
             var a = html.split('<!-- content_start -->');
             var b = a[1].split('<!-- content_end -->');
             html = b[0];
 
             showAlertBox(html, redirect);
-        }
-	}
+        }        
+	}    
 }
 
 function setAdminLinks()
 {
-	if(document.nick.is_su.value == "True")
+	if(document.nick.is_superuser.value == "True")
 	{
 		window.onLoad = document.getElementById('adminstuff').innerHTML = '<h1>Administration Links</h1><a href="javascript:navNewPlayer()">Create New Player</a><br /><br /><a href="javascript:navEditPlayers()">Edit Existing Player Details</a><br />';
 	}
@@ -205,10 +207,12 @@ function savePlayer()
 		return false;
 	}
 
-	var act = true;
+
 	var admin = stringChecked(document.getElementById('admin').checked, 'admin');
-	var su = stringChecked(document.getElementById('su').checked, 'su');
-	var unlimited = stringChecked(document.getElementById('unlimited').checked, 'unlimited');
+	var player = stringChecked(document.getElementById('player').checked, 'player');
+	var unlimitedmaker = stringChecked(document.getElementById('unlimitedmaker').checked, 'unlimitedmaker');
+    var maker = stringChecked(document.getElementById('maker').checked, 'maker');
+    var creator = stringChecked(document.getElementById('creator').checked, 'creator');
 	
 	var hex1 = hex_md5(password);
 	var hex2 = hex_md5(password2);
@@ -219,7 +223,7 @@ function savePlayer()
 	
 	requestPage("POST", '/admin/workshop/newplayer?username='+unescape(username) +
 			'&password='+hex1+'&password2='+hex2+'&email='+email+
-			'&act='+act+'&admin='+admin+'&su='+su+'&unlimited='+unlimited+
+			'&player='+player+'&maker='+maker+'&unlimitedmaker='+unlimitedmaker+'&admin='+admin+'&creator='+creator+
 			'&submit=saveplayer', toUser);
 }
 
@@ -242,14 +246,15 @@ function deletePlayer()
 function updatePlayer()
 {
 	var username = document.getElementById('editplayername').value.trim();
-	var act = true;
-	var admin = stringChecked(document.getElementById('editadmin').checked, 'admin');
-	var su = stringChecked(document.getElementById('editsu').checked, 'su');
-	var unlimited = stringChecked(document.getElementById('editunlimited').checked, 'unlimited');
+	var admin = stringChecked(document.getElementById('admin').checked, 'admin');
+	var player = stringChecked(document.getElementById('player').checked, 'player');
+	var unlimitedmaker = stringChecked(document.getElementById('unlimitedmaker').checked, 'unlimitedmaker');
+    var maker = stringChecked(document.getElementById('maker').checked, 'maker');
+    var creator = stringChecked(document.getElementById('creator').checked, 'creator');
 	var email = document.getElementById('email').value.trim();
 
-	var request = '/admin/workshop/editplayers?username='+unescape(username) + '&act='+act+
-		'&admin='+admin+'&su='+su+'&unlimited='+unlimited;
+	var request = '/admin/workshop/editplayers?username='+unescape(username) + '&player='+player+
+		'&maker='+maker+'&unlimitedmaker='+unlimitedmaker+'&admin='+admin+'&creator='+creator;
 	
 	// Vibhu Patel (31/08/2011) Check the password fields only if the checkbox is ticked.
 	if(document.getElementById('changepassword').checked)
@@ -326,28 +331,83 @@ function renderPlayer()
 		cType = xmlhttp.getResponseHeader("Content-Type");
 		if(cType == "text/html")
 		{
-			var username = (xmlhttp.responseText).split('<name>')[1];
-			var email = (xmlhttp.responseText).split('<email>')[1];
-			var date = (xmlhttp.responseText).split('<date>')[1];
-			var admin = (xmlhttp.responseText).split('<admin>')[1];
-			var su = (xmlhttp.responseText).split('<su>')[1];
-			var unlimited = (xmlhttp.responseText).split('<unlimited>')[1];
-			
-			document.getElementById("editplayername").value = username;
-			document.getElementById("editdate").value = date;
-			document.getElementById("editadmin").checked = compareBool(admin);
-			document.getElementById("editsu").checked = compareBool(su);
-			document.getElementById("editunlimited").checked = compareBool(unlimited);
-			document.getElementById("editPanel").style.display = "inherit";
-			document.getElementById("userdetails").style.display = "inline";
-			document.getElementById("dispplayername").style.display = "inline";
-			document.getElementById("email").value = (email.match(/unset/i)) ? "" : email;
+            
+                var username = (xmlhttp.responseText).split('<name>')[1];
+                var email = (xmlhttp.responseText).split('<email>')[1];
+                var date = (xmlhttp.responseText).split('<date>')[1];                
+                var player = (xmlhttp.responseText).split('<player>')[1];
+                var maker = (xmlhttp.responseText).split('<maker>')[1];
+                var unlimitedmaker = (xmlhttp.responseText).split('<unlimitedmaker>')[1];
+                var admin = (xmlhttp.responseText).split('<admin>')[1];
+                var creator = (xmlhttp.responseText).split('<creator>')[1];
+                
+                document.getElementById("editplayername").value = username;
+                document.getElementById("editdate").value = date;
+                document.getElementById("admin").checked = compareBool(admin);
+                document.getElementById("player").checked = compareBool(player);
+                document.getElementById("maker").checked = compareBool(maker);
+                document.getElementById("unlimitedmaker").checked = compareBool(unlimitedmaker);
+                document.getElementById("creator").checked = compareBool(creator);
+                document.getElementById("editPanel").style.display = "inherit";
+                document.getElementById("userdetails").style.display = "inline";
+                document.getElementById("dispplayername").style.display = "inline";
+                document.getElementById("email").value = (email.match(/unset/i)) ? "" : email;
+                
+                document.getElementById("admin").disabled=false;
+                document.getElementById("player").disabled=false;
+                document.getElementById("maker").disabled=false;
+                document.getElementById("unlimitedmaker").disabled=false;
+                document.getElementById("email").disabled=false;
+                document.getElementById("changepassword").disabled=false;
+                document.getElementById("deleteplayer").disabled=false;
+                document.getElementById("saveplayer").disabled=false;
+                
+            if(document.rupert.is_creator.value == "True" )
+            {
+            //I'm a creator editing a creator
+                
+                document.getElementById("creator").disabled=false;
+                document.getElementById("edit_player").style.display = "inherit";
+                document.getElementById("no_edit_player").style.display = "none";
+            }
+            else
+            {
+            //i'm not a creator
+                document.getElementById("creator").disabled=true;
+                if (compareBool(creator))
+                {
+                //editing a creator                  
+                    document.getElementById("admin").disabled=true;
+                    document.getElementById("player").disabled=true;
+                    document.getElementById("maker").disabled=true;
+                    document.getElementById("unlimitedmaker").disabled=true;
+                    document.getElementById("creator").disabled=true;
+                    document.getElementById("email").disabled=true;
+                    document.getElementById("changepassword").disabled=true;
+                    document.getElementById("deleteplayer").disabled=true;
+                    document.getElementById("saveplayer").disabled=true;
+                }
+            }
+            
 		}
 		else
 		{
 			alert('failure, incorrect response type: type was' + cType);
 		}
 	}
+}
+
+function setCreator()
+{
+    if(document.rupert.is_creator.value == "True")
+    {
+        window.onLoad = document.getElementById("creator").disabled=false;
+    }
+    else
+    {
+        window.onLoad = document.getElementById("creator").disabled=true;
+        
+    }
 }
 
 function compareBool(s)
@@ -361,4 +421,3 @@ function compareBool(s)
 		return false;
 	}
 }
-

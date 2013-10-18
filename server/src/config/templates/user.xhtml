@@ -2,26 +2,26 @@
 <!include workshop_nav.inc>
 <script type ="text/javascript">document.title="UpStage player details";</script>
 <div id="editplayer">
-<form name="nick" action="%(req:path)s" >
-<input type="hidden" id="username" name="username" size="16" value="%(user)s" />
-<input type="hidden" name="is_su" size="16" value="%(can_su)s" />
+    <form name="nick" action="%(req:path)s" >
+        <input type="hidden" id="username" name="username" size="16" value="%(user)s" />
+        <input type="hidden" name="is_superuser" size="16" value="%(is_superuser)s" />
 
-<h2>Details for %(user)s:</h2>
+        <h2>Details for %(user)s:</h2>
 
-<table>
-	<tr>
-		<td><b>&nbsp;&nbsp;You've been with us since:&nbsp;&nbsp;</b></td>
-		<td><i>&nbsp;&nbsp;%(date)s&nbsp;&nbsp;</i></td>
-	</tr>
-	<tr>
-		<td><b>&nbsp;&nbsp;Your current contact email is:&nbsp;&nbsp;</b></td>
-		<td><i>&nbsp;&nbsp;%(email)s&nbsp;&nbsp;</i></td>
-	</tr>
-</table>
-<div id="linebreak"></div>
+        <table>
+            <tr>
+                <td><b>&nbsp;&nbsp;You've been with us since:&nbsp;&nbsp;</b></td>
+                <td><i>&nbsp;&nbsp;%(date)s&nbsp;&nbsp;</i></td>
+            </tr>
+            <tr>
+                <td><b>&nbsp;&nbsp;Your current contact email is:&nbsp;&nbsp;</b></td>
+                <td><i>&nbsp;&nbsp;%(email)s&nbsp;&nbsp;</i></td>
+            </tr>
+        </table>
+        <div id="linebreak"></div>
 
-<br /><br />
-<h1>Change Password:</h1>
+        <br /><br />
+        <h1>Change Password:</h1>
 
 <table>
 	<tr>

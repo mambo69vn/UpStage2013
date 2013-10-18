@@ -38,6 +38,7 @@ Modified by: Nitkalya Wiriyanuparb  10/09/2013  - Added media width and height i
 Modified by: Nitkalya Wiriyanuparb  10/09/2013  - Added new methods (setThumbnail, restoreOldFile, deleteFile) to support media replacing functionality
 Modified by: Nitkalya Wiriyanuparb  24/09/2013  - Added setUrl method and modified the class to use new format of keys instead of file names
 Modified by: David Daniels          2/10/2013   - Added get_tags() to get all the tags attached to a media type
+Modified by: Lisa Helm and Vanessa Henderson (17/10/2013) changed user permissions to fit with new scheme
 Notes: 
 """
 
@@ -366,7 +367,7 @@ class MediaDict(Xml2Dict):
             return success
         
         # only admins are allowed to delete data
-        if not player.can_admin():
+        if player.is_player():
             log.msg("MediaDict: delete(): Insufficient rights. Player '%s' is not in role 'admin'." % player.name)
             return success
         
@@ -443,7 +444,7 @@ class MediaDict(Xml2Dict):
             return success
         
         # only admins are allowed to assign stages
-        if not player.can_admin():
+        if  player.is_player():
             log.msg("MediaDict: assign_stages(): Insufficient rights. Player '%s' is not in role 'admin'." % player.name)
             return success
         
@@ -515,7 +516,7 @@ class MediaDict(Xml2Dict):
             return success
         
         # only admins are allowed to edit data
-        if not player.can_admin():
+        if player.is_player():
             log.msg("MediaDict: update_data(): Insufficient rights. Player '%s' is not in role 'admin'." % player.name)
             return success
         
@@ -721,7 +722,7 @@ class MediaDict(Xml2Dict):
         If 'delete' is not a key, then the form is assumed to be
         editing a particular thing's details.
         """
-        if not player.can_admin():
+        if player.is_player():
             return
         if 'delete' in form.get('action',[None])[0]: #Shaun Narayan (02/14/10) - arg names changed in URL so have been refelcted here.
             log.msg("Deleting, form is: %s" %form)

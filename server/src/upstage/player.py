@@ -29,6 +29,7 @@ Modified by: Daniel Han (03-07-2012) - Enabled Searching for Players
 Modified by: Daniel Han (24/08/2012) - Check if username is available and if not, throws exception
 Modified by: Nitkalya Wiriyanuparb  02/10/2013  - Throw an error when username is blank or not alphanumeric (creating new users)
 Modified by: Nitkalya Wiriyanuparb  15/10/2013  - Changed player date format to be more consistent
+Modified by: Lisa Helm and Vanessa Henderson (17/10/2013) changed user permissions to fit with new scheme - redefined permissions levels to creator, admin, unlimitedmaker, maker and player
 """
 
 import md5, os
@@ -46,15 +47,27 @@ from twisted.cred import error, credentials, checkers
 
 class IParticipant:
     """showing the basic interface for participants."""
-    def can_act(self):
+    def is_player(self):
         """Can the participant act"""
         return True
 
-    def can_admin(self):
+    def is_maker(self):
         """Can the participant change stages avatars etc"""
         return False
 
-    def can_su(self):
+    def is_admin(self):
+        """Can the participant add or remove players"""
+        return False
+        
+    def is_creator(self):
+        """Can the participant add or remove players"""
+        return False
+    
+    def is_superuser(self):
+        """admin or creator"""
+        return (self.is_creator() or self.is_admin())
+        
+    def is_unlimited_maker(self):
         """Can the participant add or remove players"""
         return False
 
@@ -68,16 +81,28 @@ class _Audience:
     perhaps one per stage"""
     name = 'nice visitor'
 
-    def can_act(self):
-        """Audience members can't act"""
+    def is_player(self):
+        """Can the participant act"""
         return False
 
-    def can_admin(self):
-        """Audience members can't change stages or avatars"""
+    def is_maker(self):
+        """Can the participant change stages avatars etc"""
         return False
 
-    def can_su(self):
-        """Audience members can't add or remove players"""
+    def is_admin(self):
+        """Can the participant add or remove players"""
+        return False
+        
+    def is_creator(self):
+        """Can the participant add or remove players"""
+        return False
+        
+    def is_superuser(self):
+        """admin or creator"""
+        return (self.is_creator() or self.is_admin())
+        
+    def is_unlimited_maker(self):
+        """Can the participant add or remove players"""
         return False
 
     def is_shareable(self):
@@ -131,28 +156,35 @@ class _Player:
         return pw == self.password
 
     def set_rights(self, rights=()):
-        #XXX why this?
         if rights == ():
             raise UpstageError("rights can't be set to %s"  %(rights,))
         self.rights = rights
 
-    def can_act(self):
-        """Can the player act"""
-        return ('act' in self.rights)
+    def is_player(self):
+        """Players can only act, on stages they are given player permissions"""
+        return ('player' in self.rights)
 
-    def can_admin(self):
-        """Can add and remove stages, avatars, etc"""
-        return ('admin' in self.rights)
-
-    def can_su(self):
-        """Can delete or add players"""
-        return ('su' in self.rights)
-    
+    def is_maker(self):
+        """Can add and remove stages, upload/edit media, lock and unlock own stage, give permissions to stages"""
+        return ('maker' in self.rights)
+        
     # AC (10/05/08) - Over-ride upload limiting
-    def can_unlimited(self):
-        """ No upload limit """
-        return ('unlimited' in self.rights)
+    def is_unlimited_maker(self):
+        """same as maker, but with no upload limit """
+        return ('unlimitedmaker' in self.rights)
 
+    def is_admin(self):
+        """unlimited maker permissions, plus can create and edit players, edit any unlocked stage"""
+        return ('admin' in self.rights)
+    
+    def is_creator(self):
+        """admin permissions, plus unrestricted by stage lock (goddess)"""
+        return ('creator' in self.rights)
+        
+    def is_superuser(self):
+        """admin or creator"""
+        return (self.is_creator() or self.is_admin())
+    
     def is_shareable(self):
         """Only one socket per player per stage.""" #XXX but why?
         return False
@@ -252,10 +284,11 @@ class PlayerDict(Xml2Dict):
             if search in k:
                 players.append([k.lower(), {'name': k,
                                 'checked': '',
-                                'act': v.can_act() and 'act' or '',
-                                'admin': v.can_admin() and 'admin' or '',
-                                'su': v.can_su() and 'su' or '',
-                                'unlimited': v.can_unlimited() and 'unlimited' or '',
+                                'player': v.is_player() and 'player' or '',
+                                'maker': v.is_maker() and 'maker' or '',
+                                'unlimitedmaker': v.is_unlimited_maker() and 'unlimitedmaker' or '',
+                                'admin': v.is_admin() and 'admin' or '',
+                                'creator': v.is_creator() and 'creator' or '',
                                 'email':v.email,
                                 'reg_date': v.date,
                                 'last_login': v.last_login
@@ -273,10 +306,6 @@ class PlayerDict(Xml2Dict):
     def update_from_form(self, form, player):
         """Three modes either Add, delete or change password depending on form information.
         NOT fully checked for security."""
-        
-        #XXX unwieldy bloody great thing. should probably be split.
-        """if not player.can_su():
-            raise UpstageError("not allowed")"""
 
         log.msg(form)
         
@@ -315,7 +344,7 @@ class PlayerDict(Xml2Dict):
         log.msg('passwords match')
 
         # Normal Super Admin edit players details
-        if player.can_su():
+        if player.is_superuser():
             delete = _option('remove players')
             changepw = _option('changepassword')
 
@@ -326,7 +355,7 @@ class PlayerDict(Xml2Dict):
                         log.msg("Removing player %s (%s)" % (x, xp))
                 self.save()
 
-            rights = [ x for x in ('act', 'admin', 'su', 'unlimited') if _value(x) ]
+            rights = [ x for x in ('player', 'maker', 'unlimitedmaker', 'admin', 'creator') if _value(x) ]
             
             if user in self:
                 self[user].set_rights(rights)
@@ -341,7 +370,7 @@ class PlayerDict(Xml2Dict):
                 self[user] = newplayer
         
         # Admin self password change
-        elif player.can_admin():
+        elif player.is_superuser():
             
             if 'saveemail' in form:
                 self[user].set_email(newemail)
@@ -368,7 +397,7 @@ class PlayerDict(Xml2Dict):
         if newpass != newpass2:
             raise UpstageError('Password did not match!')
         
-        if player.can_admin():
+        if player.is_superuser():
             self[user].set_password(newpass)
             
         self.save()      
@@ -422,7 +451,7 @@ class PlayerDict(Xml2Dict):
 
         else:
             user = _value('username')
-            rights = [ x for x in ('act', 'admin', 'su', 'unlimited') if _value(x) ]
+            rights = [ x for x in ('player', 'maker', 'unlimitedmaker', 'admin', 'creator') if _value(x) ]
             email = _value('email')
             
         if user in self:
