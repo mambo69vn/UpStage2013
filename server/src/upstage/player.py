@@ -62,6 +62,10 @@ class IParticipant:
     def is_creator(self):
         """Can the participant add or remove players"""
         return False
+    
+    def is_superuser(self):
+        """admin or creator"""
+        return (self.is_creator() or self.is_admin())
         
     def is_unlimited_maker(self):
         """Can the participant add or remove players"""
@@ -92,6 +96,10 @@ class _Audience:
     def is_creator(self):
         """Can the participant add or remove players"""
         return False
+        
+    def is_superuser(self):
+        """admin or creator"""
+        return (self.is_creator() or self.is_admin())
         
     def is_unlimited_maker(self):
         """Can the participant add or remove players"""

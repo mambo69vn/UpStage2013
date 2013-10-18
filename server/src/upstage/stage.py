@@ -62,12 +62,12 @@ Modified by: Craig Farrell  30/04/2013  - added new lockStage varible
                                         - added two new methods : set_lockStage() && get_lockStage()
                                         - changed parse_element to include the new lockStage Attribute.
                                         - added new lockStage node to write_element()
-Modified by: Craig Farrell  01/05/2013  - added new tOwner varible
-                                        - added new tOwner node to load() &&  new tOwner to the tree in save().
-                                        - added new  tOwner = '' variable
-                                        - added two new methods : set_tOwner() && get_tOwner()
-                                        - changed parse_element to include the new tOwner Attribute.
-                                        - added new tOwner node to write_element()
+Modified by: Craig Farrell  01/05/2013  - added new Owner varible
+                                        - added new Owner node to load() &&  new tOwner to the tree in save().
+                                        - added new  Owner = '' variable
+                                        - added two new methods : set_Owner() && get_Owner()
+                                        - changed parse_element to include the new Owner Attribute.
+                                        - added new Owner node to write_element()
 
 Modified by: Nitkalya Wiriyanuparb  29/08/2013  - add toggle_stream_audio to mute/unmute streaming avatar
 Modified by: Nitkalya Wiriyanuparb  04/09/2013  - clear user access list (access_level_one/two/three) before appending items to them to avoid duplicates
@@ -139,21 +139,20 @@ class _Stage(object):
     debugMessages = 'normal'#(12/11/08)Aaron added to displays debug messages or not 'Normal' or 'DEBUG'
     onStageList = 'on'#(08/04/2013)Craig added to displays onStageList or not : 'on' or 'off'
     lockStage = 'false'#(30/04/2013)Craig added to displays LockStage or not : 'true' or 'false'
-    tOwner = 'admin'
     unassigned = []
     temp_access_level_one = []
     temp_access_level_two = []
 
 
-    def __init__(self, ID, name=None, owner=None):
+    def __init__(self, ID, name=None, media_items=None):
         self.name = name or str(ID)
         log.msg('Making Stage %s "%s"' %(ID, name))
         if not re.match("^[\w-]+$", ID):
             raise ValueError("Stage ID should be alphanumeric (NOT '%s')" %ID)
         self.ID = ID
         self.description = ''   #not used?
-        self.owner = owner
-        self.tOwner = 'admin'
+        self.owner = 'admin'
+        self.media_items=media_items
         self.config_dir = os.path.join(config.STAGE_DIR, self.ID)
         self.config_file = os.path.join(self.config_dir, 'config.xml')
         self.sockets = {}
@@ -166,11 +165,11 @@ class _Stage(object):
 
     def clear(self):
         """reset the things collections, including their member IDs"""
-        self.props = ThingCollection(Prop, self.owner.mediatypes['prop'])   # stuff that isn't an avatar or background.
-        self.backdrops = ThingCollection(Backdrop, self.owner.mediatypes['backdrop'])   #  backgrounds.
-        self.avatars = ThingCollection(Avatar, self.owner.mediatypes['avatar']) # avatar objects here.
+        self.props = ThingCollection(Prop, self.media_items.mediatypes['prop'])   # stuff that isn't an avatar or background.
+        self.backdrops = ThingCollection(Backdrop, self.media_items.mediatypes['backdrop'])   #  backgrounds.
+        self.avatars = ThingCollection(Avatar, self.media_items.mediatypes['avatar']) # avatar objects here.
         # PQ & EB: 17.9.07
-        self.audios = ThingCollection(Audio, self.owner.mediatypes['audio']) # audio objects here.
+        self.audios = ThingCollection(Audio, self.media_items.mediatypes['audio']) # audio objects here.
         self.unassigned = []        
         self.temp_access_level_one = []
         self.temp_access_level_two = []
@@ -391,8 +390,8 @@ class _Stage(object):
         nodeOnStageList.text(self.onStageList)
         nodeLockStage = tree.add('lockstage')#(30/04/2013)Craig
         nodeLockStage.text(self.lockStage)
-        nodetOwner = tree.add('towner')#(01/05/2013)Craig
-        nodetOwner.text(self.tOwner)
+        nodeOwner = tree.add('owner')#(01/05/2013)Craig
+        nodeOwner.text(self.owner)
         save_xml(tree.node, config_file)
         del tree
         self.load()
@@ -657,12 +656,12 @@ class _Stage(object):
             return None
 
     #added by Craig (30/04/2013) - to get owner of stage 
-    def get_tOwner(self): 
-        return self.tOwner
+    def get_owner(self): 
+        return self.owner
 
     #added by Craig (30/04/2013) - to set owner of stage 
-    def set_tOwner(self,nOwner):
-        self.tOwner = nOwner
+    def set_owner(self,nOwner):
+        self.owner = nOwner
 
     def get_uploader_list(self):
         uploaders = self.avatars.get_uploader_list()
@@ -785,7 +784,7 @@ class _Stage(object):
         if iss == 'true' or iss == 'false':
             self.lockStage = iss
     #added by Craig (30/04/2013) - gets the lockStage true or false
-    def get_LockStage(self):
+    def is_locked(self):
         return self.lockStage
 
     # Added by Daniel (11/09/2012) - check if player is audience
@@ -948,7 +947,7 @@ class _Stage(object):
 
             #tell speech module to make an utterance.
             # it will be available as a web resource when it is ready.
-            speech_url = self.owner.speech_server.utter(msg, av)
+            speech_url = self.media_items.speech_server.utter(msg, av)
             # tell the clients to ask for it back (on web port),
             # so requests come in as soon as possible.
             self.broadcast('WAVE', url=speech_url)
@@ -960,19 +959,19 @@ class _Stage(object):
       
     # EB
     def play_effect(self, fileName):
-        audio_url = self.owner.audio_server.loadAudio(fileName)
+        audio_url = self.media_items.audio_server.loadAudio(fileName)
         self.broadcast('EFFECT', url=audio_url)
         log.msg('Playing Effect: ' + audio_url)
         
     # PQ: Added to play music
     def play_music(self, fileName):
-        audio_url = self.owner.audio_server.loadAudio(fileName)
+        audio_url = self.media_items.audio_server.loadAudio(fileName)
         self.broadcast('MUSIC', url=audio_url)
         log.msg('Playing Music: ' + audio_url)
         
     # PQ & LK: Added 31.10.07 - To play applause sound
     def play_applause(self, fileName):
-        audio_url = self.owner.audio_server.loadAudio(fileName)
+        audio_url = self.media_items.audio_server.loadAudio(fileName)
         self.broadcast('APPLAUSE_PLAY', url=audio_url)
         log.msg('Playing Applause: ' + audio_url)
         
@@ -1016,7 +1015,7 @@ class _Stage(object):
             
             # tell speech module to make an utterance.
             # it will be available as a web resource when it is ready.
-            speech_url = self.owner.speech_server.utter(shout, avatar)
+            speech_url = self.media_items.speech_server.utter(shout, avatar)
             # tell the clients to ask for it back (on web port),
             # so requests come in as soon as possible
             self.broadcast('WAVE', url=speech_url);
@@ -1224,7 +1223,7 @@ class StageDict(Xml2Dict):
         s = _Stage(ID, name, self)
         s.set_ifOnStageList((node.getAttribute('onstagelist'))) #(08/04/2013)Craig
         s.set_LockStage((node.getAttribute('lockstage'))) #(30/04/2013)Craig
-        s.set_tOwner((node.getAttribute('towner')))#(01/05/2013)Craig
+        s.set_owner((node.getAttribute('owner')))#(01/05/2013)Craig
         dict.__setitem__(self, ID, s)
         if active:
             s.wake()
@@ -1245,8 +1244,8 @@ class StageDict(Xml2Dict):
         if stage.active:
             node['active']='active'
         node['onstagelist']= stage.get_ifOnStageList() #(08/04/2013)Craig
-        node['lockstage']= stage.get_LockStage() #(30/04/2013)Craig
-        node['towner']= stage.get_tOwner()#(01/05/2013)Craig
+        node['lockstage']= stage.is_locked() #(30/04/2013)Craig
+        node['owner']= stage.get_owner()#(01/05/2013)Craig
 
     def update_from_form(self, form, player):
         """Delete selected stages"""
@@ -1299,7 +1298,7 @@ class StageDict(Xml2Dict):
         """Add a stage to the dictionary"""
         s = _Stage(ID, name, self)
         s.add_al_one(playerName)
-        s.set_tOwner(playerName)
+        s.set_owner(playerName)
         self[ID] = s
         #log.msg("TRYING TO GET STAGE ID: %s" % self['id'])
         s.wake()
@@ -1323,7 +1322,7 @@ class StageDict(Xml2Dict):
             onSList = node.getAttribute('onstagelist')
             s.set_ifOnStageList((node.getAttribute('onstagelist'))) #(31/04/2013)Craig
             s.set_LockStage((node.getAttribute('lockstage'))) #(30/04/2013)Craig
-            s.set_tOwner((node.getAttribute('towner')))#(31/04/2013)Craig
+            s.set_owner((node.getAttribute('owner')))#(31/04/2013)Craig
             if onSList == 'on':# if onstagelist is 'on', put in list.
                 sL[ID] = s
             if active:

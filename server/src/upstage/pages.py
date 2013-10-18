@@ -780,7 +780,7 @@ class StageEditPage(Workshop):
     stage_link = ''
     stage_saved = ''
     stage_ViewImg = ''#(30/04/2013) Craig
-    stage_CB_lock = ''#(01/05/2013) Craig
+    stage_lock = ''#(01/05/2013) Craig
     isOwner = 'false'#(02/05/2013) Craig
     
     def __init__(self, player, collection):
@@ -832,7 +832,7 @@ class StageEditPage(Workshop):
         else:
             return self.no_stage
 
-    def text_IsOwner(self, request):#(02/05/2013) Craig
+    def text_isOwner(self, request):#(02/05/2013) Craig
         if self.stage:
             #log.msg(' isowner = : %s' %self.isOwner)
             return self.isOwner
@@ -927,8 +927,12 @@ class StageEditPage(Workshop):
             if k == self.stagename:
                 table.extend('<option value="%s" selected="selected">%s</option>' %(k, k))
             else:
-                if self.player.is_creator() or current_stage.contains_al_one(self.player.name) or current_stage.contains_al_two(self.player.name):
-                    table.extend('<option value="%s">%s</option>' %(k, k))
+                if current_stage.is_locked()=='true':
+                    if self.player.is_creator() or current_stage.owner==self.player:
+                        table.extend('<option value="%s">%s</option>' %(k, k))
+                elif current_stage.is_locked()=='false': 
+                    if self.player.is_superuser() or current_stage.contains_al_one(self.player.name):
+                        table.extend('<option value="%s">%s</option>' %(k, k))
         return ''.join(table)
     
     def text_can_access(self, request):
@@ -1020,29 +1024,19 @@ class StageEditPage(Workshop):
             log.msg(imgThumbUrl)
             log.msg(aName)
             
-    def setupStageLock(self, request):#(01/05/2013) Craig
-        chec = ''
+    def setupStageLock(self, request):#(01/05/2013) Craig        
         if self.stage:
-            log.msg(' here is pN: %s' %(self.player.name))
-            log.msg(' here is sc: %s' %(self.stage.get_tOwner()))
-            log.msg(' here is lock: %s' %(self.stage.get_LockStage()))
-            log.msg(' isowner = : %s' %self.isOwner)
-            if self.stage.get_LockStage() == 'true':
-                chec = 'checked="true"' 
-            if self.player.name == self.stage.get_tOwner() or self.player.is_creator():
-                self.isOwner = 'true'
-                log.msg('name == stage owner')
-                self.stage_CB_lock = '<input type="checkbox" id="lockStageCB" name="lockStageCB" %s onclick="if (this.checked) {lockStageChecked()}else{lockStageUnchecked()}" />' %(chec)
-                log.msg(self.stage_CB_lock)
+            check=self.stage.is_locked() 
+            if check == 'true':
+                text = 'checked="checked"'
             else:
-                #if self.player.can_unlimited() == True:#(02/05/2013) Craig
-                #     self.isOwner = 'true'
-                #else:
+                text = ''
+            if self.player.name == self.stage.get_owner() or self.player.is_creator():
+                self.isOwner = 'true'
+                self.stage_lock = '<input type="checkbox" id="lockStageCB" name="lockStageCB" %s onclick="if (this.checked) {lockStageChecked()}else{lockStageUnchecked()}" />' %(text)
+            else:
                 self.isOwner = 'false'
-                log.msg('name !!== stage owner')
-                self.stage_CB_lock = '<input type="checkbox" id="lockStageCB" %s disabled="true" name="lockStageCB" />' %(chec)
-                log.msg(self.stage_CB_lock)
-
+                self.stage_lock = '<input type="checkbox" id="lockStageCB" %s disabled="true" name="lockStageCB" />' %(text)
 
     def render(self, request):
         """Save changes and create new state"""
@@ -1052,7 +1046,7 @@ class StageEditPage(Workshop):
         self.stage_link= ''
         self.stage_saved= ''
         try:
-            self.stagename = request.args.get('shortName',[''])[0]
+            self.stagename = request.args.get('shortName',[''])[0]  
             self.stage = self.collection.stages.get(self.stagename)
             self.stage_link="<a href=\"../../../stages/%s\">Go directly to stage. </a>" %self.stage.ID
         except:
@@ -1168,7 +1162,7 @@ class StageEditPage(Workshop):
             for i in range(0, len(items)):
                 pname = items[i]
                 if self.stagename and pname:
-                    if pname != self.stage.tOwner:
+                    if pname != self.stage.owner:
                         self.stage.remove_al_one(pname)
                         self.stage.add_al_two(pname)
         #if self.stage:
@@ -1872,9 +1866,13 @@ class NewPlayer(AdminBase):
     """Page for the addition and/or removal of player logins"""
     filename = "newplayer.xhtml" #XXX unused, because of redirect below.
     isLeaf = True
+    
+    def text_is_creator(self, request):
+        if(self.player):
+            return str(self.player.is_creator())
 
     def render(self, request):
-        if not self.player.can_su():
+        if not self.player.is_superuser():
             return errorpage(request, "You can't do that!", 'user')
         form = request.args
         if 'submit' in form:
@@ -1902,7 +1900,7 @@ class EditPlayer(AdminBase):
         def _value(x):
             return form.get(x, [None])[0]
         
-        if not self.player.can_su():
+        if not self.player.is_superuser():
             return errorpage(request, "You can't do that!", 'user')
         
         submit = _value('submit')
@@ -1944,6 +1942,11 @@ class EditPlayer(AdminBase):
                 return errorpage(request, "That didn't work! %s" % e, 'user')
             
         return AdminBase.render(self, request)
+        
+            
+    def text_is_creator(self, request):
+        if(self.player):
+            return str(self.player.is_creator())
 
     def text_list_players(self, request):
 

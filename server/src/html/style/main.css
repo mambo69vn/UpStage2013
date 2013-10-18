@@ -795,6 +795,22 @@ a.IconButton
     /*border-radius: 2px;*/
 }
 
+.no_edit_player
+{
+	vertical-align: middle;
+	z-index: 10;
+	margin: 5px;
+	padding: 20px;
+	padding-top: 0;
+	position: relative;
+	background-color: #fff;
+    right:0;
+    top:0;
+    overflow: auto;
+    box-shadow: #aaa -5px 0px 4px -3px;
+    /*border-radius: 2px;*/
+}
+
 #exitButton
 {
 	margin-right: -20px;

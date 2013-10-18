@@ -2,74 +2,76 @@
 <!include workshop_nav.inc>
 <script type="text/javascript">document.title='Creating New Player';</script>
 
+
 <h2>Adding a player</h2>
 <br />	<!-- PQ: Added to match other pages and moved a few lines below to keep pages consistent -->
 <h1>Pick a username and password</h1><br/>
 
 <form name="rupert" action="%(req:path)s" >
+    <input type="hidden" name="is_creator" size="16" value="%(is_creator)s" />
+    <table>
+        <tr>
+            <td>
+                <b>Username:</b>
+            </td>
+            <td>
+                <input type="text" name="name" id="name" size="30" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <b>Password:</b>
+            </td>
+            <td>
+                <input type="password" name="password" id="password" size="30" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <b>Password again:&nbsp;&nbsp;</b>
+            </td>
+            <td>
+                <input type="password" name="password2" id="password2" size="30" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <b>E-mail address:</b>
+            </td>
+            <td>
+                <input type="text" name="email" id="email" size="30" />
+            </td>
+        </tr>
+    </table>
+    <br />
+    <h1>Player permissions</h1>
+    <table>
+        <tr><th colspan="2">
+        This player is a:
+        </th></tr>
+        <tr>
+        <td><input type="radio" name="permissions" id="player" checked="checked" /></td>
+        <td><b>Player</b> - can act on stages.</td>
+        </tr>
+        <tr>
+        <td><input type="radio" name="permissions" id="maker" /></td> 
+        <td><b>Maker</b> - can create/edit stages, upload/edit media and has all Player permissions.</td>
+        </tr>
+        <tr>
+        <td><input type="radio" name="permissions" id="unlimitedmaker" /></td> 
+        <td><b>Unlimited Maker</b> - can create/edit stages, upload/edit media and has all Player permissions. Has no upload limit.</td>
+        </tr>
+        <tr>
+        <td><input type="radio" name="permissions" id="admin" /></td> 
+        <td><b>Admin</b> - can create/edit players, edit pages, and has all Maker permissions.</td>
+        </tr>
+        <tr id="creatorline">        
+        <td><input type="radio" name="permissions" id="creator" /></td> 
+        <td><b>Creator</b> - can do everything.</td>
+        </tr>
+    </table><br />
 
-<table>
-	<tr>
-		<td>
-			<b>Username:</b>
-		</td>
-		<td>
-			<input type="text" name="name" id="name" size="30" />
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<b>Password:</b>
-		</td>
-		<td>
-			<input type="password" name="password" id="password" size="30" />
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<b>Password again:&nbsp;&nbsp;</b>
-		</td>
-		<td>
-			<input type="password" name="password2" id="password2" size="30" />
-		</td>
-	</tr>
-	<tr>
-		<td>
-			<b>E-mail address:</b>
-		</td>
-		<td>
-			<input type="text" name="email" id="email" size="30" />
-		</td>
-	</tr>
-</table>
-<br />
-<h1>Player permissions</h1>
-<table>
-<tr><th colspan="2">
-This player is a:
-</th></tr>
-<tr>
-<td><input type="radio" name="player" id="player" checked="checked" /></td>
-<td><b>Player</b> - can act on stages.</td>
-</tr>
-<tr>
-<td><input type="radio" name="maker" id="maker" /></td> 
-<td><b>Maker</b> - can create/edit stages, upload/edit media and has all Player permissions.</td>
-</tr>
-<tr>
-<td><input type="radio" name="unlimitedmaker" id="unlimitedmaker" /></td> 
-<td><b>Unlimited Maker</b> - can create/edit stages, upload/edit media and has all Player permissions. Has no upload limit.</td>
-</tr>
-<tr>
-<td><input type="radio" name="admin" id="admin" /></td> 
-<td><b>Admin</b> - can create/edit players, edit pages, and has all Maker permissions.</td>
-</tr>
-<tr>
-<td><input type="radio" name="creator" id="creator" /></td> 
-<td><b>Creator</b> - can do everything.</td>
-</tr>
-</table><br />
-
-<button onclick="javascript:savePlayer(); return false;">Save Player</button>
+    <button onclick="javascript:savePlayer(); return false;">Save Player</button>
+    <script type ="text/javascript">setCreator();</script>
 </form>
 <!include master_b.inc>

@@ -2,6 +2,9 @@
 <!include workshop_nav.inc>
 <script type="text/javascript">document.title='Editing Player Details';</script>
 
+<form name="rupert">
+<input type="hidden" name="is_creator" size="16" value="%(is_creator)s" />
+
 <div class="topSearchBar">
 	<div class="search_section">
 		<form name="search" method="GET">
@@ -40,32 +43,34 @@
 			<input type="hidden" name="date" id="editdate" value="" />
 			<a href="#" id="exitButton" onclick="closeEdit();"> x </a>
 			<h2 id="playerName"><b id='dispplayername'></b></h2>
-			  <h1>Change Permissions</h1>
-			  <table>
-			<tr><th colspan="2">
-			  This player is a:
-			</th></tr>
-			<tr>
-            <td><input type="radio" name="player" id="player" /></td>
-            <td><b>Player</b> - can act on stages.</td>
-            </tr>
-            <tr>
-            <td><input type="radio" name="maker" id="maker" /></td> 
-            <td><b>Maker</b> - can create/edit stages, upload/edit media and has all Player permissions.</td>
-            </tr>
-            <tr>
-            <td><input type="radio" name="unlimitedmaker" id="unlimitedmaker" /></td> 
-            <td><b>Unlimited Maker</b> - can create/edit stages, upload/edit media and has all Player permissions. Has no upload limit.</td>
-            </tr>
-            <tr>
-            <td><input type="radio" name="admin" id="admin" /></td> 
-            <td><b>Admin</b> - can create/edit players, edit pages, and has all Maker permissions.</td>
-            </tr>
-            <tr>
-            <td><input type="radio" name="creator" id="creator" /></td> 
-            <td><b>Creator</b> - can do everything.</td>
-            </tr>
-		     </table>
+
+                  <h1>Change Permissions</h1>
+                  <table>
+                <tr><th colspan="2">
+                  This player is a:
+                </th></tr>
+                <tr>
+                <td><input type="radio" name="permissions" id="player" /></td>
+                <td><b>Player</b> - can act on stages.</td>
+                </tr>
+                <tr>
+                <td><input type="radio" name="permissions" id="maker" /></td> 
+                <td><b>Maker</b> - can create/edit stages, upload/edit media and has all Player permissions.</td>
+                </tr>
+                <tr>
+                <td><input type="radio" name="permissions" id="unlimitedmaker" /></td> 
+                <td><b>Unlimited Maker</b> - can create/edit stages, upload/edit media and has all Player permissions. Has no upload limit.</td>
+                </tr>
+                <tr>
+                <td><input type="radio" name="permissions" id="admin" /></td> 
+                <td><b>Admin</b> - can create/edit players, edit pages, and has all Maker permissions.</td>
+                </tr>
+                <tr id="creatorline">
+                <td><input type="radio" name="permissions" id="creator" /></td> 
+                <td><b>Creator</b> - can do everything.</td>                
+                </tr>
+                 </table>
+
 			  <br/>
 
 			<h1>Change Email</h1>
@@ -99,8 +104,8 @@
 			<br />
 
 			<div id="playerButtonGroup">
-				<button type="button" class="controlButton" title="Update" onclick="javascript:updatePlayer();"><i class="icon-save icon-2x"></i></button>
-				<button type="button" class="controlButton" title="Delete" onclick="javascript:deletePlayer();"><i class="icon-trash icon-2x"></i></button>
+				<button type="button" class="controlButton" title="Update" onclick="javascript:updatePlayer();" id="saveplayer"><i class="icon-save icon-2x"></i></button>
+				<button type="button" class="controlButton" title="Delete" onclick="javascript:deletePlayer();" id="deleteplayer"><i class="icon-trash icon-2x"></i></button>
 			</div>
 			</form>
 
@@ -112,4 +117,6 @@
 
 
 <script type="text/javascript">switchPasswordStuff(false);</script>
+<!--<script type ="text/javascript">setCreator();</script>-->
+</form>
 <!include master_b.inc>
