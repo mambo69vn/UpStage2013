@@ -1,0 +1,10 @@
+<stage onstagelist="on" name="AUT Meeting" created="2013-10-21 13:03:52.938615" lockstage="false" active="active" id="aut">
+<access_one>admin</access_one>
+<access_two>Admin,Anne,Creator,David,Helen,Ing,Lisa,Maker,Martin,Nikos,Player,UMaker,Vanessa,Vicki</access_two>
+<chatbgcolour>0xFFFFFF</chatbgcolour>
+<toolsbgcolour>0xFFFFFF</toolsbgcolour>
+<pagebgcolour>0xFFFFFF</pagebgcolour>
+<onstagelist>on</onstagelist>
+<lockstage>false</lockstage>
+<owner>admin</owner>
+</stage>

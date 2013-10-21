@@ -1,12 +1,6 @@
 <stages>
-<stage onstagelist="on" name="aa" lockstage="true" owner="cf" active="active" id="aa">
+<stage onstagelist="on" name="Test Stage" lockstage="false" owner="admin" active="active" id="test">
 </stage>
-<stage onstagelist="on" name="gg" lockstage="true" owner="df" active="active" id="gg">
-</stage>
-<stage onstagelist="on" name="test" lockstage="true" owner="admin" active="active" id="test">
-</stage>
-<stage onstagelist="on" name="cf" lockstage="true" owner="admin" active="active" id="cf">
-</stage>
-<stage onstagelist="on" name="stageee" lockstage="false" owner="Lisa" active="active" id="stageeee">
+<stage onstagelist="on" name="AUT Meeting" lockstage="false" owner="admin" active="active" id="aut">
 </stage>
 </stages>
