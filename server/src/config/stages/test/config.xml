@@ -1,7 +1,4 @@
-<stage onstagelist="on" name="test" created="2013-08-30 12:01:32.998378" lockstage="true" active="active" id="test">
-<lockstage>true</lockstage>
-<avatar media="avatar_mrYzhHEo" voice="ked" name="TestStreamSeach" showname="show">
-</avatar>
+<stage onstagelist="on" name="Test Stage" created="2013-10-21 13:02:52.163885" lockstage="false" active="active" id="test">
 <access_one>admin</access_one>
 <access_two>
 </access_two>
@@ -9,6 +6,6 @@
 <toolsbgcolour>0xFFFFFF</toolsbgcolour>
 <pagebgcolour>0xFFFFFF</pagebgcolour>
 <onstagelist>on</onstagelist>
-<lockstage>true</lockstage>
+<lockstage>false</lockstage>
 <owner>admin</owner>
 </stage>

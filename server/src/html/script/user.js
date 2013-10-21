@@ -198,7 +198,7 @@ function validateInfoBeforeSave(username, password, password2, email)
 */
 function savePlayer()
 {
-	var username = document.getElementById('name').value.trim();
+	var username = document.getElementById('name').value.trim().toLowerCase();
 	var password = document.getElementById('password').value.trim();
 	var password2 = document.getElementById('password2').value.trim();
 	var email = document.getElementById('email').value.trim();
@@ -362,7 +362,7 @@ function renderPlayer()
                 document.getElementById("deleteplayer").disabled=false;
                 document.getElementById("saveplayer").disabled=false;
                 
-            if(document.rupert.is_creator.value == "True" )
+            if(document.playerpanel.is_creator.value == "True" )
             {
             //I'm a creator editing a creator
                 
@@ -399,7 +399,7 @@ function renderPlayer()
 
 function setCreator()
 {
-    if(document.rupert.is_creator.value == "True")
+    if(document.playerpanel.is_creator.value == "True")
     {
         window.onLoad = document.getElementById("creator").disabled=false;
     }
