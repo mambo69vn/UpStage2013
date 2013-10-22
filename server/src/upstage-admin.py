@@ -17,8 +17,6 @@ upstage-admin list
 upstage-admin rm [server-name]
 upstage-admin remove [server-name]
   delete a server's configuration
-  
-  Modified by: Lisa Helm and Vanessa Henderson (17/10/2013) changed user permissions to fit with new scheme
 
 """
 
@@ -28,7 +26,8 @@ from ConfigParser import SafeConfigParser, NoOptionError
 from md5 import md5
 
 from upstage.config import HTDOCS, ADMIN_DIR, TEMPLATE_DIR, \
-     CONFIG_DIR, PLAYERS_XML, SWF_DIR, POLICY_FILE_PORT
+     CONFIG_DIR, PLAYERS_XML, SWF_DIR, STAGE_DIR, POLICY_FILE_PORT, \
+     STAGES_XML, AVATARS_XML, PROPS_XML, BACKDROPS_XML, AUDIOS_XML
 
 #helper functions for input.
 
@@ -99,6 +98,15 @@ def filepath(msg, default='', type='file'):
                 continue
         return a
 
+def replaceAdmin(xmlpath, newUser):
+    with open(xmlpath,'r') as f:
+        newlines = []
+        for line in f.readlines():
+            newlines.append(line.replace('admin', newUser))
+    with open(xmlpath, 'w') as f:
+        for line in newlines:
+            f.write(line)
+
 
 
 #####################################
@@ -146,9 +154,12 @@ class Conf(SafeConfigParser):
         pidfile = self.get(name, 'pidfile')
         try:
             f = open(pidfile)
-            pid = int(f.read())
+            pids = f.read()
             f.close()
-            os.kill(pid, 15)
+            pids = pids.split(',')
+            for pid in pids:
+                print 'Killing process PID: %s' % pid
+                os.kill(int(pid), 15)
             #os.remove(pidfile) #upstage-server does this itself
         except (IOError, OSError), e:
             print "couldn't find process to kill -is it running?", e
@@ -221,11 +232,19 @@ class Conf(SafeConfigParser):
         user = word("what is the admin's username?")
         pw = password("enter the admin password", "the same password again")
         #XXX should be using upstage libraries for this
-        xml = '<players><player password="%s" name="%s" rights="creator" date="forever" email="notset" /></players>'
+        xml = '<players><player password="%s" name="%s" rights="creator" date="The Beginning of Time" email="Unset" /></players>'
         xmlpath = os.path.join(self.get(name, 'basedir'), PLAYERS_XML)
         f = open(xmlpath, 'w')
         f.write(xml %(md5(pw).hexdigest(), user))
         f.close()
+
+        # make sure stage permission and uploader names are set to the new user
+        for xmlfile in [STAGES_XML, AVATARS_XML, PROPS_XML, BACKDROPS_XML, AUDIOS_XML]:
+            xmlpath = os.path.join(self.get(name, 'basedir'), xmlfile)
+            replaceAdmin(xmlpath, user)
+
+        xmlpath = os.path.join(self.get(name, 'basedir'), STAGE_DIR, 'test/config.xml') # have 1 stage named 'test' by default
+        replaceAdmin(xmlpath, user)
 
     def cmd_rm(self, name=None):
         """Remove a server from the list"""
