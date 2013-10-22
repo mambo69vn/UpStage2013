@@ -45,6 +45,7 @@ import upstage.model.ModelDrawing;
  *                                                 - Fixed audio not heard by late audiences
  * Modified by: Nitkalya Wiriyanuparb  04/10/2013  - Recieved messages about audio start and stop positions
  * Modified by: Nitkalya & Vanessa     16/10/2013  - Set chat opening message to the same as splash message
+ * Modified by: Nitkalya Wiriyanuparb  22/10/2013  - Fixed correct policy port has not been used properly
  */
 
 class upstage.Transport extends XMLSocket
@@ -145,7 +146,7 @@ class upstage.Transport extends XMLSocket
         //trace("decoder is" + decoder);
         this.mode = decoder.mode;
         this.swfport = Number(decoder.swfport);
-        this.policyport = Number(decoder.policyport);
+        this.policyport = Number(decoder.policyport) || Client.POLICY_PORT;
         this.stageID = decoder.stageID;
         //this.player = decoder.player;
     }
@@ -215,7 +216,7 @@ class upstage.Transport extends XMLSocket
         while (! connected && (connectionTried < Client.MAX_CONNECTION_ATTEMPTS))
             {
             	// AC - Get required policy file
-       			System.security.loadPolicyFile('xmlsocket://' + domain + ':' + Client.POLICY_PORT.toString());
+       			System.security.loadPolicyFile('xmlsocket://' + domain + ':' + this.policyport.toString());
             	
                 trace('attemptConnect() - trying to connect to ' + this.swfport);
                 connected = this.connect(null, this.swfport);
