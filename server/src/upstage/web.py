@@ -802,9 +802,9 @@ class SwfConversionWrapper(Resource):
         size_x = ''
         size_y = ''
         # get actual swf width and height from the file
-        #if swf.endswith('.swf'):
-            #size_x = commands.getoutput("swfdump -X html/media/" + swf).split()[1];
-            #size_y = commands.getoutput("swfdump -Y html/media/" + swf).split()[1];
+        if swf.endswith('.swf'):
+            size_x = commands.getoutput("swfdump -X html/media/" + swf).split()[1];
+            size_y = commands.getoutput("swfdump -Y html/media/" + swf).split()[1];
 
         success_message = ''
 
