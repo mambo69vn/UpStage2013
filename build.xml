@@ -521,16 +521,18 @@ Modified by Nitkalya Wiriyanuparb
 				<!-- exclude development scripts -->
 				<exclude name="**/jslint*" />
 				<exclude name="**/pychecker*" />
-				<exclude name="**/install.py" /> <!-- unused -->
-				<exclude name="**/uninstall.sh" /> <!-- unused -->
+				<exclude name="**/install.py" /> <!-- unused for dev -->
+				<exclude name="**/uninstall.sh" /> <!-- unused for dev -->
 				
 				<include name="**/*.py"/>
+				<include name="**/upstage-server"/> <!-- upstage-admin and upstage-backup are not used for dev -->
 				<include name="**/*.sh"/>
 				<include name="**/*.bat"/>
 				<include name="**/*.command"/>
-				<include name="**/*.conf"/> <!-- is this used? -->
+				<!-- <include name="**/*.conf"/> is this used? -->
 				
 			</fileset>
+			<mapper type="glob" from="upstage-server" to="upstage-server.py"/>
 		</copy>
 		
 		<!-- chmod scripts in lib folder: make scripts executable -->
