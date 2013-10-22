@@ -874,6 +874,7 @@ class _Stage(object):
         if client.player.is_player() or client.player.is_maker() or client.player.is_unlimited_maker():
             self.player_sockets[client.ID] = client
         if client.player.is_superuser():
+            self.player_sockets[client.ID] = client
             self.admin_sockets[client.ID] = client
 
         # Added checking if user is player access or admin access

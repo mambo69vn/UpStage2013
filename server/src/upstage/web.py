@@ -331,11 +331,10 @@ class SessionID(Resource):
               ID = urlencode({
                    'player':   player.name,
                    'key':      k,
-                   'isPlayer': player.is_player(),
-                   'isMaker': player.is_maker(),
-                   'isUnlimitedMaker': player.is_unlimited_maker(),
-                   'isAdmin':    player.is_admin(),
-                   'isCreator':  player.is_creator(),
+                   # not used - commented out in Auth.as decode.onLoad
+                   # 'canAct':   (player.is_player() or player.is_maker() or player.is_unlimited_maker() or player.is_admin() or player.is_creator()),
+                   # 'canAdmin': (player.is_maker() or player.is_unlimited_maker()),
+                   # 'canSu':    (player.is_admin() or player.is_creator()),
                    })
 
         request.setHeader('Content-length', len(ID))

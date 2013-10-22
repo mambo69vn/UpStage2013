@@ -128,7 +128,6 @@ class upstage.Sender
     function AV(avID :Number) :Void
     {
         this.send( 'AV', 'ID', avID);
-        trace('XXXXXXXXX');
     };
 
 
