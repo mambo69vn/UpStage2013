@@ -14,8 +14,10 @@
 # without the user naming the package
 # -Added compiling of the client, generates the flex-config file (needs some work though)
 # -Fixed silly bug with permissions. Added more descriptive comments to the functions.
-# -Added removal of .svn directories which do not play nicely with the script for now. Also added changing of permissions for DEBIAN files.
+# -Added removal of .svn directories which do not play nicely with the script for now. Also added changing of permissions for deb files.
 # -Completed the compiling of the client which now works. Usage is: python install.py cc /path/to/flex
+#
+# Modified by Nitkalya Wiriyanuparb: 22/10/2013 - Used mtasc and swfmill instead of flex, adjusted folder structure, change svn to git
 """
 
 import os
@@ -30,8 +32,10 @@ baseDir = '/usr/local/share/'
 serverDir = '/usr/local/'
 config_path = '/usr/local/etc/'
 backup_location = '/etc/cron.weekly/'
-workingDir = os.path.abspath('.')
-control_file_location = workingDir+'/DEBIAN/control'
+appRootDir = os.path.abspath('.')
+appServerDir = os.path.abspath('./server/src')
+appClientDir = os.path.abspath('./client')
+control_file_location = appRootDir+'/DEBIAN/control'
 system_calls = ['chmod +x /usr/local/upstage/*', 'chmod +x /etc/cron.weekly/upstage-backup', 'ln -s /usr/local/upstage/* /usr/local/bin/', 'ln -s /etc/cron.weekly/upstage-backup /usr/local/bin/']
 server_files = ['chownme.sh','img2swf.py','speaker.py','upstage-admin','upstage-admin.conf','upstage-backup','upstage-server']
 
@@ -48,18 +52,36 @@ def replaceAll(file,searchExp,replaceExp):
 Compiles the client, Actionscript 3 into swf file. The path to the compiler must be 
 provided.
 """
-def compile_client(compiler_path):
+def compile_client(): #compiler_path):
 	print "Compiling Client..."
-	current_path = os.path.abspath('')
-	os.system('cp '+current_path+'/client/upstage/org/flex-config.xml '+current_path+'/')
-	flex_config_path = current_path + '/flex-config.xml'
-	print flex_config_path
-	#replace expression
-	replaceAll(flex_config_path,'<source-path></source-path>','\t<source-path><path-element>'+current_path+'/client/upstage/'+'</path-element></source-path>\n')
+	temp = appRootDir + '/temp'
+	os.system('mkdir ' + temp)
 
-	os.system('cp '+flex_config_path +' '+ compiler_path+'/frameworks/')	 				
-	os.system(compiler_path+'/bin/mxmlc' +' '+current_path+'/client/upstage/org/main.mxml')
-	file_util.copy_file(current_path+'/client/upstage/org/main.swf', current_path+'/html/swf/classes.swf')
+	# using mtasc and swfmill - hard code options for now
+	mtasc = 'mtasc -swf ' + temp + '/classes.swf -frame 1 -header 320:200:31 -trace App.debug -version 8 -v -strict -msvc -wimp -cp ' + appClientDir + '/src App.as upstage/Client.as'
+	print mtasc
+	os.system(mtasc)
+
+	os.system('cp -r '+ appClientDir + '/src/font/*.ttf ' + temp)
+	os.system('cp -r '+ appClientDir + '/src/image/*.png ' + temp)
+
+	swfmill = 'swfmill -v simple ' + appClientDir + '/src/application.xml ' + appServerDir +'/html/swf/client.swf'
+	print swfmill
+	os.system(swfmill)
+
+	os.system('rm -rf ' + temp)
+
+	# using flex - don't know it it still works
+
+	# current_path = os.path.abspath('')
+	# os.system('cp '+current_path+'/client/upstage/org/flex-config.xml '+current_path+'/')
+	# flex_config_path = current_path + '/flex-config.xml'
+	# print flex_config_path
+	# #replace expression
+	# replaceAll(flex_config_path,'<source-path></source-path>','\t<source-path><path-element>'+current_path+'/client/upstage/'+'</path-element></source-path>\n')
+	# os.system('cp '+flex_config_path +' '+ compiler_path+'/frameworks/')
+	# os.system(compiler_path+'/bin/mxmlc' +' '+current_path+'/client/upstage/org/main.mxml')
+	# file_util.copy_file(current_path+'/client/upstage/org/main.swf', current_path+'/html/swf/classes.swf')
 
 """
 Parses the control file to extract the user
@@ -88,28 +110,28 @@ def generate_deb(packagename):
         packagename = parse_control_file()
         print packagename
     os.system('rm -rf `find . -type d -name .svn`')     	 
-    rootpath = workingDir+'/'+packagename;
+    rootpath = appRootDir+'/'+packagename;
     os.makedirs(rootpath) #create root direction
     #copy the directory tree to the root of the destination
-    dir_util.copy_tree(workingDir+'/html', rootpath+baseDir+'upstage/DEFAULT/html/')
-    dir_util.copy_tree(workingDir+'/config', rootpath+baseDir+'upstage/DEFAULT/config/')
-    dir_util.copy_tree(workingDir+'/upstage', rootpath+serverDir+'/upstage/upstage/')
-    dir_util.copy_tree(workingDir+'/DEBIAN', rootpath+'/DEBIAN')
+    dir_util.copy_tree(appServerDir+'/html', rootpath+baseDir+'upstage/DEFAULT/html/')
+    dir_util.copy_tree(appServerDir+'/config', rootpath+baseDir+'upstage/DEFAULT/config/')
+    dir_util.copy_tree(appServerDir+'/upstage', rootpath+serverDir+'upstage/upstage/')
+    dir_util.copy_tree(appRootDir+'/DEBIAN', rootpath+'/DEBIAN')
     for file in server_files:
         if(file == 'upstage-admin.conf'):
             if(not os.path.exists(rootpath+config_path+'upstage/')):
                 print 'Creating: '+rootpath+config_path+'upstage/'
                 os.makedirs(rootpath+config_path)
                 os.makedirs(rootpath+config_path+'upstage/')
-            file_util.copy_file(workingDir+'/'+file, rootpath+config_path+'upstage/'+file)
-            print 'Copied: '+workingDir+'/'+file+ ' -to- '+ rootpath+config_path+'upstage/'+file
+            file_util.copy_file(appServerDir+'/'+file, rootpath+config_path+'upstage/'+file)
+            print 'Copied: '+appServerDir+'/'+file+ ' -to- '+ rootpath+config_path+'upstage/'+file
         if(file == 'upstage-backup'):
             os.makedirs(rootpath+'/etc')
             os.makedirs(rootpath+'/etc/cron.weekly')
-            file_util.copy_file(workingDir+'/'+file, rootpath+backup_location+file)
-            print 'copied: '+ workingDir+'/'+file+' -to- '+ rootpath+backup_location+file
-        shutil.copyfile(workingDir+'/'+file, rootpath+serverDir+'upstage/'+file)
-        print 'copied: '+ workingDir+'/'+file+' -to- '+ rootpath+serverDir+'upstage/'
+            file_util.copy_file(appServerDir+'/'+file, rootpath+backup_location+file)
+            print 'copied: '+ appServerDir+'/'+file+' -to- '+ rootpath+backup_location+file
+        shutil.copyfile(appServerDir+'/'+file, rootpath+serverDir+'upstage/'+file)
+        print 'copied: '+ appServerDir+'/'+file+' -to- '+ rootpath+serverDir+'upstage/'
     os.system('dpkg -b '+packagename) #create the deb package
     os.system('rm -r '+packagename) #cleanup
 
@@ -142,14 +164,14 @@ Copies files and folders to the installed paths
 def copyFiles(location, noargs):
 	if(noargs):
 		if(os.path.exists(location+'/config')):
-			dir_util.copy_tree(location+'/config', baseDir+'/upstage/DEFAULT/config/')
-			print 'Copying Directory: '+location+'/config' + ' -to- '+ baseDir+'/upstage/DEFAULT/config/'	
+			dir_util.copy_tree(location+'/config', baseDir+'upstage/DEFAULT/config/')
+			print 'Copying Directory: '+location+'/config' + ' -to- '+ baseDir+'upstage/DEFAULT/config/'	
 		if(os.path.exists(location+'/html')):
-			dir_util.copy_tree(location+'/html', baseDir+'/upstage/DEFAULT/html/')
-			print 'Copying Directory: '+location+'/html' + ' -to- '+ baseDir+'/upstage/DEFAULT/html/'
+			dir_util.copy_tree(location+'/html', baseDir+'upstage/DEFAULT/html/')
+			print 'Copying Directory: '+location+'/html' + ' -to- '+ baseDir+'upstage/DEFAULT/html/'
 		if(os.path.exists(location+'/upstage'))	:
-			dir_util.copy_tree(location+'/upstage', serverDir+'/upstage/upstage/')
-			print 'Copying Directory: '+location+'/upstage' + ' -to- '+ serverDir+'/upstage/upstage/'
+			dir_util.copy_tree(location+'/upstage', serverDir+'upstage/upstage/')
+			print 'Copying Directory: '+location+'/upstage' + ' -to- '+ serverDir+'upstage/upstage/'
 		for file in server_files:
 			if(file == 'upstage-admin.conf'):
 				if(not os.path.exists(config_path+'upstage/')):
@@ -171,29 +193,32 @@ Execute the script.
 """
 if(len(sys.argv) >= 2):
 	if(sys.argv[1] == 'cc'):
-		if(sys.argv[2] == None):
-			print "Usage: python install.py cc /path/to/flex/compiler/"
-		else:		
-			compile_client(sys.argv[2])
-			print 'Client compiled Sucessfully! You can now create a deb file or install from source using:'
-			print 'To create a deb file: '
-			print 'sudo python install.py deb'
-			print 'To install from source: '
-			print 'sudo python install.py'
+		# now compile using mtasc and swfmill
+		compile_client()
+
+		# if(sys.argv[2] == None):
+		# 	print "Compile client.."
+			# print "Usage: python install.py cc /path/to/flex/compiler/"
+		# else:
+		# 	# compile_client(sys.argv[2])
+		# 	# print 'Client compiled Sucessfully! You can now create a deb file or install from source using:'
+		# 	print 'To create a deb file: '
+		# 	print 'sudo python install.py deb'
+		# 	print 'To install from source: '
+		# 	print 'sudo python install.py'
 	elif(sys.argv[1] == 'deb' and len(sys.argv) > 2):
 		print "Changing permissions for install scripts."
-		os.system('chmod 755 '+workingDir+'/DEBIAN/*')
+		os.system('chmod 755 '+appServerDir+'/DEBIAN/*')
 		generate_deb(sys.argv[2])
 	elif(sys.argv[1] == 'deb'):
 		print "Changing permissions for install scripts."
-		os.system('chmod 755 '+workingDir+'/DEBIAN/*')
+		os.system('chmod 755 '+appServerDir+'/DEBIAN/*')
 		generate_deb('')# usage python install.py deb
-	
-	
+
 else:
-	print "Removing .svn files from current directory and all subdirectories..."
-	os.system('rm -rf `find . -type d -name .svn`')
-	copyFiles(workingDir, True)
+	print "Removing .git files from current directory and all subdirectories..."
+	os.system('rm -rf `find . -type d -name .git`')
+	copyFiles(appServerDir, True)
 	finalizeSetup()
 
 		
@@ -205,7 +230,6 @@ else:
 #    if(sys.argv[1] == 'deb' and len(sys.argv[2]) >1):
 #        generate_deb(sys.argv[2])
 #else:
-#	print workingDir
-#	copyFiles(workingDir, True)
+#	print appServerDir
+#	copyFiles(appServerDir, True)
 #	finalizeSetup()
-

@@ -1,6 +1,4 @@
 <stages>
 <stage onstagelist="on" name="Test Stage" lockstage="false" owner="admin" active="active" id="test">
 </stage>
-<stage onstagelist="on" name="AUT Meeting" lockstage="false" owner="admin" active="active" id="aut">
-</stage>
 </stages>
