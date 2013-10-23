@@ -329,7 +329,6 @@ class PlayerDict(Xml2Dict):
         NOT fully checked for security."""
 
         log.msg(form)
-        log.msg("IS THIS CALLED?")
         
         def _option(x):
             return x in form and form[x]

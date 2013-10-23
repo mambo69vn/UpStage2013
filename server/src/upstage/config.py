@@ -96,7 +96,7 @@ THUMBNAILS_DIR   =  _join(HTDOCS, MEDIA_SUBURL, 'thumb')
 SWF_DIR          =  _join(HTDOCS, SWF_SUBURL)
 
 ADMIN_DIR        =  _join(HTDOCS, 'admin')
-NONADMIN_DIR     =  _join(HTDOCS, 'admin', 'nonadmin')
+PLAYER_DIR     =  _join(HTDOCS, 'admin', 'player')
 SPEECH_DIR       =  _join(HTDOCS, SPEECH_SUBURL)
 AUDIO_DIR        =  _join(HTDOCS, AUDIO_SUBURL)
 

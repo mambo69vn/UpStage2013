@@ -26,11 +26,11 @@ Modified by: Corey, Heath, Karena 24/08/2011 - Added media tagging to function s
                                              - Added media tagging set the tags to self.tags in AudioThing and VideoThing 
              Heath, Karena, Corey 26/08/2011 - Added retrieving tags from form when avatar uploaded so tags can now be added when media
                                                 is uploaded.                                      
-Modified by: Daniel Han 26/06/2012		- Modified NonAdmin part inside AdminRealm
+Modified by: Daniel Han 26/06/2012		- Modified Player part inside AdminRealm
 Modified by: Daniel Han 29/06/2012		- ADDed SU rights for Admin/Edit access. (inside AdminRealm)
 Modified by: Daniel Han 29/08/2012      - Added /Admin/Home and /Admin/Stages. so when user logged in, home and stages are linked to /Admin/Stages
                                         - Also, when user is not logged in, it will show it just as if user is in normal home or stages page.
-Modified by: Daniel Han 11/09/2012      - Added Edit/NonAdmin and Edit/Stages
+Modified by: Daniel Han 11/09/2012      - Added Edit/Player and Edit/Stages
 
 Modified by: Daniel, Scott 11/09/2012   - Added Audio Upload Postback and File size error post back.
 Modified by: Gavin          5/10/2012   - Imported AdminError class from pages.py to change the errorMsg variable title for different errors
@@ -70,8 +70,8 @@ from upstage.stage import reloadStagesInList
 from upstage.pages import  AdminLoginPage, AdminBase, errorpage, Workshop, HomePage, SignUpPage, Workshop, StageEditPage,\
                            MediaUploadPage, MediaEditPage, CreateDir, \
                            NewPlayer, EditPlayer, NewAvatar, NewProp, NewBackdrop, NewAudio,     \
-                           ThingsList, StagePage, UserPage, NonAdminPage, PageEditPage, HomeEditPage, WorkshopEditPage, SessionCheckPage, successpage,\
-                           NonAdminEditPage, StagesEditPage, SignupEditPage, AdminError
+                           ThingsList, StagePage, UserPage, PlayerPage, PageEditPage, HomeEditPage, WorkshopEditPage, SessionCheckPage, successpage,\
+                           PlayerEditPage, StagesEditPage, SignupEditPage, AdminError
 
 #twisted
 from twisted.python import log
@@ -268,7 +268,7 @@ class AdminRealm:
 			if player.can_admin():
 				edit_pages = {'home' : (HomeEditPage, self.data),
 							  'workshop' : (WorkshopEditPage, self.data),
-                              'nonadmin' : (NonAdminEditPage, self.data),
+                              'player' : (PlayerEditPage, self.data),
                               'stages' : (StagesEditPage, self.data),
                               'signup' : (SignupEditPage, self.data)}
 				tree.putChild('edit', PageEditPage(player, edit_pages))
@@ -277,7 +277,7 @@ class AdminRealm:
 		# player, but not admin.
 		elif player.is_player():
 		# Daniel modified 27/06/2012
-			tree = NonAdminPage(player, self.data)	    
+			tree = PlayerPage(player, self.data)	    
 			tree.putChild('id', SessionID(player, self.data.clients))
 		# anon - the audience.
 		else:

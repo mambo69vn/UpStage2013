@@ -544,7 +544,7 @@ class StagesEditPage(AdminBase):
 """
 Added by: Daniel Han (11/09/2012) 
 """
-class NonAdminEditPage(AdminBase):
+class PlayerEditPage(AdminBase):
 
     filename="edit.xhtml"
     postback = ''
@@ -554,14 +554,14 @@ class NonAdminEditPage(AdminBase):
         self.collection = collection
     
     def text_editable(self, request):
-        s = get_template('nonadmin_editable.inc')	
+        s = get_template('player_editable.inc')	
         form = request.args
 
         if 'action' in form:
             content = form.get('action',[''])[0]
 
             if content == 'Default':
-                s = get_template('nonadmin_editable.default')
+                s = get_template('player_editable.default')
 
         return s 
         
@@ -576,7 +576,7 @@ class NonAdminEditPage(AdminBase):
             if content == 'Submit':
                 if 'editor' in form:
                     content = form["editor"][0]
-                    f = open(os.path.join(config.TEMPLATE_DIR, 'nonadmin_editable.inc'), 'w')
+                    f = open(os.path.join(config.TEMPLATE_DIR, 'player_editable.inc'), 'w')
                     f.write(content)
                     f.close()
                     self.postback = "Successfully Saved"
@@ -655,9 +655,9 @@ def successpage(request, message='success', code=200, redirect='mediaupload'):
     r = p.render(request)
     return r    
 
-class NonAdminPage(AdminBase):
+class PlayerPage(AdminBase):
     """This is the page that you see if you're player."""
-    filename = 'nonadmin.xhtml'
+    filename = 'player.xhtml'
 
     def __init__(self, player, collection=None):
         AdminBase.__init__(self, player, collection)

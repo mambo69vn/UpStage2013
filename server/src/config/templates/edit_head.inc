@@ -192,7 +192,7 @@ form {
 				<li> <a href="/admin/">&laquo; Back</a> </li>
 				<li> <a href="/admin/edit/home">Home Page</a> </li>
                 <li> <a href="/admin/edit/workshop">Workshop Page</a> </li>
-                <li> <a href="/admin/edit/nonadmin">Non-Admin(Guest Player) Page</a> </li>
+                <li> <a href="/admin/edit/player">Player Page</a> </li>
                 <li> <a href="/admin/edit/stages">Stages Page</a> </li>
                 <li> <a href="/admin/edit/signup">Sign Up Page</a> </li>
            	</ul>
