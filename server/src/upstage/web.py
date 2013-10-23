@@ -238,7 +238,7 @@ class AdminRealm:
 
 		self.data.players.update_last_login(player)		
 
-		if not player.is_player(): 
+		if player.can_make(): 
 			tree = Workshop(player, self.data)
 			#Shaun Narayan (02/16/10) - Removed all previous new/edit pages and inserted workshop pages.
 			workshop_pages = {'stage' : (StageEditPage, self.data),
@@ -265,7 +265,7 @@ class AdminRealm:
 			# This is the test sound file for testing avatar voices in workshop - NOT for the audio widget
 			tree.putChild('test.mp3', SpeechTest(self.data.stages.speech_server))
 
-			if player.is_superuser():
+			if player.can_admin():
 				edit_pages = {'home' : (HomeEditPage, self.data),
 							  'workshop' : (WorkshopEditPage, self.data),
                               'nonadmin' : (NonAdminEditPage, self.data),
@@ -407,7 +407,7 @@ class AudioFileProcessor(Resource):
         duration = MadFile(the_url).total_time()
         
         if not (fileSizes is None and duration > 0):
-            if (validSizes(fileSizes, self.player.is_superuser()) or self.player.is_unlimited_maker()):
+            if (validSizes(fileSizes, self.player.can_admin()) or self.player.is_unlimited_maker()):
                 now = datetime.datetime.now() # AC () - Unformated datetime value
                 duration = str(duration/float(1000))
 
@@ -609,7 +609,7 @@ class SwfConversionWrapper(Resource):
             """ Alan (13/09/07) ==> Check the file sizes of avatar frame """
             # natasha continue conversion
             if not (fileSizes is None):
-                if (validSizes(fileSizes, self.player.is_superuser()) or self.player.is_unlimited_maker()):
+                if (validSizes(fileSizes, self.player.can_admin()) or self.player.is_unlimited_maker()):
                     # call the process with swf filename and temp image filenames 
                     d = getProcessValue(config.IMG2SWF_SCRIPT, args=[swf_full, thumbnail_full] + tfns)
                     args = (swf, thumbnail, form, request)
