@@ -321,7 +321,7 @@ class AdminBase(Template):
     def text_nav(self, request):
         try:
             if self.player.is_superuser():
-               html_list = '<li> <a href="/admin/edit/"> [Edit Page Mode]</a> </li>'
+               html_list = '<li id="editpagelink"> <a href="/admin/edit/"> Edit Page Mode</a> </li>'
                return html_list
             else:
                 return '&nbsp;'

@@ -23,6 +23,8 @@ Then, normally, the script will daemonised, and start up an upstage
 server.
 
 Use  --help on the commandline to see other options.
+
+Modified by: Nitkalya Wiriyanuparb  22/10/2013  - Stores PID for policyfileserver process as well, so it can be killed properly
 """
 
 import os, sys
@@ -52,7 +54,11 @@ class Options(usage.Options):
 
 def daemonise(pidfile, errlog, outlog=None):
     if os.path.exists(pidfile):
-        print "WARNING: PID file exists"
+        print "ERROR: PID file exists"
+        print ">> This UpStage instance might be running, please stop it first"
+        print ">> If you're sure this UpStage instance is not running, please delete the PID file and try again"
+        return False
+
     sys.stdout.flush()
     sys.stderr.flush()
     if os.fork():   # launch child and...
@@ -86,6 +92,17 @@ def daemonise(pidfile, errlog, outlog=None):
     f.write(str(pid))
     f.close()
 
+    return True
+
+def add_policy_pid(pid, pidfile):
+    if not os.path.exists(pidfile):
+        print "PID file doesnot exist"
+    try:
+        f = open(pidfile, 'a')
+        f.write(',' + str(pid))
+    except IOError:
+        print "Can't append policy server pid to file"
+
 def port_int(s):
     n = int(s)
     if n < 1024 or n > 65234:
@@ -116,19 +133,25 @@ def main():
     if options['kill']:
         try:
             f = open(config.PID_FILE)
-            pid = int(f.read())
+            pids = f.read()
             f.close()
         except IOError,e:
-            print "%s\ncan't read PID file." %(e)
-            pid = None
+            print "%s\nCan't read PID file." %(e)
+            pids = None
         try:
-            os.kill(pid, 15)
+            pids = pids.split(',')
+            for pid in pids:
+                print 'Killing process PID: %s' % pid
+                os.kill(int(pid), 15)
         except (IOError, TypeError, OSError), e:
-            print "%s\n\ncan't kill process %s, continuing anyway." %(e, pid)
+            print "%s\n\nCan't kill process %s, continuing anyway." %(e, pid)
         sys.exit()
         
     if not options['no-daemon']:
-        daemonise(config.PID_FILE, config.LOG_FILE)
+        success = daemonise(config.PID_FILE, config.LOG_FILE)
+        if not success:
+            # STOP TRYING TO START THE SERVER
+            return None
 
 
     #change into base dir so all the relative paths work. XXX better to fix the paths?
@@ -140,9 +163,9 @@ def main():
 
 
     ############ Policy File Server - Startup ############
-	
     pid = os.fork()
     if pid == 0:
+        # in child process
     	try:
             # Starts the server for serving policy files (for latest version of flash player)
             policy_server(config.POLICY_FILE_PORT, config.POLICY_FILE).run()
@@ -151,9 +174,12 @@ def main():
             print >> sys.stderr, e
             sys.exit(1)
         sys.exit()
+    elif not options['no-daemon']:
+        # in parent - remember the pid if daemonise
+        # log.msg('PID Policy: ', pid)
+        add_policy_pid(pid, config.PID_FILE)
 
     ############ Policy File Server - Startup ############
-   
 
     #don't import the upstage modules until config is settled.
     from upstage.app import do_it

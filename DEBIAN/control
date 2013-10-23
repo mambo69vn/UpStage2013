@@ -1,0 +1,11 @@
+Package: UpStage
+Version: 3.0.0-Beta
+Section: web
+Priority: optional
+Architecture: i386
+Essential: no
+Pre-Depends: python (>= 2.5.2), python-twisted, festival, gif2png, lame, netpbm, espeak, mbrola, rsynth, swftools, python-pymad
+Recommends: chrome, flashplayer-plugin
+Maintainer: UpStage@AUT (aut.upstage.team@gmail.com)
+Provides: UpStage
+Description: UpStage - the online venue for cyberformance

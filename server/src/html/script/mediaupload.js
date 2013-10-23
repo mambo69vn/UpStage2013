@@ -474,8 +474,9 @@ function checkAllFields()
         document.getElementById('name').value = name;  
 	}
     
-    if(tags.match('#') || tags.match('&') || tags.match(':'))
+    if(tags.match('#') || tags.match('&') || tags.match(':') || tags.match(' '))
 	{
+		tags = tags.replace(/\s/g,"_");
 		tags = tags.replace(/&/g,"");
         tags = tags.replace(/#/g,""); 
         tags = tags.replace(/:/g,"");

@@ -331,11 +331,10 @@ class SessionID(Resource):
               ID = urlencode({
                    'player':   player.name,
                    'key':      k,
-                   'isPlayer': player.is_player(),
-                   'isMaker': player.is_maker(),
-                   'isUnlimitedMaker': player.is_unlimited_maker(),
-                   'isAdmin':    player.is_admin(),
-                   'isCreator':  player.is_creator(),
+                   # not used - commented out in Auth.as decode.onLoad
+                   # 'canAct':   (player.is_player() or player.is_maker() or player.is_unlimited_maker() or player.is_admin() or player.is_creator()),
+                   # 'canAdmin': (player.is_maker() or player.is_unlimited_maker()),
+                   # 'canSu':    (player.is_admin() or player.is_creator()),
                    })
 
         request.setHeader('Content-length', len(ID))
@@ -802,9 +801,9 @@ class SwfConversionWrapper(Resource):
         size_x = ''
         size_y = ''
         # get actual swf width and height from the file
-        #if swf.endswith('.swf'):
-            #size_x = commands.getoutput("swfdump -X html/media/" + swf).split()[1];
-            #size_y = commands.getoutput("swfdump -Y html/media/" + swf).split()[1];
+        if swf.endswith('.swf'):
+            size_x = commands.getoutput("swfdump -X html/media/" + swf).split()[1];
+            size_y = commands.getoutput("swfdump -Y html/media/" + swf).split()[1];
 
         success_message = ''
 

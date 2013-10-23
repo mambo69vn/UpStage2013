@@ -327,10 +327,15 @@ p.error
 {
 	display:inline;
 }
+#workshopnav li#editpagelink
+{
+	float: right;
+}
 #workshopnav li a:link
 {
 	text-decoration:none;
-	padding-right:8px;
+	padding: 3px 5px;
+	border-radius: 2px;
 }
 #workshopnav li a:active
 {
@@ -711,7 +716,7 @@ a.IconButton
 
 #playerPanel
 {
-	max-height: 500px;
+	max-height: 510px;
 	overflow: hidden;
 	width: 100%;
 }

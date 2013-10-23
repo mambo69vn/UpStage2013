@@ -1016,7 +1016,9 @@ function setupDataGrid() {
 						for (i = 0; i < selectedValues.length; i += 1) {
 							var tagName = $.trim(selectedValues[i]);
 							if(tagName != '') {
+								
 								if(jQuery.inArray(tagName, selectedTags) == -1) {
+									tagName = tagName.replace(/\s/g, "_");
 									log.debug("clickHandlerExecuteTag: selected unique tag: '" + tagName + "'");
 									selectedTags.push(tagName);
 								} else {
