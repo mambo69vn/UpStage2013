@@ -240,7 +240,7 @@ class AdminBase(Template):
         self.message = ''
         
         """ Alan (17/08/09) Refreshes the upload message when entering the page"""
-        if ((not self.player.is_player()) and (self.filename != None) and 
+        if ((self.player.can_make()) and (self.filename != None) and 
             (self.filename in ["newthing.xhtml", "new_avatar.xhtml", "new_audio.xhtml"])):
             if (self.player.get_setError()):
                 self.player.set_sizeValid(False)
@@ -251,7 +251,7 @@ class AdminBase(Template):
         """Can the named player use this page?  default is
         maker level -- create and alter stages, props etc.
         (not delete users, which is checked separately)"""
-        return not player.is_player()
+        return player.can_make()
 
     """ Alan (18/09/07) ==> Used for upload limiting feature. """    
     def text_uploadMessage(self, request):
@@ -320,7 +320,7 @@ class AdminBase(Template):
     #Daniel Han (29/06/2012) - get additional button for SU user
     def text_nav(self, request):
         try:
-            if self.player.is_superuser():
+            if self.player.can_admin():
                html_list = '<li id="editpagelink"> <a href="/admin/edit/"> Edit Page Mode</a> </li>'
                return html_list
             else:
@@ -544,7 +544,7 @@ class StagesEditPage(AdminBase):
 """
 Added by: Daniel Han (11/09/2012) 
 """
-class NonAdminEditPage(AdminBase):
+class PlayerEditPage(AdminBase):
 
     filename="edit.xhtml"
     postback = ''
@@ -554,14 +554,14 @@ class NonAdminEditPage(AdminBase):
         self.collection = collection
     
     def text_editable(self, request):
-        s = get_template('nonadmin_editable.inc')	
+        s = get_template('player_editable.inc')	
         form = request.args
 
         if 'action' in form:
             content = form.get('action',[''])[0]
 
             if content == 'Default':
-                s = get_template('nonadmin_editable.default')
+                s = get_template('player_editable.default')
 
         return s 
         
@@ -576,7 +576,7 @@ class NonAdminEditPage(AdminBase):
             if content == 'Submit':
                 if 'editor' in form:
                     content = form["editor"][0]
-                    f = open(os.path.join(config.TEMPLATE_DIR, 'nonadmin_editable.inc'), 'w')
+                    f = open(os.path.join(config.TEMPLATE_DIR, 'player_editable.inc'), 'w')
                     f.write(content)
                     f.close()
                     self.postback = "Successfully Saved"
@@ -655,9 +655,9 @@ def successpage(request, message='success', code=200, redirect='mediaupload'):
     r = p.render(request)
     return r    
 
-class NonAdminPage(AdminBase):
+class PlayerPage(AdminBase):
     """This is the page that you see if you're player."""
-    filename = 'nonadmin.xhtml'
+    filename = 'player.xhtml'
 
     def __init__(self, player, collection=None):
         AdminBase.__init__(self, player, collection)
@@ -929,10 +929,10 @@ class StageEditPage(Workshop):
                 table.extend('<option value="%s" selected="selected">%s</option>' %(k, k))
             else:
                 if current_stage.is_locked()=='true':
-                    if self.player.is_creator() or current_stage.owner==self.player:
+                    if self.player.is_creator() or current_stage.owner==self.player.name:
                         table.extend('<option value="%s">%s</option>' %(k, k))
                 elif current_stage.is_locked()=='false': 
-                    if self.player.is_superuser() or current_stage.contains_al_one(self.player.name):
+                    if self.player.can_admin() or current_stage.contains_al_one(self.player.name):
                         table.extend('<option value="%s">%s</option>' %(k, k))
         return ''.join(table)
     
@@ -1004,9 +1004,8 @@ class StageEditPage(Workshop):
                     imgThumbUrl = config.MEDIA_URL + aName
                     self.stage_ViewImg = '<object><param id="esMediaPreview" name="esMediaPreview" value="%s"><embed src="%s" width="300px" height="300px"></embed></object><br><br>' %(aName,imgThumbUrl)
                     log.msg('show selected media from assigned column')
-                else:
-                    self.stage_ViewImg = '<div id="streaming"><div id="streamtest" class="fieldrow"><table><tr><td><div id="sestreamdiv" style="color:#0000FF" style="display:block" style="height:100px" style="width:150px" style="visibility:visible"></div></td></tr><tr><td><input type="button" id="seStartStreamPreview" onclick="javascript:seTestStream();" value="Play" /><input type="button" id="seStartStreamPreview" onclick="javascript:seResetTestStream();" value="Cancel" /></td><tr></table></div></div>'      
-                    #self.stage_ViewImg = '<p>That media item cannot be previewed.</p>'
+                else:                         
+                    self.stage_ViewImg = '<p>That media item cannot be previewed.</p>'
             elif aName is '' and unName is not '':
                 if unName.count('.swf') > 0:
                     imgThumbUrl = config.MEDIA_URL + unName
@@ -1783,7 +1782,7 @@ class MediaUploadPage(Workshop):
             
     def text_is_superuser(self, request):
         if(self.player):
-            return str(self.player.is_superuser())
+            return str(self.player.can_admin())
         
     def text_user(self, request):
         if (self.player):
@@ -1876,7 +1875,7 @@ class NewPlayer(AdminBase):
             return str(self.player.is_creator())
 
     def render(self, request):
-        if not self.player.is_superuser():
+        if not self.player.can_admin():
             return errorpage(request, "You can't do that!", 'user')
         form = request.args
         if 'submit' in form:
@@ -1904,7 +1903,7 @@ class EditPlayer(AdminBase):
         def _value(x):
             return form.get(x, [None])[0]
         
-        if not self.player.is_superuser():
+        if not self.player.can_admin():
             return errorpage(request, "You can't do that!", 'user')
         
         submit = _value('submit')
@@ -2007,7 +2006,7 @@ class EditPlayer(AdminBase):
 
     def allows_player(self, player):
         """Need to be superuser to use this page"""
-        return  player.is_superuser()
+        return  player.can_admin()
 
 class NewThing(AdminBase):
     """Page for the addition and setting up of avatars, props or backgrounds.
@@ -2226,7 +2225,7 @@ class UserPage(AdminBase):
         submit = _value('submit')
 
         if form:
-            if submit == 'savepassword':               
+            if submit == 'savepassword':                   
                 try:
                     #(19/05/11) Mohammed and Heath - True means that only the password is being saved to the XML
                     self.collection.players.update_player(form, self.player, True)
@@ -2255,7 +2254,7 @@ class UserPage(AdminBase):
         
     def text_is_superuser(self, request):
         if(self.player):
-            return str(self.player.is_superuser())
+            return str(self.player.can_admin())
         
 class StageLog(Resource):
     """Show a plain text version of a stage's chat log"""
@@ -2317,7 +2316,7 @@ class StageLog(Resource):
         fileSizes = getFileSizes(filenames)
         
         if not (fileSizes is None):
-            if (validSizes(fileSizes, is_superuser()) or self.player.is_unlimited_maker()):
+            if (validSizes(fileSizes, can_admin()) or self.player.is_unlimited_maker()):
                 now = datetime.datetime.now() # AC () - Unformated datetime value
                 media_dict.add(url='%s/%s' % (config.AUDIO_SUBURL, mp3name), #XXX dodgy? (windows safe?)
                                file=mp3name,
