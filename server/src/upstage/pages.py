@@ -1004,9 +1004,8 @@ class StageEditPage(Workshop):
                     imgThumbUrl = config.MEDIA_URL + aName
                     self.stage_ViewImg = '<object><param id="esMediaPreview" name="esMediaPreview" value="%s"><embed src="%s" width="300px" height="300px"></embed></object><br><br>' %(aName,imgThumbUrl)
                     log.msg('show selected media from assigned column')
-                else:
-                    self.stage_ViewImg = '<div id="streaming"><div id="streamtest" class="fieldrow"><table><tr><td><div id="sestreamdiv" style="color:#0000FF" style="display:block" style="height:100px" style="width:150px" style="visibility:visible"></div></td></tr><tr><td><input type="button" id="seStartStreamPreview" onclick="javascript:seTestStream();" value="Play" /><input type="button" id="seStartStreamPreview" onclick="javascript:seResetTestStream();" value="Cancel" /></td><tr></table></div></div>'      
-                    #self.stage_ViewImg = '<p>That media item cannot be previewed.</p>'
+                else:                         
+                    self.stage_ViewImg = '<p>That media item cannot be previewed.</p>'
             elif aName is '' and unName is not '':
                 if unName.count('.swf') > 0:
                     imgThumbUrl = config.MEDIA_URL + unName
