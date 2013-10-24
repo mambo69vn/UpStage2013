@@ -960,12 +960,10 @@ function warn(type)
 
 function seSaveOnly() //09/04/2013 Craig - changed embedmessage method name so it is more understandable
 {
-    doIt=confirm(warningMessages[6]);
-        if(doIt)
-        {
-            document.stageedit.action.value = actions[6];
-            requestPage("POST", buildRequest(2),fillPage);
-        }
+    
+    document.stageedit.action.value = actions[6];
+    requestPage("POST", buildRequest(2),fillPage);
+     
 }
 
 //==========================================================================

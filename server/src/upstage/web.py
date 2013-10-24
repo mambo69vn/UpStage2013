@@ -26,11 +26,11 @@ Modified by: Corey, Heath, Karena 24/08/2011 - Added media tagging to function s
                                              - Added media tagging set the tags to self.tags in AudioThing and VideoThing 
              Heath, Karena, Corey 26/08/2011 - Added retrieving tags from form when avatar uploaded so tags can now be added when media
                                                 is uploaded.                                      
-Modified by: Daniel Han 26/06/2012		- Modified NonAdmin part inside AdminRealm
+Modified by: Daniel Han 26/06/2012		- Modified Player part inside AdminRealm
 Modified by: Daniel Han 29/06/2012		- ADDed SU rights for Admin/Edit access. (inside AdminRealm)
 Modified by: Daniel Han 29/08/2012      - Added /Admin/Home and /Admin/Stages. so when user logged in, home and stages are linked to /Admin/Stages
                                         - Also, when user is not logged in, it will show it just as if user is in normal home or stages page.
-Modified by: Daniel Han 11/09/2012      - Added Edit/NonAdmin and Edit/Stages
+Modified by: Daniel Han 11/09/2012      - Added Edit/Player and Edit/Stages
 
 Modified by: Daniel, Scott 11/09/2012   - Added Audio Upload Postback and File size error post back.
 Modified by: Gavin          5/10/2012   - Imported AdminError class from pages.py to change the errorMsg variable title for different errors
@@ -46,6 +46,7 @@ Modified by: Nitkalya Wiriyanuparb  24/09/2013  - Generated new format of keys f
 Modified by: Nitkalya Wiriyanuparb  29/09/2013  - Added try-catch when replacing file, and reset audio timer after an audio is replaced
 Modified by: Nitkalya Wiriyanuparb  04/10/2013  - Used pymad to get audio duration when uploading a new file (clients stream from server; don't know duration right away)
 Modified by: Lisa Helm and Vanessa Henderson (17/10/2013) changed user permissions to fit with new scheme
+Modified by: Lisa Helm (24/10/2013) - audio uploads now check their name and rename another media item exists with the same name 
 """
 
 
@@ -70,8 +71,8 @@ from upstage.stage import reloadStagesInList
 from upstage.pages import  AdminLoginPage, AdminBase, errorpage, Workshop, HomePage, SignUpPage, Workshop, StageEditPage,\
                            MediaUploadPage, MediaEditPage, CreateDir, \
                            NewPlayer, EditPlayer, NewAvatar, NewProp, NewBackdrop, NewAudio,     \
-                           ThingsList, StagePage, UserPage, NonAdminPage, PageEditPage, HomeEditPage, WorkshopEditPage, SessionCheckPage, successpage,\
-                           NonAdminEditPage, StagesEditPage, SignupEditPage, AdminError
+                           ThingsList, StagePage, UserPage, PlayerPage, PageEditPage, HomeEditPage, WorkshopEditPage, SessionCheckPage, successpage,\
+                           PlayerEditPage, StagesEditPage, SignupEditPage, AdminError
 
 #twisted
 from twisted.python import log
@@ -238,7 +239,7 @@ class AdminRealm:
 
 		self.data.players.update_last_login(player)		
 
-		if not player.is_player(): 
+		if player.can_make(): 
 			tree = Workshop(player, self.data)
 			#Shaun Narayan (02/16/10) - Removed all previous new/edit pages and inserted workshop pages.
 			workshop_pages = {'stage' : (StageEditPage, self.data),
@@ -265,10 +266,10 @@ class AdminRealm:
 			# This is the test sound file for testing avatar voices in workshop - NOT for the audio widget
 			tree.putChild('test.mp3', SpeechTest(self.data.stages.speech_server))
 
-			if player.is_superuser():
+			if player.can_admin():
 				edit_pages = {'home' : (HomeEditPage, self.data),
 							  'workshop' : (WorkshopEditPage, self.data),
-                              'nonadmin' : (NonAdminEditPage, self.data),
+                              'player' : (PlayerEditPage, self.data),
                               'stages' : (StagesEditPage, self.data),
                               'signup' : (SignupEditPage, self.data)}
 				tree.putChild('edit', PageEditPage(player, edit_pages))
@@ -277,7 +278,7 @@ class AdminRealm:
 		# player, but not admin.
 		elif player.is_player():
 		# Daniel modified 27/06/2012
-			tree = NonAdminPage(player, self.data)	    
+			tree = PlayerPage(player, self.data)	    
 			tree.putChild('id', SessionID(player, self.data.clients))
 		# anon - the audience.
 		else:
@@ -407,7 +408,7 @@ class AudioFileProcessor(Resource):
         duration = MadFile(the_url).total_time()
         
         if not (fileSizes is None and duration > 0):
-            if (validSizes(fileSizes, self.player.is_superuser()) or self.player.is_unlimited_maker()):
+            if (validSizes(fileSizes, self.player.can_admin()) or self.player.is_unlimited_maker()):
                 now = datetime.datetime.now() # AC () - Unformated datetime value
                 duration = str(duration/float(1000))
 
@@ -435,6 +436,8 @@ class AudioFileProcessor(Resource):
 
                 else:
                     key = unique_custom_string(prefix='audio_', suffix='')
+                    while self.name_is_used(name):
+                        name += random.choice('1234567890')
                     # upload new assets
                     self.media_dict.add(url='%s/%s' % (config.AUDIO_SUBURL, mp3name), #XXX dodgy? (windows safe?)
                                        file=mp3name,
@@ -486,6 +489,16 @@ class AudioFileProcessor(Resource):
         # always finish request
         request.finish()
         return server.NOT_DONE_YET
+        
+    def name_is_used(self, name):
+        """checking whether a name exists in any media collection"""
+        #XXX should perhaps reindex by name.
+        log.msg('checking whether "%s" is a used name' %name)
+        for k, d in self.mediatypes.items():
+            for x in d.values():
+                if name == x.name:
+                    return True
+        return False
 
     def refresh(self, request):
         
@@ -609,7 +622,7 @@ class SwfConversionWrapper(Resource):
             """ Alan (13/09/07) ==> Check the file sizes of avatar frame """
             # natasha continue conversion
             if not (fileSizes is None):
-                if (validSizes(fileSizes, self.player.is_superuser()) or self.player.is_unlimited_maker()):
+                if (validSizes(fileSizes, self.player.can_admin()) or self.player.is_unlimited_maker()):
                     # call the process with swf filename and temp image filenames 
                     d = getProcessValue(config.IMG2SWF_SCRIPT, args=[swf_full, thumbnail_full] + tfns)
                     args = (swf, thumbnail, form, request)
