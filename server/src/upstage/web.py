@@ -46,6 +46,7 @@ Modified by: Nitkalya Wiriyanuparb  24/09/2013  - Generated new format of keys f
 Modified by: Nitkalya Wiriyanuparb  29/09/2013  - Added try-catch when replacing file, and reset audio timer after an audio is replaced
 Modified by: Nitkalya Wiriyanuparb  04/10/2013  - Used pymad to get audio duration when uploading a new file (clients stream from server; don't know duration right away)
 Modified by: Lisa Helm and Vanessa Henderson (17/10/2013) changed user permissions to fit with new scheme
+Modified by: Lisa Helm (24/10/2013) - audio uploads now check their name and rename another media item exists with the same name 
 """
 
 
@@ -435,6 +436,8 @@ class AudioFileProcessor(Resource):
 
                 else:
                     key = unique_custom_string(prefix='audio_', suffix='')
+                    while self.name_is_used(name):
+                        name += random.choice('1234567890')
                     # upload new assets
                     self.media_dict.add(url='%s/%s' % (config.AUDIO_SUBURL, mp3name), #XXX dodgy? (windows safe?)
                                        file=mp3name,
@@ -486,6 +489,16 @@ class AudioFileProcessor(Resource):
         # always finish request
         request.finish()
         return server.NOT_DONE_YET
+        
+    def name_is_used(self, name):
+        """checking whether a name exists in any media collection"""
+        #XXX should perhaps reindex by name.
+        log.msg('checking whether "%s" is a used name' %name)
+        for k, d in self.mediatypes.items():
+            for x in d.values():
+                if name == x.name:
+                    return True
+        return False
 
     def refresh(self, request):
         
