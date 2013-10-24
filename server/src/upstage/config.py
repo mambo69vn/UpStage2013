@@ -169,7 +169,7 @@ REGENERATE_VOICE_SCRIPTS=True
 
 """ Alan (13/09/07) ==> Constants used for upload size limits """
 ADMIN_SIZE_LIMIT = 1000000
-SUPER_ADMIN_SIZE_LIMIT = 2000000
+SUPER_ADMIN_SIZE_LIMIT = 10000000 # Ing - change the limit for admin and unlimited maker to 10MB
 
 # @brief prefix for built-in library images
 LIBRARY_PREFIX = 'library:'

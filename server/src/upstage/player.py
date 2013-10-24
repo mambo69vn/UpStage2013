@@ -55,8 +55,12 @@ class IParticipant:
     
     def can_admin(self):
         """admin or creator"""
-        return False  
-    
+        return False
+
+    def can_upload_big_file(self):
+        """unlimited maker and above"""
+        return False
+
     def is_player(self):
         """Can the participant act"""
         return True
@@ -95,7 +99,11 @@ class _Audience:
     
     def can_admin(self):
         """admin or creator"""
-        return False 
+        return False
+
+    def can_upload_big_file(self):
+        """unlimited maker and above"""
+        return False
 
     def is_player(self):
         """Can the participant act"""
@@ -184,6 +192,10 @@ class _Player:
     def can_admin(self):
         """admin or creator"""
         return self.is_admin() or self.is_creator()
+
+    def can_upload_big_file(self):
+        """unlimited maker and above"""
+        return self.is_unlimited_maker() or self.can_admin() or self.is_creator()
 
     def is_player(self):
         """Players can only act, on stages they are given player permissions"""
