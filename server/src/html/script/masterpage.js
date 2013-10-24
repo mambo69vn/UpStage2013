@@ -391,7 +391,7 @@ function login()
 {
 	// first time that the user tries to login (never reaches woven's guard realm before) - then init session
 	// requesting the perspective-init page without a session cookie will init the session
-	if (document.cookie.indexOf("woven_guard") === -1) {
+	if (document.cookie.indexOf("woven_session") === -1) {
 		requestPage("GET", '/admin/perspective-init', null);
 	}
 
@@ -430,6 +430,10 @@ function logout()
 {
 	// not deleting woven session cookie anymore, the guard realm needs it
 	// the cookie does not contain anything about users' credentials
+	// delete username and password cookies ('remember me' was checked)
+	deleteCookie('username');
+	deleteCookie('password');
+
 	requestPage("GET", '/admin/perspective-destroy', null);
 	document.getElementById('signup').innerHTML = loginLinks;
 	window.location = '/home';
