@@ -199,8 +199,9 @@ function selectColoring(select)
 		document.getElementById("pageIm").src = "/image/radioselect.jpg";
 	}
 	selector = select;
-	clearAllColors();
-	document.getElementById(select.toLowerCase()+"td").bgColor='#FFFFFF';
+	// Ing - why clearing them? just commented out for now, I'm not sure how this works
+	// clearAllColors();
+	// document.getElementById("col" + select).bgColor='#FFFFFF';
 }
 /**
  * Set all items to default bg color.
@@ -210,7 +211,7 @@ function clearAllColors()
 {
 	for(i in colorTypes)
 	{
-		document.getElementById(colorTypes[i].toLowerCase() + "td").bgColor=nocolor;
+		document.getElementById("col" + colorTypes[i]).bgColor=nocolor;
 	}
 }
 /**
@@ -261,7 +262,7 @@ function setMediaAssigned()
  */
 function viewMediaImage()//24/04/2013 -CF-
 {
-
+	saveState();
     document.stageedit.action.value = 'view_media';
     requestPage("POST", buildRequestByFormName('stageedit'),fillPage);
 }
@@ -365,7 +366,9 @@ function displayAccess()
 {
 	if(document.stageedit.displayaccess.value=='false')
 	{
-		document.getElementById('accessdiv').innerHTML='';
+		var el = document.getElementById('accessdiv') // Ing - this div doesn't seem to exist anymore
+		if (el)
+			el.innerHTML='';
 	}
 }
 
@@ -515,19 +518,22 @@ function resizePage()
 {
 	document.getElementById('masterpage').style.width = "";
 	var colorPickerWidth = 300;
-	var editWidth = document.getElementById('edit').offsetWidth;
+	var editEl = document.getElementById('edit');
 	var editStage = document.getElementById('editStageGeneral');
-	var calculatedWidth = (editWidth - colorPickerWidth - 40);
-	
-	if(calculatedWidth > 550)
-	{
-		editStage.style.width = calculatedWidth + "px";
-		
-	}
-	else
-	{
-		editStage.style.width = 550 + "px";
-		document.getElementById('masterpage').style.width = (550 + colorPickerWidth + 120) + "px";
+	// element with id 'edit' can be null
+	if (editEl && editStage) {
+		var editWidth = editEl.offsetWidth;
+		var calculatedWidth = (editWidth - colorPickerWidth - 40);
+
+		if(calculatedWidth > 550)
+		{
+			editStage.style.width = calculatedWidth + "px";
+		}
+		else
+		{
+			editStage.style.width = 550 + "px";
+			document.getElementById('masterpage').style.width = (550 + colorPickerWidth + 120) + "px";
+		}
 	}
 }
 
