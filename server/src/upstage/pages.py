@@ -2251,6 +2251,21 @@ class UserPage(AdminBase):
     def text_email(self, request):
         if(self.player):
             return self.player.email
+    
+    def text_permission(self, request):
+        if(self.player):
+            if(self.player.is_player()):
+                return 'Player'
+            elif(self.player.is_maker()):
+                return 'Maker'
+            elif(self.player.is_unlimited_maker()):
+                return 'Unlimited maker'
+            elif(self.player.is_admin()):
+                return 'Admin'
+            elif(self.player.is_creator()):
+                return 'Creator'
+            else:
+                return ''
         
     def text_is_superuser(self, request):
         if(self.player):
