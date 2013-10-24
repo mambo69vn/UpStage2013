@@ -43,7 +43,7 @@ March 2013		Added minify with YUI Compressor
 Modified by Nitkalya Wiriyanuparb
 05/09/2013 - Added 'start' and 'stop' to start and stop UpStage daemon
 15/09/2013 - Removed 'stop' target, modified 'kill', renamed 'start' to 'clean-start' and made a new 'start' target
-22/10/2013 - Removed the scary 'kill' target, and 'stop' target is back!! and as upstage-server --kill now alsos kill policy server process as well
+22/10/2013 - Removed the scary 'kill' target, and 'stop' target is back!! and as upstage-server -k now alsos kill policy server process as well
 
 -->
 <project name="UpStage" default="help" basedir=".">

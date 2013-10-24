@@ -584,7 +584,18 @@ function setupDataGrid() {
 						var audiotype = $('input[name="editAudioType"]:radio:checked').val() || '';
 						//var videoimagepath = $('#selectEditVideoImage').val() || '';
 						var forceReload = $('#editMediaForceReload').is(':checked') || false;
-						
+
+						if ($.trim(name) == '') {
+							alert('Media name cannot be empty');
+							return;
+						}
+
+						if ($('#tabEditStream').css('display') != 'none' &&
+							($.trim(streamserver) == '' || $.trim(streamname) == '')) {
+							if (! confirm('Stream server or stream name is empty.\nAre you sure you want to save?'))
+								return;
+						}
+
 						/*
 						// DEBUG:
 						alert(

@@ -1340,7 +1340,7 @@ class MediaEditPage(Workshop):
                 media.extend(self.collection.backdrops.get_media_list())
                 media.extend(self.collection.audios.get_media_list())
                 
-                log.msg("MediaEditPage: render_POST(): media collection: media=%s" % pprint.saferepr(media))
+                # log.msg("MediaEditPage: render_POST(): media collection: media=%s" % pprint.saferepr(media))
                 
                 # process all list elements
                 for media_item in media:
@@ -1690,10 +1690,10 @@ class MediaEditPage(Workshop):
             if add_dataset:
                 log.msg("MediaEditPage: _get_data(): adding dataset=%s" % dataset);
                 result.append(dataset)
-            else:
-                log.msg("MediaEditPage: _get_data(): skipping dataset=%s" % dataset);
+            # else:
+                # log.msg("MediaEditPage: _get_data(): skipping dataset=%s" % dataset);
         
-        log.msg("MediaEditPage: _get_data(): result=%s" % result);
+        # log.msg("MediaEditPage: _get_data(): result=%s" % result);
         return result
    
 #    def _get_detail(self):
