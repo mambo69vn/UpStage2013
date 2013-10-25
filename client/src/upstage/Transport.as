@@ -146,7 +146,12 @@ class upstage.Transport extends XMLSocket
         //trace("decoder is" + decoder);
         this.mode = decoder.mode;
         this.swfport = Number(decoder.swfport);
+
+        // Ing - inconsistent problems about cross-domain policy if the server is running multiple UpStage instances
+        // one of the following lines works on different server machines, don't know why
+        // this.policyport = Client.POLICY_PORT;
         this.policyport = Number(decoder.policyport) || Client.POLICY_PORT;
+
         this.stageID = decoder.stageID;
         //this.player = decoder.player;
     }

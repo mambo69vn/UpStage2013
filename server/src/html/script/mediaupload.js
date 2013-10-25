@@ -595,7 +595,7 @@ function checkExtensions(type)
  */
 function checkFileSizeAgainstPermissions(size)
 {
-    if(size > 1000000 || document.getElementById('can_upload_big_file').value != 'True')
+    if(size > 1000000 && document.getElementById('can_upload_big_file').value != 'True')
     {
         alert("You cannot upload files of greater than 1mb. Please try again.");
         return false;

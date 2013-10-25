@@ -109,7 +109,7 @@ def generate_deb(packagename):
     if(not len(packagename)>0):
         packagename = parse_control_file()
         print packagename
-    os.system('rm -rf `find . -type d -name .svn`')     	 
+    os.system('rm -rf `find . -type d -name .git`')
     rootpath = appRootDir+'/'+packagename;
     os.makedirs(rootpath) #create root direction
     #copy the directory tree to the root of the destination
@@ -154,7 +154,7 @@ def finalizeSetup():
 	print 'To Create a new server run as root: upstage-admin create'
 	print 'To Start a server run as root: upstage-admin start servername'
 	print 'To See if any servers are active run as root: upstage-admin ls'
-	print 'AUT upstage development team (2011)'
+	print 'AUT UpStage Team (2013)'
 	print '\n'
 	print '***************************************************************'
 

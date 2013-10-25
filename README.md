@@ -38,6 +38,14 @@ rsynth: wget http://archive.debian.org/debian-archive/debian/pool/non-free/r/rsy
 
 ## For Development
 ________
+__Important:__ Modify the following lines in `server/src/upstage/config.py` like so, and don't forget to modify it back for version releases
+```
+# Uncomment if installed using install.py or deb pkg
+# IMG2SWF_SCRIPT = '/usr/local/bin/img2swf.py'
+
+# Uncomment below if use Ant for development
+IMG2SWF_SCRIPT = './img2swf.py'
+```
 
 Use `ant` to compile/build/run (other targets are not tested yet)
 > Note: you need to install `mtasc` and `swfmill` to compile UpStage client
@@ -51,6 +59,8 @@ Use `ant` to compile/build/run (other targets are not tested yet)
 - `ant run` to  build and run automatically
 - `ant clean` to clean `build` and `temp` directories
 - `ant compile-swf` to compile client swf files
+
+> For problems about the cross domain policy when running multiple server instances (the typical symptom is users cannot load stages), see comments about `this.policyport` variable in `parseUrlVars()` inside `Transport.as`.
 
 ________
 #### AUT UpStage Team 2013

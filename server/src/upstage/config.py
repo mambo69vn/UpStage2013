@@ -145,11 +145,11 @@ LOG_ROTATE_SIZE = 1024 * 1024
 
 KILLALL_SCRIPT = '/usr/bin/killall'
 
-#Uncomment if installed using deb pkg
-#IMG2SWF_SCRIPT = '/usr/local/bin/img2swf.py'
+# Uncomment if installed using install.py or deb pkg
+IMG2SWF_SCRIPT = '/usr/local/bin/img2swf.py'
 
-#Comment below at AUT
-IMG2SWF_SCRIPT = './img2swf.py'
+# Uncomment below if use Ant for development
+# IMG2SWF_SCRIPT = './img2swf.py'
 
 IMG2SWF_LOG = './img2swf.log'
 

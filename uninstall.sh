@@ -40,8 +40,8 @@ echo "Removing /usr/local/bin/upstage"
 rm -r /usr/local/bin/upstage
 echo "Removing /usr/local/share/upstage/"
 rm -r /usr/local/share/upstage/
-echo "Removing /etc/cron.weekly/upstage-backup.sh"
-rm /etc/cron.weekly/upstage-backup.sh
+echo "Removing /etc/cron.weekly/upstage-backup"
+rm /etc/cron.weekly/upstage-backup
 echo "Removing symbolic links in /usr/local/bin"
 rm /usr/local/bin/chownme.sh
 rm /usr/local/bin/img2swf.py
