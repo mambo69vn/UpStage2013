@@ -577,14 +577,33 @@ function checkExtensions(type)
 	else if(type == "audio")
 	{
 		var prefix = 'au';
-		fileID = prefix + "contents0";
-		filename = document.getElementById(fileID).value;
-		shallContinue = checkMediaType(filename, type);
+		fileID = prefix + "contents0";        
+		var f = document.getElementById(fileID);
+		filename = f.value;   
+		var file = f.files[0];
+		shallContinue = checkMediaType(filename, type, file.size);
 
 	}
     //Lisa 21/08/2013 - removed video avatar code
 
 	return shallContinue;
+}
+
+/*
+ * Author: Lisa  25/10/13
+ * Checks if user can upload file of given size
+ */
+function checkFileSizeAgainstPermissions(size)
+{
+    if(size > 1000000 || document.getElementById('can_upload_big_file').value != 'True')
+    {
+        alert("You cannot upload files of greater than 1mb. Please try again.");
+        return false;
+    }
+    else
+    {
+        return true;
+    }
 }
 
 function checkAllMedia(type, prefix, frameNo)
@@ -595,19 +614,11 @@ function checkAllMedia(type, prefix, frameNo)
 	for(var count = 0; count < frameNo && shallContinue; count++)
 	{
 		fileID = prefix + "contents" + count;
-        var f = document.getElementById(fileID);
+		var f = document.getElementById(fileID);
 		filename = f.value;   
-        var file = f.files[0];
-        
-        if(file.size > 1000000 || document.getElementById('can_upload_big_file').value != 'True')
-        {
-            shallContinue=false;
-            alert("You cannot upload files of greater than 1mb. Please try again.");
-        }
-        else
-        {
-            shallContinue = checkMediaType(filename, type, count);
-        }
+		var file = f.files[0];
+
+		shallContinue = checkMediaType(filename, type, file.size, count);   
 	}
 
 	return shallContinue;
@@ -617,7 +628,7 @@ function checkAllMedia(type, prefix, frameNo)
  * Author: Natasha Pullan
  * Checks the extensions of files in the file field
  */
-function checkMediaType(filename, type, frameNum)
+function checkMediaType(filename, type, size, frameNum)
 {
 	log.debug("checkMediaType(): filename="+filename+", type="+type);
 	
@@ -663,8 +674,10 @@ function checkMediaType(filename, type, frameNum)
 		}
 	}
     
-    
-	
+	if (shallContinue) {
+		shallContinue = checkFileSizeAgainstPermissions(size);
+	}
+
 	return shallContinue;
 	
 }
