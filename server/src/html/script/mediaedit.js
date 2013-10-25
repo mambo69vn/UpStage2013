@@ -382,6 +382,7 @@ function showKnownError(timestamp,status,response) {
 	var message = "";
 	if(status == 500)
     {
+		alert("Name already in use, please choose a different name");
         message += "<p><strong>Error:</strong> Name already in use</p>";
     }else
     {
