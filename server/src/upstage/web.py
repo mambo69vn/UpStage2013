@@ -408,7 +408,7 @@ class AudioFileProcessor(Resource):
         duration = MadFile(the_url).total_time()
         
         if not (fileSizes is None and duration > 0):
-            if (validSizes(fileSizes, self.player.can_admin()) or self.player.is_unlimited_maker()):
+            if validSizes(fileSizes, self.player.can_upload_big_file()):
                 now = datetime.datetime.now() # AC () - Unformated datetime value
                 duration = str(duration/float(1000))
 
@@ -622,7 +622,7 @@ class SwfConversionWrapper(Resource):
             """ Alan (13/09/07) ==> Check the file sizes of avatar frame """
             # natasha continue conversion
             if not (fileSizes is None):
-                if (validSizes(fileSizes, self.player.can_admin()) or self.player.is_unlimited_maker()):
+                if validSizes(fileSizes, self.player.can_upload_big_file()):
                     # call the process with swf filename and temp image filenames 
                     d = getProcessValue(config.IMG2SWF_SCRIPT, args=[swf_full, thumbnail_full] + tfns)
                     args = (swf, thumbnail, form, request)
@@ -631,10 +631,15 @@ class SwfConversionWrapper(Resource):
                     d.setTimeout(config.MEDIA_TIMEOUT, timeoutFunc=d.errback)
                     d.addErrback(log.err)   # Make sure errors get logged - TODO is this working?
                 else:
+                    redirect = 'mediaupload'
+                    if form.get('mode', '') == 'replace':
+                        redirect = 'mediaedit'
+                        self.media_dict.restoreOldFile(form.get('oldfile'))
                     ''' Send new avatar page back containing error message '''
                     self.player.set_setError(True)
                     self.cleanup_upload(None, tfns)
-                    request.redirect('/admin/new/%s' %(self.mediatype))
+                    request.write(errorpage(request, 'You do not have the permission to upload a file over 1MB in size.', redirect))
+                    # request.redirect('/admin/new/%s' %(self.mediatype))
                     request.finish()
             #return server.NOT_DONE_YET
         
