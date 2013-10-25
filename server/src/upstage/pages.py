@@ -1237,6 +1237,10 @@ class MediaEditPage(Workshop):
     def text_user(self, request):
         if (self.player):
             return self.player.name
+            
+    def text_can_upload_big_file(self, request):
+        if(self.player):
+            return str(self.player.can_upload_big_file())
     
     def text_list_voices_as_html_option_tag(self,request):
         voicelist = ['<option value=""> -- none -- </option>']
