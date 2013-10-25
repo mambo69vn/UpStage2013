@@ -871,7 +871,7 @@ class _Stage(object):
 
         self.sockets[client.ID] = client
         
-        if client.player.can_play():
+        if client.player.can_act():
             self.player_sockets[client.ID] = client
         if client.player.can_admin():
             self.admin_sockets[client.ID] = client

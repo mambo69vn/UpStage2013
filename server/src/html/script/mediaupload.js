@@ -551,55 +551,66 @@ function checkExtensions(type)
 
 	var filename = '',
 		fileID = '',
-		shallcontinue = false;
+		shallContinue = false;
 
 	if(type == "avatar")
 	{
 		var frameNo = parseInt(document.getElementById('avframecount').value);
 		var prefix = 'av';
 
-		shallcontinue = checkAllMedia(type, prefix, frameNo);
+		shallContinue = checkAllMedia(type, prefix, frameNo);
 	}
 	else if(type == "backdrop")
 	{
 		var frameNo = parseInt(document.getElementById('bkframecount').value);
 		var prefix = 'bk';
 
-		shallcontinue = checkAllMedia(type, prefix, frameNo);
+		shallContinue = checkAllMedia(type, prefix, frameNo);
 	}
 	else if(type == "prop")
 	{
 		var frameNo = 1; // parseInt(document.getElementById('prframecount').value);
 		var prefix = 'pr';
 
-		shallcontinue = checkAllMedia(type, prefix, frameNo);
+		shallContinue = checkAllMedia(type, prefix, frameNo);
 	}
 	else if(type == "audio")
 	{
 		var prefix = 'au';
 		fileID = prefix + "contents0";
 		filename = document.getElementById(fileID).value;
-		shallcontinue = checkMediaType(filename, type);
+		shallContinue = checkMediaType(filename, type);
 
 	}
     //Lisa 21/08/2013 - removed video avatar code
 
-	return shallcontinue;
+	return shallContinue;
 }
 
 function checkAllMedia(type, prefix, frameNo)
 {
 	var filename = '',
 		fileID = '',
-		shallcontinue = true;
-	for(var count = 0; count < frameNo && shallcontinue; count++)
+		shallContinue = true;
+	for(var count = 0; count < frameNo && shallContinue; count++)
 	{
 		fileID = prefix + "contents" + count;
-		filename = document.getElementById(fileID).value;
-		shallcontinue = checkMediaType(filename, type, count);
+        var f = document.getElementById(fileID);
+		filename = f.value;   
+        var file = f.files[0];
+        
+        if(file.size > 1000000 || document.getElementById('can_upload_big_file').value != 'True')
+        {
+            shallContinue=false;
+            alert("You cannot upload files of greater than 1mb. Please try again.");
+        }
+        else
+        {
+            shallContinue = checkMediaType(filename, type, count);
+        }
 	}
 
-	return shallcontinue;
+	return shallContinue;
 }
 
 /*
@@ -613,13 +624,13 @@ function checkMediaType(filename, type, frameNum)
 	var splitfilename = filename.split(".");
 	//Modified by heath behrens (28/07/2011) - now accesses last element in the array
 	var fileExt = splitfilename[splitfilename.length-1];
-	var shallcontinue = false;
+	var shallContinue = false;
 	
 	if(type == "audio")
 	{
 		if(fileExt == "mp3")
 		{
-			shallcontinue = true;
+			shallContinue = true;
 		}
 		else
 		{
@@ -633,7 +644,7 @@ function checkMediaType(filename, type, frameNum)
 			|| fileExt.toUpperCase() == "PNG" || fileExt.toUpperCase() == "GIF" 
 			||fileExt.toUpperCase() == 'JPEG')
 		{
-            shallcontinue = true;
+            shallContinue = true;
             if( fileExt.toUpperCase() == "SWF" || fileExt.toUpperCase() == "GIF")
             {
                 if(frameNum > 0)
@@ -648,11 +659,13 @@ function checkMediaType(filename, type, frameNum)
 		else
 		{
 			alert("You need to pick either a jpg, swf, gif or png file.");
-			shallcontinue = false;
+			shallContinue = false;
 		}
 	}
+    
+    
 	
-	return shallcontinue;
+	return shallContinue;
 	
 }
 

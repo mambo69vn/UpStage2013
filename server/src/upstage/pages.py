@@ -1783,6 +1783,10 @@ class MediaUploadPage(Workshop):
     def text_is_superuser(self, request):
         if(self.player):
             return str(self.player.can_admin())
+            
+    def text_can_upload_big_file(self, request):
+        if(self.player):
+            return str(self.player.can_upload_big_file())
         
     def text_user(self, request):
         if (self.player):
