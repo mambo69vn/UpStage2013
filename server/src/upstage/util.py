@@ -97,7 +97,7 @@ def getFileSizes(filenames):
 
 
 """ Alan (13/09/07) ==> Check the file sizes are valid under 1MB for normal users 
-    and less than 2MB for super admin users. Anything over 2MB is denied. """
+    and less than 10MB for super admin users. Anything over 10MB is denied. """ # Ing - 10MB
 def validSizes(sizes, super_admin):
     valid = True
     limit = 0
