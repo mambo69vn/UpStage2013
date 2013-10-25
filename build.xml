@@ -532,9 +532,10 @@ Modified by Nitkalya Wiriyanuparb
 				<!-- <include name="**/*.conf"/> is this used? -->
 				
 			</fileset>
-			<mapper type="glob" from="upstage-server" to="upstage-server.py"/>
 		</copy>
-		
+
+		<move file="${upstage.dir.build}/upstage-server" tofile="${upstage.dir.build}/upstage-server.py"/>
+
 		<!-- chmod scripts in lib folder: make scripts executable -->
 		<chmod perm="755">
 			<fileset dir="${upstage.dir.build}">
