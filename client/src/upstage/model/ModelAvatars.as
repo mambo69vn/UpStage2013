@@ -582,10 +582,10 @@ class upstage.model.ModelAvatars implements TransportInterface
         var myMenu:ContextMenu = new ContextMenu();
         myMenu.hideBuiltInItems();
 
-        var moveupMenuItem:ContextMenuItem = new ContextMenuItem("Move Up", function(){
+        var moveupMenuItem:ContextMenuItem = new ContextMenuItem("Move Forward", function(){
             modelAv.MOVE_LAYER_UP();
         });
-        var movedownMenuItem:ContextMenuItem = new ContextMenuItem("Move Down", function(){
+        var movedownMenuItem:ContextMenuItem = new ContextMenuItem("Move Backward", function(){
             modelAv.MOVE_LAYER_DOWN();
         });
         var movefastMenuItem:ContextMenuItem = new ContextMenuItem("Move Fast", function(){

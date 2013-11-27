@@ -39,7 +39,8 @@ package org.view
      * 			0.4 - Allowed external modification of menu (specifically speed items).
      * @see
      * @modified Shaun Narayan 04/26/10 - Context Menus, shadow and renaming
-     * @note Fast/Slow has some crazy weird bug.     */
+     * @note Fast/Slow has some crazy weird bug.
+     */
     public class AvMenu extends MovieClip 
     {
     	//Custom Menu
@@ -137,8 +138,8 @@ package org.view
 				renameMenuItem = new ContextMenuItem("Rename");
 				shadowMenuItem = new ContextMenuItem("Shadow");
 				voiceMenuItem = new ContextMenuItem("Change Voice");
-				layerUpMenuItem = new ContextMenuItem("Move Up");
-				layerDownMenuItem = new ContextMenuItem("Move Down");
+				layerUpMenuItem = new ContextMenuItem("Move Forward");
+				layerDownMenuItem = new ContextMenuItem("Move Backward");
 				
 				slowMenuItem.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, handleSlow);
 				fastMenuItem.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, handleFast);
@@ -169,7 +170,8 @@ package org.view
         	}
         }
         /**
-         * Event Handlers         */
+         * Event Handlers
+         */
 		function handleFast(e:ContextMenuEvent):void
 		{
 			trace("HANDLE FAST INVOKED");
@@ -258,7 +260,8 @@ package org.view
         	ti.SET_MOVE(e.stageX/App.scaleAmountX, e.stageY/App.scaleAmountY);
         }
         /**
-         * Allows menu context to be updated from external actions.         */
+         * Allows menu context to be updated from external actions.
+         */
         public function updateMoveSpeed(fast:Boolean):void
 		{
 			if(Client.AV_UI_MENU_CUSTOM)
