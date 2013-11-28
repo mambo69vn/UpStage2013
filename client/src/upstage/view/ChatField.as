@@ -46,6 +46,8 @@ class upstage.view.ChatField
     private var chatInput    :ChatInput;
     private var up           :ScrollButton;
     private var down         :ScrollButton;
+
+    private var welcomeMessage    :String;
     
     private var applauseBtn     :UiButton;
     private var volunteerBtn     :UiButton;
@@ -216,7 +218,7 @@ class upstage.view.ChatField
     function loadChat(text :String) :Void
     {
         this.clearChat();
-        this.tf.text = 'Welcome to UpStage\n';
+        this.tf.text = welcomeMessage;
         var lines : Array = text.split('\n');
         while (lines.length){
             var x : String = String(lines.shift());
@@ -644,9 +646,9 @@ function buildURL(sLink:String):String
      * Added by Vanessa Henderson 10/10/13
      *
      */ 
-    function setWelcomeMsg(welcomeMessage :String):Void{
+    function setWelcomeMsg(splashMessage :String):Void{
 
-      this.tf.text = welcomeMessage;
-      trace('Welcome message Set in Chat: '+ welcomeMessage);
+      this.welcomeMessage = splashMessage;
+      trace('Welcome message Set in Chat: '+ splashMessage);
     }
 };

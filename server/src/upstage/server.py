@@ -222,6 +222,7 @@ class _UpstageSocket(LineOnlyReceiver):
                           duration = au.media.width
                           )
 
+            self.send('CHAT_MSG', msg = self.stage.splash_message)
             chat = '\n'.join(stage.retrieve_chat())
             chat = chat.replace('<', '&lt;')# Vishaal 15/10/09 Changed to ACTUALLY fix < > chatlog problem
             chat = chat.replace('>', '&gt;')# Vishaal 15/10/09 Changed to ACTUALLY fix < > chatlog problem
