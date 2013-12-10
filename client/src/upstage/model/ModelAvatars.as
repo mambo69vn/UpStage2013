@@ -638,18 +638,33 @@ class upstage.model.ModelAvatars implements TransportInterface
 
         // Mute/Unmute streaming avatar - Ing - 28/8/13
         if (av.isStream) {
-            var toggleLocalAudioMenuItem:ContextMenuItem = new ContextMenuItem("Toggle Mute/Unmute Locally", function(){
-                av.isMutedLocally = !av.isMutedLocally;
-                av.setVolumeAccordingToLocalMuteStatus();
-
-                if (!av.isMutedLocally && av.isMutedGlobally) {
-                    ExternalInterface.call("alert", "Audiences do not currently hear you; you might also want to unmute globally.");
-                }
-            });
-
-            var toggleGlobalAudioMenuItem:ContextMenuItem = new ContextMenuItem("Toggle Mute/Unmute Globally", function(){
-                modelAv.TOGGLE_STREAM_AUDIO();
-            });
+            if(av.isMutedLocally){
+                var toggleLocalAudioMenuItem:ContextMenuItem = new ContextMenuItem("Unmute Locally", function(){
+                    av.isMutedLocally = !av.isMutedLocally;
+                    av.setVolumeAccordingToLocalMuteStatus();
+                    
+                });
+            }
+            if(!av.isMutedLocally){
+                var toggleLocalAudioMenuItem:ContextMenuItem = new ContextMenuItem("Mute Locally", function(){
+                    av.isMutedLocally = !av.isMutedLocally;
+                    av.setVolumeAccordingToLocalMuteStatus();
+                    
+                    if (!av.isMutedLocally && av.isMutedGlobally) {
+                        ExternalInterface.call("alert", "Audiences do not currently hear you; you might also want to unmute globally.");
+                    }
+                });
+            }
+            if(av.isMutedGlobally){
+                var toggleGlobalAudioMenuItem:ContextMenuItem = new ContextMenuItem("Unmute Globally", function(){
+                    modelAv.TOGGLE_STREAM_AUDIO();
+                });
+            }
+            if(!av.isMutedGlobally){
+                var toggleGlobalAudioMenuItem:ContextMenuItem = new ContextMenuItem("Mute Globally", function(){
+                    modelAv.TOGGLE_STREAM_AUDIO();
+                });
+            }
 
             // add it at the top
             rotateAvatarRightMenuItem.separatorBefore = true;
