@@ -55,6 +55,7 @@ import flash.external.ExternalInterface;
  *                                                 - Hide rotation options for streaming avatars
  * Modified by: Nitkalya Wiriyanuparb  14/09/2013  - Sent new name to other audiences when renaming an avatar using context menu
  *                                                 - Showed sound status (mute?) for straming avatar in front of its name
+ * Modified by: Vanessa Henderson      13/12/2013 - Changed the right click menu buttons to separate buttons for Muting/Unmuting streaming avatars
  */
 class upstage.model.ModelAvatars implements TransportInterface
 {
@@ -637,24 +638,42 @@ class upstage.model.ModelAvatars implements TransportInterface
 		drawAvatarMenuItem.separatorBefore = true;
 
         // Mute/Unmute streaming avatar - Ing - 28/8/13
+        //Mute/Unmute streaming avatar buttons - Vanessa 13/12/2013
         if (av.isStream) {
-            var toggleLocalAudioMenuItem:ContextMenuItem = new ContextMenuItem("Toggle Mute/Unmute Locally", function(){
-                av.isMutedLocally = !av.isMutedLocally;
-                av.setVolumeAccordingToLocalMuteStatus();
-
-                if (!av.isMutedLocally && av.isMutedGlobally) {
-                    ExternalInterface.call("alert", "Audiences do not currently hear you; you might also want to unmute globally.");
+            var toggleLocalAudioMenuItemUnmute:ContextMenuItem = new ContextMenuItem("Unmute Locally", function(){
+                    if(av.isMutedLocally){
+                        av.isMutedLocally = !av.isMutedLocally;
+                        av.setVolumeAccordingToLocalMuteStatus();
+                    }
+                    
+                });
+                 var toggleLocalAudioMenuItemMute:ContextMenuItem = new ContextMenuItem("Mute Locally", function(){
+                    
+                    if(!av.isMutedLocally){
+                        av.isMutedLocally = !av.isMutedLocally;
+                        av.setVolumeAccordingToLocalMuteStatus();
+                 
+                    
+                    if (!av.isMutedLocally && av.isMutedGlobally) {
+                        ExternalInterface.call("alert", "Audiences do not currently hear you; you might also want to unmute globally.");
+                    }
                 }
-            });
-
-            var toggleGlobalAudioMenuItem:ContextMenuItem = new ContextMenuItem("Toggle Mute/Unmute Globally", function(){
-                modelAv.TOGGLE_STREAM_AUDIO();
-            });
-
-            // add it at the top
-            rotateAvatarRightMenuItem.separatorBefore = true;
-            myMenu.customItems.push(toggleLocalAudioMenuItem, toggleGlobalAudioMenuItem);
-
+                });
+                 var toggleGlobalAudioMenuItemUnmute:ContextMenuItem= new ContextMenuItem("Unmute Globally", function(){
+                    if(av.isMutedGlobally){
+                    modelAv.TOGGLE_STREAM_AUDIO();
+                }
+                });
+                var toggleGlobalAudioMenuItemMute:ContextMenuItem= new ContextMenuItem("Mute Globally", function(){
+                    if(!av.isMutedGlobally){
+                    modelAv.TOGGLE_STREAM_AUDIO();
+                }
+                    
+                });
+                    // add it at the top
+                    rotateAvatarRightMenuItem.separatorBefore = true;
+                    myMenu.customItems.push(toggleLocalAudioMenuItemUnmute,toggleLocalAudioMenuItemMute, toggleGlobalAudioMenuItemUnmute, toggleGlobalAudioMenuItemMute);
+        
         } else {
             // can only rotate normal avatars
             myMenu.customItems.push(rotateAvatarRightMenuItem, rotateAvatarLeftMenuItem);
