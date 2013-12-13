@@ -1191,7 +1191,12 @@ class _Stage(object):
 
     def broadcast_numbers(self):
         """Broadcast player, audience count to players"""
-        p = len(self.player_sockets)
+        p = 0
+        for sock in self.player_sockets.values():
+            if sock.player.name in self.access_level_one:
+                p = p + 1
+            elif sock.player.name in self.access_level_two:
+                p = p + 1
         a = len(self.sockets) - p
         #self.player_broadcast('JOINED', pCount = str(p), aCount = str(a))  - 08/10/09 - Changed to broadcast to all for audience tools
         self.broadcast('JOINED', pCount = str(p), aCount = str(a)) 
