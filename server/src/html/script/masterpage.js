@@ -430,9 +430,13 @@ function logout()
 {
 	// not deleting woven session cookie anymore, the guard realm needs it
 	// the cookie does not contain anything about users' credentials
+	var cookies = document.cookie.split(";");
+	for (var i = 0 ; i < cookies.length; i++){
+		deleteCookie(cookies[i].split("=")[0]);
+	}
 	// delete username and password cookies ('remember me' was checked)
-	deleteCookie('username');
-	deleteCookie('password');
+	//deleteCookie('username');
+	//deleteCookie('password');
 
 	requestPage("GET", '/admin/perspective-destroy', null);
 	document.getElementById('signup').innerHTML = loginLinks;
