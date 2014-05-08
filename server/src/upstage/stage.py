@@ -395,7 +395,7 @@ class _Stage(object):
         nodeOwner.text(self.owner)
         save_xml(tree.node, config_file)
         del tree
-        self.load()
+        #self.load() commented out as a potential fix for git#193
 
     def wake(self):
         """Set stage to active"""
@@ -628,7 +628,7 @@ class _Stage(object):
                     if k not in collection.media:
                         collection.add_mediafile(k)
                         log.msg("created media file list")
-                        #self.save()  commented out as a potential fix for git#193
+                        self.save()
         # Natasha change this later to accept any type of media
         #else:
             #log.msg('List of avatars: %s' % self.get_avatar_list())
