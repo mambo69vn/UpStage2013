@@ -395,7 +395,7 @@ class _Stage(object):
         nodeOwner.text(self.owner)
         save_xml(tree.node, config_file)
         del tree
-        self.load()
+        #self.load() commented out as a potential fix for git#193
 
     def wake(self):
         """Set stage to active"""
