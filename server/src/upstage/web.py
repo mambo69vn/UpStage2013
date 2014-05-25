@@ -47,6 +47,7 @@ Modified by: Nitkalya Wiriyanuparb  29/09/2013  - Added try-catch when replacing
 Modified by: Nitkalya Wiriyanuparb  04/10/2013  - Used pymad to get audio duration when uploading a new file (clients stream from server; don't know duration right away)
 Modified by: Lisa Helm and Vanessa Henderson (17/10/2013) changed user permissions to fit with new scheme
 Modified by: Lisa Helm (24/10/2013) - audio uploads now check their name and rename another media item exists with the same name 
+Modified by: Vanessa Henderson (25/05/2014) - Changed to allow player to edit their profile details
 """
 
 
@@ -72,7 +73,7 @@ from upstage.pages import  AdminLoginPage, AdminBase, errorpage, Workshop, HomeP
                            MediaUploadPage, MediaEditPage, CreateDir, \
                            NewPlayer, EditPlayer, NewAvatar, NewProp, NewBackdrop, NewAudio,     \
                            ThingsList, StagePage, UserPage, PlayerPage, PageEditPage, HomeEditPage, WorkshopEditPage, SessionCheckPage, successpage,\
-                           PlayerEditPage, StagesEditPage, SignupEditPage, AdminError
+                           PlayerEditPage, StagesEditPage, SignupEditPage, AdminError, UserPlayerPage
 
 #twisted
 from twisted.python import log
@@ -278,7 +279,11 @@ class AdminRealm:
         # player, but not admin.
         elif player.is_player():
         # Daniel modified 27/06/2012
-            tree = PlayerPage(player, self.data)        
+            tree = PlayerPage(player, self.data)
+            workshop_pages = {
+                              'user' : (UserPlayerPage, self.data)
+                              }
+            tree.putChild('workshop', CreateDir(player, workshop_pages))
             tree.putChild('id', SessionID(player, self.data.clients))
         # anon - the audience.
         else:
