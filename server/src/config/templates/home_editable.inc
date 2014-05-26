@@ -14,8 +14,6 @@
 <h1>
 	UpStage Stage List</h1>
 <p>
-	Your name is %(username)s</p>
-<p>
 	The following stages are viewable on this UpStage server:</p>
 <p>
 	%(list)s</p>
