@@ -34,6 +34,7 @@ import upstage.util.LoadTracker;
  *                                                 - Support mute/unmute globally and locally
  * Modified by: Nitkalya Wiriyanuparb  05/09/2013  - Removed video avatar code
  * Modified by: Nitkalya Wiriyanuparb  10/09/2013  - Added correct Prop resizing in loadImage()
+ * Modified by: Takuma and Vanessa 4/06/2013       - isMutedLocally is set to true by defalut.
  */
 class upstage.thing.Thing extends MovieClip
 {
@@ -92,7 +93,7 @@ class upstage.thing.Thing extends MovieClip
         thing.medium = medium;
         thing.streamName = streamname;
         thing.streamServer = streamserver;
-        thing.isMutedLocally = false;
+        thing.isMutedLocally = true;    
         thing.isMutedGlobally = false;
 
         if (medium == 'stream') {
